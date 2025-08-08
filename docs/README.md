@@ -1,6 +1,11 @@
-# Anamnesis Navigator
+<div align="center">
+  <b><h1>Anamnesis Navigator</h1><b>
+  <img src="../src/frontend/assets/logo.png" alt="Logo do Projeto" width="400">
+</div>
 
-> Fichário virtual para psicólogos — registro, organização e consulta de anamneses e sessões. MVP focado em entregar o fluxo essencial com segurança e usabilidade.
+### Fichário virtual para psicólogos 🧠
+- Registro, organização e consulta de anamneses e sessões. 
+- MVP focado em entregar o fluxo essencial com segurança e usabilidade.
 
 ---
 
@@ -27,7 +32,7 @@ Anamnese Navigator é um sistema web pensado para psicólogos gerenciarem pacien
 
 ---
 
-## 📁 Estrutura do repositório (sugestão)
+## 📁 Estrutura do repositório 
 ```txt
 Anamnese Navigator
 │
