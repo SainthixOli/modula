@@ -34,41 +34,39 @@ Anamnese Navigator é um sistema web pensado para psicólogos gerenciarem pacien
 
 ## 📁 Estrutura do repositório 
 ```txt
-Anamnese Navigator
+anamnesis-navigator/
 │
-├── docs/                      # Toda documentação do projeto
-│   ├── README.md               # Apresentação geral do projeto
-│   ├── planejamento.md         # Escopo, objetivos, requisitos, etc.
-│   ├── telas.md                # Descrição das telas, fluxos, funcionalidades
-│   ├── tecnologias.md          # Tecnologias utilizadas e integração
-│   ├── organograma.png         # Imagem do organograma técnico
-│   ├── cronograma.md           # Organização de entregas e prazos
-│   └── outros-arquivos/        # Qualquer documento extra
+├── docs/                      # Toda a documentação do projeto
+│   ├── README.md               # Apresentação geral do projeto
+│   ├── planejamento.md         # Escopo, objetivos, requisitos, etc.
+│   ├── telas.md                # Descrição das telas, fluxos, funcionalidades
+│   ├── tecnologias.md          # Tecnologias utilizadas e integração
+│   ├── organograma.png         # Imagem do organograma técnico
+│   ├── cronograma.md           # Organização de entregas e prazos
+│   └── outros-arquivos/        # Qualquer documento extra
 │
-├── design/                     # Arquivos de design
-│   ├── figma-screenshots/      # Capturas de tela das telas do Figma
-│   └── prototipos.pdf          # Exportação completa do protótipo
+├── design/                     # Arquivos de design
+│   ├── figma-screenshots/      # Capturas de tela das telas do Figma
+│   └── prototipos.pdf          # Exportação completa do protótipo
 │
-├── src/                        # Código fonte do projeto
-│   ├── frontend/               # Código do frontend
-│   │   ├── index.html
-│   │   ├── styles.css
-│   │   ├── script.js
-│   │   └── assets/             # Imagens, ícones, etc.
-│   │
-│   ├── backend/                # Código do backend
-│   │   ├── server.js           # Arquivo principal Node.js + Express
-│   │   ├── routes/             # Rotas da API
-│   │   ├── controllers/        # Lógica das rotas
-│   │   ├── models/             # Estrutura de dados / conexão BD
-│   │   └── middleware/         # Segurança (auth, validação, etc.)
-│   │
-│   └── database/               # Configuração do banco
-│       ├── init.sql             # Script de criação das tabelas
-│       └── config.js            # Configuração da conexão com o banco
+├── frontend/                   # Código do frontend
+│   └── src/
+│       ├── assets/             # Imagens, ícones, etc.
+│       ├── index.html
+│       ├── styles.css
+│       └── script.js
 │
-├── .gitignore                  # Arquivos/pastas para ignorar no Git
-├── package.json                # Dependências do Node.js
-└── LICENSE                     # Licença do projeto (opcional)
+├── backend/                    # Código do backend e banco de dados
+│   └── src/
+│       ├── config/             # Configuração do banco (conexão, etc.)
+│       ├── controllers/        # Lógica das rotas
+│       ├── middleware/         # Segurança (auth, validação, etc.)
+│       ├── models/             # Estrutura de dados / ORM
+│       ├── routes/             # Rotas da API
+│       └── server.js           # Arquivo principal Node.js + Express
+│
+├── .gitignore                  # Arquivos/pastas para ignorar no Git
+├── package.json                # Dependências do Node.js
+└── LICENSE                     # Licença do projeto (opcional)
 ```
 
