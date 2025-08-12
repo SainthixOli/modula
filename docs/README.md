@@ -1,6 +1,6 @@
 <div align="center">
   <b><h1>Anamnesis Navigator</h1><b>
-  <img src="../src/frontend/assets/logo.png" alt="Logo do Projeto" width="400">
+  <img src="../frontend/src/assets/logo.png" alt="Logo do Projeto" width="400">
 </div>
 
 ### Fichário virtual para psicólogos 🧠
