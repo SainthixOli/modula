@@ -104,7 +104,7 @@ anamnesis-navigator/
 ```
 ---
 
-## 👥 Equipa
+## 👥 Equipe
 
 Este projeto foi desenvolvido com a colaboração dos seguintes membros:
 
