@@ -1,6 +1,6 @@
 <div align="center">
-  <b><h1>Anamnesis Navigator</h1><b>
-  <img src="../frontend/src/assets/logo.png" alt="Logo do Projeto" width="400">
+  <b><h1>Módula</h1><b>
+  <img src="../frontend/src/assets/logoProjeto.png" alt="Logo do Projeto" width="400">
 </div>
 
 <div align="center">
@@ -115,3 +115,4 @@ Este projeto foi desenvolvido com a colaboração dos seguintes membros:
 | <img src="https://github.com/gabrielpyxp.png" width="80px;" alt="Foto de Perfil do Gabriel"/> | **Gabriel** | Desenvolvedor | [@gabrielpyxp](https://github.com/gabrielpyxp) |
 | <img src="https://github.com/strlovs.png" width="80px;" alt="Foto de Perfil da Layla"/> | **Layla** | Tester | [@strlovs](https://github.com/strlovs) |
 | <img src="https://github.com/SainthixOli.png" width="80px;" alt="Foto de Perfil do Oliver"/> | **Oliver** | Desenvolvedor | [@SainthixOli](https://github.com/SainthixOli) |
+| <img src="https://github.com/rafaelsanoli.png" width="80px;" alt="Foto de Perfil do Rafael"/> | **Rafael** | Desenvolvedor | [@rafaelsanoli](https://github.com/rafaelsanoli) |
