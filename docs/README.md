@@ -9,22 +9,34 @@
   <img src="https://img.shields.io/github/license/SainthixOli/anamnesis-navigator" alt="Licença">
 </div>
 
-### Fichário virtual para psicólogos 🧠
-- Registro, organização e consulta de anamneses e sessões. 
-- MVP focado em entregar o fluxo essencial com segurança e usabilidade.
+### 🧠 Módula 
+- Módula é a plataforma de gestão que promete revolucionar o dia a dia de clínicas e consultórios de saúde. Nossa missão é transformar processos manuais, complexos e descentralizados em uma experiência digital, integrada e inteligente.
+
+- Chega de pilhas de papéis, planilhas confusas e sistemas que não se conversam. Com o Módula, você centraliza a gestão de agendamentos, prontuários, finanças e o relacionamento com o paciente em um único lugar, de forma segura e acessível de onde estiver.
 
 ---
 
-## 🚀 Resumo rápido
-Anamnese Navigator é um sistema web pensado para psicólogos gerenciarem pacientes e sessões de forma simples e segura. O objetivo do MVP é cobrir o fluxo mínimo: autenticação do psicólogo, cadastro de pacientes, registro de sessões e visualização do histórico.
+## ✨ Funcionalidades em Destaque
+Nossa plataforma foi desenhada para otimizar cada aspecto da sua clínica, desde a recepção até a gestão financeira.
+
+🏥 Para a sua Clínica: Controle Total e Eficiência
+Oferecemos ferramentas poderosas para simplificar a administração e permitir que você foque no que realmente importa: o cuidado com o paciente.
+
+❤️ Para o seu Paciente: Comodidade e Engajamento
+Fortaleça o relacionamento com seus pacientes oferecendo uma experiência moderna, com autonomia e acesso facilitado às informações.
+
+
 
 ---
 
-## 🎯 Objetivos do MVP
-- Login seguro para psicólogos  
-- Cadastro e listagem de pacientes  
-- Registro de sessão (editor de texto simples)  
-- Histórico cronológico de sessões por paciente
+## 🎯 Objetivos
+- Digitalizar e Centralizar: Unificar todas as operações da clínica em uma única plataforma.
+
+- Otimizar o Tempo: Automatizar tarefas repetitivas como agendamentos, lembretes e controle financeiro.
+
+- Aprimorar a Experiência do Paciente: Oferecer conveniência, autonomia e comunicação transparente.
+
+- Garantir a Segurança: Proteger os dados sensíveis de pacientes e da clínica com as melhores práticas de segurança.
 
 
 ## 💻 Como executar o projeto
