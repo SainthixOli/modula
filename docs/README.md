@@ -6,7 +6,7 @@
 <div align="center">
   <img src="https://img.shields.io/badge/Status-Em%20Desenvolvimento-blue" alt="Status do Projeto">
   <img src="https://img.shields.io/badge/Versão-0.1.0-orange" alt="Versão do Projeto">
-  <img src="https://img.shields.io/github/license/SainthixOli/anamnesis-navigator" alt="Licença">
+  <img src="https://img.shields.io/github/license/SainthixOli/modula" alt="Licença">
 </div>
 
 ### 🧠 Módula 
@@ -56,7 +56,7 @@ Fortaleça o relacionamento com seus pacientes oferecendo uma experiência moder
 
 ## 💻 Como executar o projeto
 
-Para executar o Anamnesis Navigator na tua máquina, segue os passos abaixo:
+Para executar o Módula em sua máquina, siga os passos abaixo:
 
 ### Pré-requisitos
 Certifica-te de que tens as seguintes ferramentas instaladas:
@@ -65,15 +65,15 @@ Certifica-te de que tens as seguintes ferramentas instaladas:
 - [PostgreSQL](https://www.postgresql.org/download/)
 
 ### Passo a passo
-1.  **Clona este repositório:**
+1.  **Clone este repositório:**
     ```bash
-    git clone [https://github.com/SainthixOli/anamnesis-navigator.git](https://github.com/SainthixOli/anamnesis-navigator.git)
-    cd anamnesis-navigator
+    git clone [https://github.com/SainthixOli/modula.git](https://github.com/SainthixOli/modula.git)
+    cd modula
     ```
-2.  **Configura o backend:**
+2.  **Configure o backend:**
     - Navega até a pasta `backend`: `cd backend`
     - Instala as dependências: `npm install`
-    - Cria um arquivo `.env` com as tuas credenciais do banco de dados (exemplo: `DATABASE_URL=postgres://user:password@localhost:5432/anamnesis_db`)
+    - Cria um arquivo `.env` com as tuas credenciais do banco de dados (exemplo: `DATABASE_URL=postgres://user:password@localhost:5432/modula_db`)
     - Inicia o servidor: `npm start`
 3.  **Configura o frontend:**
     - Navega até a pasta `frontend`: `cd ../frontend`
@@ -83,7 +83,7 @@ Certifica-te de que tens as seguintes ferramentas instaladas:
 
 ## 📁 Estrutura do repositório 
 ```txt
-anamnesis-navigator/
+modula/
 │
 ├── docs/                      # Toda a documentação do projeto
 │   ├── README.md               # Apresentação geral do projeto
