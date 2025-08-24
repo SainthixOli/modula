@@ -1,0 +1,210 @@
+# ===============================================
+# MÓDULA - ARQUIVO .GITIGNORE PARA BACKEND
+# ===============================================
+# Este arquivo especifica quais arquivos e pastas
+# devem ser ignorados pelo Git para manter a
+# segurança e limpeza do repositório.
+# ===============================================
+
+# -------------------------------------------
+# DEPENDÊNCIAS DO NODE.JS
+# -------------------------------------------
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# -------------------------------------------
+# ARQUIVOS DE AMBIENTE E CONFIGURAÇÃO
+# -------------------------------------------
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+.env.*.local
+
+# Configurações específicas do desenvolvedor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# -------------------------------------------
+# LOGS E ARQUIVOS TEMPORÁRIOS
+# -------------------------------------------
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Arquivos temporários
+*.tmp
+*.temp
+.temp/
+.tmp/
+
+# -------------------------------------------
+# BANCO DE DADOS
+# -------------------------------------------
+# Arquivos SQLite (caso use para desenvolvimento/testes)
+*.db
+*.sqlite
+*.sqlite3
+
+# Dumps de banco de dados
+*.sql
+*.dump
+
+# -------------------------------------------
+# TESTES E COVERAGE
+# -------------------------------------------
+coverage/
+.nyc_output
+.coverage/
+*.lcov
+
+# Arquivos de teste temporários
+test-results/
+test-output/
+
+# -------------------------------------------
+# SISTEMA OPERACIONAL
+# -------------------------------------------
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.directory
+.Trash-*
+
+# -------------------------------------------
+# ARQUIVOS DE BUILD E DISTRIBUIÇÃO
+# -------------------------------------------
+dist/
+build/
+out/
+
+# -------------------------------------------
+# DOCUMENTAÇÃO GERADA
+# -------------------------------------------
+docs/generated/
+api-docs/
+
+# -------------------------------------------
+# CERTIFICADOS E CHAVES
+# -------------------------------------------
+*.pem
+*.key
+*.crt
+*.csr
+*.p12
+*.pfx
+certificates/
+ssl/
+
+# -------------------------------------------
+# UPLOADS E ARQUIVOS DE USUÁRIO
+# -------------------------------------------
+uploads/
+files/
+storage/
+public/uploads/
+
+# -------------------------------------------
+# CACHE E ARQUIVOS TEMPORÁRIOS DE FERRAMENTAS
+# -------------------------------------------
+.cache/
+.parcel-cache/
+.next/
+.nuxt/
+.vuepress/dist
+
+# ESLint
+.eslintcache
+
+# Prettier
+.prettier-cache
+
+# -------------------------------------------
+# ARQUIVOS DE MONITORAMENTO
+# -------------------------------------------
+# PM2
+.pm2/
+pids/
+*.pid
+*.seed
+
+# -------------------------------------------
+# ARQUIVOS ESPECÍFICOS DO PROJETO
+# -------------------------------------------
+# Backups de banco
+backup/
+*.backup
+
+# Arquivos de migração temporários
+migrations/backup/
+
+# Logs específicos da aplicação
+app.log
+error.log
+combined.log
+
+# Arquivos de configuração local
+config.local.json
+settings.local.json
+
+# -------------------------------------------
+# FERRAMENTAS DE DESENVOLVIMENTO
+# -------------------------------------------
+# Webpack
+.webpack/
+
+# Babel
+.babelrc.local
+
+# Jest
+jest.config.local.js
+
+# -------------------------------------------
+# ARQUIVOS DE EXEMPLO QUE DEVEM SER MANTIDOS
+# -------------------------------------------
+# Mantenha arquivos de exemplo (não ignore)
+# !.env.example
+# !config.example.json
+
+# -------------------------------------------
+# COMENTÁRIOS SOBRE ARQUIVOS IMPORTANTES
+# -------------------------------------------
+# 
+# SEMPRE MANTER NO GIT:
+# - .env.example (template de configuração)
+# - README.md (documentação)
+# - package.json (dependências)
+# - Arquivos de configuração base
+# 
+# NUNCA COMITAR:
+# - .env (contém dados sensíveis)
+# - node_modules/ (muito grande)
+# - Logs (arquivos temporários)
+# - Arquivos pessoais dos desenvolvedores
+# 
+# -------------------------------------------
