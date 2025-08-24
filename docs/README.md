@@ -37,7 +37,22 @@ Fortaleça o relacionamento com seus pacientes oferecendo uma experiência moder
 - Aprimorar a Experiência do Paciente: Oferecer conveniência, autonomia e comunicação transparente.
 
 - Garantir a Segurança: Proteger os dados sensíveis de pacientes e da clínica com as melhores práticas de segurança.
+  
+---
 
+## 🧰 Tecnologias
+
+<div align="center">
+
+| Frontend | Backend | Banco de Dados | Segurança |
+|:---:|:---:|:---:|:---:|
+| ![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white) | ![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white) | ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white) | ![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white) |
+| ![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white) | ![Express.js](https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white) | | ![Bcrypt](https://img.shields.io/badge/Bcrypt-4A90E2?style=for-the-badge&logoColor=white) |
+| ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black) | | | |
+
+</div>
+
+---
 
 ## 💻 Como executar o projeto
 
@@ -63,17 +78,6 @@ Certifica-te de que tens as seguintes ferramentas instaladas:
 3.  **Configura o frontend:**
     - Navega até a pasta `frontend`: `cd ../frontend`
     - Abre o arquivo `index.html` no teu navegador preferido.
-
-
----
-
-## 🧰 Tecnologias 
-- **Frontend:** HTML, CSS, JavaScript  
-- **Backend:** Node.js + Express  
-- **Banco de dados:** PostgreSQL  
-- **Segurança:** bcrypt, JWT   
-
-> Observação: a stack pode ser ajustada conforme o time.
 
 ---
 
