@@ -1,0 +1,16 @@
+name: Gerenciador de Sprint Semanal
+
+on:
+  schedule:
+    # Agora roda todo SÁBADO (6) às 00:00h (UTC)
+    - cron: '0 0 * * 6'
+  
+  workflow_dispatch:
+    # Isso adiciona um botão para teste
+
+jobs:
+  hello_world:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Imprime uma mensagem no log
+        run: echo "Olá, mundo! O robô foi ativado."
