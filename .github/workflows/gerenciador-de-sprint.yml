@@ -12,7 +12,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
           
-          PROJECT_ID: "PVT_kwHOC0i8wMABAKS9"
+          PROJECT_NUMBER: "1" 
         run: |
-          echo "Buscando os campos do projeto..."
-          gh project field-list "$PROJECT_ID" --format json --jq '.fields[] | select(.name == "Status")'
+          echo "Buscando os campos do projeto número $PROJECT_NUMBER..."
+          gh project field-list "$PROJECT_NUMBER" --owner "@me" --format json --jq '.fields[] | select(.name == "Status")'
