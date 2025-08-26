@@ -1,17 +1,18 @@
-name: Gerenciador de Sprint Semanal
+name: Descobrir IDs das Colunas
 
 on:
   workflow_dispatch:
 
 jobs:
-  find_project_id:
-    name: Encontrar ID do Projeto
+  find_field_ids:
+    name: Encontrar IDs do campo Status
     runs-on: ubuntu-latest
-    
     steps:
-      - name: Listar projetos e seus IDs
+      - name: Listar o campo 'Status' e suas opções
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
+          
+          PROJECT_ID: "PVT_kwHOC0i8wMABAKS9"
         run: |
-          echo "Buscando projetos do usuário ${{ github.actor }}..."
-          gh project list --owner "@me" --format json
+          echo "Buscando os campos do projeto..."
+          gh project field-list "$PROJECT_ID" --format json --jq '.fields[] | select(.name == "Status")'
