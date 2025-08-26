@@ -1,16 +1,20 @@
 name: Gerenciador de Sprint Semanal
 
 on:
-  schedule:
-    # Agora roda todo SÁBADO (6) às 00:00h (UTC)
-    - cron: '0 0 * * 6'
-  
-  workflow_dispatch:
-    # Isso adiciona um botão para teste
+  workflow_dispatch: # Gatilho para rodar manualmente
 
 jobs:
-  hello_world:
+  find_project_id:
+    name: Encontrar ID do Projeto
     runs-on: ubuntu-latest
+    
+    permissions:
+      read-all
+
     steps:
-      - name: Imprime uma mensagem no log
-        run: echo "Olá, mundo! O robô foi ativado."
+      - name: Listar projetos e seus IDs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          echo "Buscando projetos do usuário ${{ github.actor }}..."
+          gh project list --owner "@me" --format json
