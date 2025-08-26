@@ -1,20 +1,17 @@
 name: Gerenciador de Sprint Semanal
 
 on:
-  workflow_dispatch: # Gatilho para rodar manualmente
+  workflow_dispatch:
 
 jobs:
   find_project_id:
     name: Encontrar ID do Projeto
     runs-on: ubuntu-latest
     
-    permissions:
-      read-all
-
     steps:
       - name: Listar projetos e seus IDs
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
           echo "Buscando projetos do usuário ${{ github.actor }}..."
           gh project list --owner "@me" --format json
