@@ -367,3 +367,71 @@ backend/
 
 * **Code Review Checklist:** Verificar padrões, validações, tratamento de erros, testes, documentação, performance e segurança.
 * **Métricas de Qualidade:** Code Coverage > 80%, ESLint sem erros, resposta de API < 200ms.
+
+
+---
+
+## **APÊNDICE A: FUNDAMENTAÇÃO TEÓRICA E JUSTIFICATIVA DAS TECNOLOGIAS**
+
+Esta seção detalha a base teórica e as justificativas acadêmicas para as principais escolhas de arquitetura, tecnologias e metodologias empregadas no desenvolvimento do backend do sistema Módula.
+
+### **A.1. Arquitetura de Backend e Ambiente de Execução: Node.js**
+
+A plataforma Módula foi desenvolvida sobre o runtime **Node.js**. A escolha se fundamenta em seu modelo de I/O (Entrada/Saída) não-bloqueante e orientado a eventos (*event-driven, non-blocking I/O*). Este modelo arquitetural é particularmente eficaz para aplicações que gerenciam um grande número de conexões simultâneas com operações que não são intensivas em CPU, como é o caso de uma API que serve dados de um banco de dados para múltiplos usuários (profissionais de saúde, administradores).
+
+A eficiência deste modelo é descrita por seu criador, Ryan Dahl, e validada em diversos estudos sobre performance de servidores web. Para uma aplicação de gestão clínica, onde múltiplos profissionais podem estar consultando prontuários, agendando sessões e gerando relatórios concorrentemente, a arquitetura do Node.js permite um uso mais eficiente dos recursos do servidor, resultando em menor latência para o usuário final.
+
+* **Referência Principal:**
+    * Tilkov, S., & Vinoski, S. (2010). Node. js: Using JavaScript to build high-performance network programs. *IEEE Internet Computing*, 14(6), 80-83. Este artigo explora o modelo de concorrência do Node.js e sua adequação para aplicações de rede de alta performance.
+
+### **A.2. Padrão Arquitetural: MVC (Model-View-Controller)**
+
+A estrutura do backend segue uma adaptação do padrão arquitetural **Model-View-Controller (MVC)**. O MVC promove a separação de responsabilidades (*Separation of Concerns*), um princípio fundamental da engenharia de software que visa aumentar a manutenibilidade, testabilidade e o desenvolvimento paralelo do sistema.
+
+* **Model:** Representa os dados e a lógica de negócio (modelos `User`, `Patient` no Sequelize).
+* **View:** (Adaptado para uma API) A representação dos dados, tipicamente em formato JSON.
+* **Controller:** Atua como intermediário, recebendo requisições, acionando a lógica no Model e retornando a representação dos dados.
+
+Este padrão foi originalmente formulado para interfaces gráficas, mas sua aplicação em sistemas web e APIs é consagrada por facilitar a evolução do sistema. A lógica de negócio fica isolada das regras de roteamento e da apresentação dos dados, permitindo que cada parte seja modificada com mínimo impacto nas outras.
+
+* **Referência Clássica:**
+    * Reenskaug, T. (1979). *MODELS-VIEWS-CONTROLLERS*. Xerox PARC, Note-79-19. Este é um dos documentos originais onde Trygve Reenskaug descreve a concepção do padrão MVC, enfatizando a separação entre a representação da informação e sua interação com o usuário.
+
+### **A.3. Design de API: REST (Representational State Transfer)**
+
+A comunicação entre o frontend e o backend é projetada seguindo os princípios da arquitetura **REST (Representational State Transfer)**. A escolha pelo REST se deve à sua simplicidade, escalabilidade e aceitação como padrão de mercado para a construção de APIs web. As restrições do REST, como comunicação cliente-servidor, ausência de estado (*statelessness*) e interface uniforme, promovem um baixo acoplamento entre o cliente e o servidor.
+
+Para o Módula, isso significa que diferentes clientes (ex: aplicação web, aplicativo móvel futuro) poderão consumir a mesma API de forma padronizada, utilizando os verbos HTTP (`GET`, `POST`, `PUT`, `DELETE`) para manipular os recursos (`/patients`, `/sessions`, etc.).
+
+* **Referência Definitiva:**
+    * Fielding, R. T. (2000). *Architectural Styles and the Design of Network-based Software Architectures*. Tese de Doutorado, University of California, Irvine. A tese de Roy Fielding, um dos principais autores da especificação HTTP, define formalmente os princípios e as restrições da arquitetura REST.
+
+### **A.4. Sistema de Gerenciamento de Banco de Dados: PostgreSQL**
+
+A escolha do **PostgreSQL** como SGBD se baseia em sua robustez, extensibilidade e conformidade com o padrão ACID (Atomicidade, Consistência, Isolamento, Durabilidade). Para um sistema de gestão de saúde que armazena dados sensíveis, a integridade transacional garantida pelo ACID é um requisito não-funcional crítico.
+
+Adicionalmente, o PostgreSQL é um sistema objeto-relacional que oferece suporte nativo a tipos de dados avançados, como `JSONB`. Esta característica é explorada no projeto Módula para armazenar dados semiestruturados (ex: `metadata`, `address`), combinando a flexibilidade de um banco NoSQL com a consistência de um banco relacional.
+
+* **Referência Acadêmica:**
+    * Stonebraker, M., & Rowe, L. A. (1986). The design of POSTGRES. *ACM SIGMOD Record*, 15(2), 340-355. Este artigo, escrito pelos criadores do Postgres (predecessor do PostgreSQL), descreve os princípios de design que o tornaram um dos bancos de dados relacionais de código aberto mais avançados e confiáveis.
+
+### **A.5. Mapeamento Objeto-Relacional (ORM com Sequelize)**
+
+O uso de um **ORM (Object-Relational Mapping)**, especificamente o Sequelize, abstrai a complexidade da comunicação com o banco de dados relacional. O ORM resolve o problema da "incompatibilidade de impedância" entre o paradigma orientado a objetos do Node.js e o paradigma relacional do PostgreSQL.
+
+A utilização do Sequelize aumenta a produtividade do desenvolvedor, automatizando a escrita de consultas SQL repetitivas e provendo uma camada de segurança contra ataques de injeção de SQL.
+
+* **Referência Conceitual:**
+    * Fowler, M. (2002). *Patterns of Enterprise Application Architecture*. Addison-Wesley Professional. Martin Fowler descreve detalhadamente o padrão ORM, juntamente com outros padrões de arquitetura de software, explicando seu propósito e trade-offs.
+
+### **A.6. Autenticação e Segurança: JWT, bcrypt e OWASP**
+
+A segurança do sistema é fundamentada em padrões e práticas recomendadas pela comunidade de segurança.
+
+* **JSON Web Tokens (JWT):** A autenticação stateless via JWT foi escolhida por sua eficiência em arquiteturas de microsserviços e aplicações de página única (SPAs). A especificação do JWT é um padrão aberto e documentado pela IETF.
+    * **Referência Padrão:** Jones, M., Bradley, J., & Sakimura, N. (2015). *RFC 7519: JSON Web Token (JWT)*. Internet Engineering Task Force (IETF).
+
+* **bcrypt:** Para o armazenamento de senhas, foi utilizado o algoritmo bcrypt. Diferente de algoritmos de hash rápidos como MD5 ou SHA-1, o bcrypt é um algoritmo adaptativo e lento por design, com um "fator de trabalho" configurável. Isso o torna resiliente a ataques de força bruta que utilizam hardware moderno (GPUs, ASICs).
+    * **Referência Original:** Provos, N., & Mazières, D. (1999). A Future-Adaptable Password Scheme. In *Proceedings of the FREENIX Track: 1999 USENIX Annual Technical Conference* (pp. 81-92).
+
+* **Princípios OWASP:** A configuração de segurança geral, incluindo o uso de middlewares como `Helmet` e `CORS`, segue as diretrizes do **OWASP (Open Web Application Security Project)**, uma autoridade no campo da segurança de aplicações web. As práticas adotadas visam mitigar riscos comuns listados no OWASP Top 10, como injeção, autenticação quebrada e exposição de dados sensíveis.
