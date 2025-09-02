@@ -435,3 +435,29 @@ A segurança do sistema é fundamentada em padrões e práticas recomendadas pel
     * **Referência Original:** Provos, N., & Mazières, D. (1999). A Future-Adaptable Password Scheme. In *Proceedings of the FREENIX Track: 1999 USENIX Annual Technical Conference* (pp. 81-92).
 
 * **Princípios OWASP:** A configuração de segurança geral, incluindo o uso de middlewares como `Helmet` e `CORS`, segue as diretrizes do **OWASP (Open Web Application Security Project)**, uma autoridade no campo da segurança de aplicações web. As práticas adotadas visam mitigar riscos comuns listados no OWASP Top 10, como injeção, autenticação quebrada e exposição de dados sensíveis.
+
+### **A.7. Validação de Dados e Defesa em Profundidade (Joi)**
+
+A utilização da biblioteca **Joi** para validação de esquemas (*schema validation*) em todas as entradas da API é uma implementação direta do princípio de segurança **Defesa em Profundidade** (*Defense in Depth*). Este princípio postula que a segurança de um sistema não deve depender de uma única camada de proteção, mas sim de múltiplas barreiras. A validação de entrada é a primeira e uma das mais cruciais dessas barreiras.
+
+Ao definir esquemas estritos para os dados de entrada, o sistema garante que apenas informações no formato, tipo e tamanho esperados sejam processadas pela lógica de negócio. Esta prática mitiga proativamente uma vasta gama de vulnerabilidades, incluindo, mas não se limitando a, ataques de Injeção (SQL, NoSQL), Cross-Site Scripting (XSS) e corrupção de dados. A abordagem declarativa do Joi permite a criação de regras de validação complexas e legíveis, diminuindo a probabilidade de erros humanos na implementação da lógica de validação.
+
+* **Referência Padrão (Indústria):**
+    * Open Web Application Security Project (OWASP). *Input Validation Cheat Sheet*. Esta documentação da OWASP é uma referência padrão na indústria que descreve as melhores práticas para validar entradas, afirmando que a validação deve ocorrer o mais cedo possível na arquitetura (no nosso caso, nos middlewares, antes dos controllers).
+    * Open Web Application Security Project (OWASP). *Application Security Verification Standard (ASVS)*, V4.0.3, Seção 5.1: Input Validation and Encoding Requirements. O ASVS é um padrão para verificação de segurança que estabelece a validação de entrada como um requisito fundamental (Nível 1) para todas as aplicações.
+
+### **A.8. Estratégia de Qualidade e Testes (Jest & Supertest)**
+
+A estratégia de testes adotada pelo projeto, utilizando **Jest** para testes unitários e **Jest + Supertest** para testes de integração, é fundamentada no conceito da **"Pirâmide de Testes"**. Este modelo, popularizado por Mike Cohn, propõe uma distribuição hierárquica de diferentes tipos de testes para otimizar a eficácia e a eficiência do processo de garantia de qualidade.
+
+A pirâmide sugere a seguinte estrutura:
+
+1.  **Base Larga de Testes Unitários:** O Jest é utilizado para testar pequenas unidades de código (funções, métodos de modelo, serviços) de forma isolada. Estes testes são rápidos, estáveis e fornecem um feedback preciso ao desenvolvedor, formando a base da confiança no sistema.
+2.  **Camada Intermediária de Testes de Integração:** O Supertest é usado em conjunto com o Jest para testar os endpoints da API. Estes testes verificam se múltiplos componentes (rotas, controllers, modelos, banco de dados) interagem corretamente, garantindo o funcionamento dos fluxos de negócio.
+3.  **(Topo Estreito) de Testes End-to-End (E2E):** (Planejados para o futuro) Testariam a aplicação completa sob a perspectiva do usuário.
+
+Esta abordagem é considerada uma prática recomendada por equilibrar o custo de escrita e manutenção dos testes com a confiança que eles proporcionam, evitando a armadilha do "Cone de Sorvete de Testes" (*Test Ice Cream Cone*), um anti-padrão onde há um excesso de testes manuais e E2E lentos e frágeis.
+
+* **Referências Principais:**
+    * Cohn, M. (2009). *Succeeding with Agile: Software Development Using Scrum*. Addison-Wesley Professional. Mike Cohn introduz o conceito da Pirâmide de Testes como um guia para alocar esforços em automação de testes em projetos ágeis.
+    * Fowler, M. (2012). *The Practical Test Pyramid*. Artigo online. Martin Fowler, uma autoridade em arquitetura de software, elabora sobre o conceito de Cohn, discutindo suas nuances práticas e sua aplicação em arquiteturas modernas.
