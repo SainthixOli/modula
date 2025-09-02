@@ -1,0 +1,158 @@
+name: Gerenciador de Sprint Semanal
+
+on:
+  schedule:
+    # Roda todo Sábado às 5h da manhã (UTC).
+    - cron: '0 5 * * 6'
+  
+  workflow_dispatch:
+    # Botão para rodar manualmente
+
+jobs:
+  manage_overdue_tasks:
+    name: Mover Tarefas Atrasadas
+    runs-on: ubuntu-latest
+    steps:
+      - name: Rodar script para mover tarefas
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GH_PAT }}
+          script: |
+            // --- CONFIGURAÇÃO ---
+            const PROJECT_ID = "PVT_kwHOC0i8wMABAKS9";
+            const STATUS_FIELD_ID = "PVTSSF_lAHOC0i8wMABAKS9zgkVmhA";
+            // --- FIM DA CONFIGURAÇÃO ---
+
+            // Função para calcular o nome da semana com base na data da sexta-feira
+            function getWeekName(date) {
+              const startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+              const dayOfWeek = startOfMonth.getDay(); // 0=Dom, 1=Seg, ..., 6=Sáb
+              const firstFriday = new Date(startOfMonth);
+              // Acha a data da primeira sexta-feira do mês
+              firstFriday.setDate(1 + (5 - dayOfWeek + 7) % 7);
+              
+              // Se a data atual for antes da primeira sexta, ela pertence à semana anterior
+              if (date.getDate() < firstFriday.getDate()) {
+                  const prevMonthLastDay = new Date(date);
+                  prevMonthLastDay.setDate(0); // Vai para o último dia do mês anterior
+                  return getWeekName(prevMonthLastDay); 
+              }
+
+              // Calcula em qual semana do mês estamos com base nas sextas-feiras
+              const weekNumber = Math.floor((date.getDate() - firstFriday.getDate()) / 7) + 1;
+
+              let currentFriday = new Date(firstFriday);
+              currentFriday.setDate(firstFriday.getDate() + (weekNumber - 1) * 7);
+
+              const day = String(currentFriday.getDate()).padStart(2, '0');
+              const month = String(currentFriday.getMonth() + 1).padStart(2, '0');
+              const year = currentFriday.getFullYear();
+
+              return `Semana ${weekNumber} (${day}/${month}/${year})`;
+            }
+
+            const today = new Date(); // Data de hoje, ex: Sábado, 26 de Agosto
+            const lastWeek = new Date();
+            lastWeek.setDate(today.getDate() - 7); // Data da semana passada, ex: Sábado, 19 de Agosto
+
+            const currentWeekName = getWeekName(today); // Ex: Semana 4 (29/08/2025)
+            const previousWeekName = getWeekName(lastWeek); // Ex: Semana 3 (22/08/2025)
+            
+            console.log(`Verificando tarefas da '${previousWeekName}' para mover para '${currentWeekName}'.`);
+
+            // 1. Pega todos os itens e o ESTADO (aberto/fechado) do Issue
+            const response = await github.graphql(`
+              query($projectId: ID!) {
+                node(id: $projectId) {
+                  ... on ProjectV2 {
+                    items(first: 100) {
+                      nodes {
+                        id
+                        content {
+                          ... on Issue {
+                            id
+                            number
+                            title
+                            state
+                          }
+                        }
+                        fieldValues(first: 20) {
+                          nodes {
+                            ... on ProjectV2ItemFieldValueCommon {
+                              field { ... on ProjectV2FieldCommon { id } }
+                            }
+                            ... on ProjectV2ItemFieldSingleSelectValue {
+                              optionId
+                            }
+                          }
+                        }
+                      }
+                    }
+                    fields(first: 20) {
+                      nodes {
+                        ... on ProjectV2SingleSelectField {
+                          id
+                          name
+                          options { id name }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            `, { projectId: PROJECT_ID });
+
+            const project = response.node;
+            const statusField = project.fields.nodes.find(f => f.id === STATUS_FIELD_ID);
+            
+            if (!statusField) throw new Error("Campo 'Status' não encontrado.");
+
+            const currentWeekOption = statusField.options.find(o => o.name === currentWeekName);
+            const previousWeekOption = statusField.options.find(o => o.name === previousWeekName);
+
+            if (!previousWeekOption) {
+              console.log(`Coluna da semana anterior '${previousWeekName}' não encontrada. Nenhuma tarefa a ser movida.`);
+              return;
+            }
+            if (!currentWeekOption) {
+              core.setFailed(`Coluna da semana atual '${currentWeekName}' não encontrada. Crie a coluna no projeto primeiro.`);
+              return;
+            }
+
+            // LÓGICA ALTERADA: Filtra apenas os itens cujo Issue está ABERTO na semana anterior
+            const itemsToMove = project.items.nodes.filter(item => {
+              const statusValue = item.fieldValues.nodes.find(fv => fv.field?.id === STATUS_FIELD_ID);
+              const isInPreviousWeek = statusValue?.optionId === previousWeekOption.id;
+              // A MÁGICA ACONTECE AQUI:
+              const isIssueOpen = item.content.state === 'OPEN'; 
+              
+              return isInPreviousWeek && isIssueOpen;
+            });
+
+            if (itemsToMove.length === 0) {
+              console.log("Nenhuma tarefa aberta (atrasada) encontrada na semana anterior.");
+              return;
+            }
+
+            console.log(`Encontradas ${itemsToMove.length} tarefas abertas para mover.`);
+
+            // 2. Mover cada item e adicionar o comentário
+            for (const item of itemsToMove) {
+              console.log(`Movendo item: #${item.content.number} - ${item.content.title}`);
+              
+              await github.graphql(`
+                mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
+                  updateProjectV2ItemFieldValue( input: { projectId: $projectId, itemId: $itemId, fieldId: $fieldId, value: { singleSelectOptionId: $optionId } } ) { projectV2Item { id } }
+                }
+              `, { projectId: PROJECT_ID, itemId: item.id, fieldId: STATUS_FIELD_ID, optionId: currentWeekOption.id });
+
+              const commentBody = `**🤖 Automação de Sprint:**\nEsta tarefa não foi concluída na semana anterior e foi movida automaticamente da coluna *${previousWeekName}* para a coluna *${currentWeekName}*.`;
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: item.content.number,
+                body: commentBody
+              });
+              
+              console.log(`Comentário adicionado em: #${item.content.number}`);
+            }

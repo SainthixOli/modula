@@ -80,6 +80,14 @@ Certifica-te de que tens as seguintes ferramentas instaladas:
     - Abre o arquivo `index.html` no teu navegador preferido.
 
 ---
+## 💻 Telas Protótipos
+
+### Tela de Login  
+  <div align="center">
+  <img src="../design/figma-screenshots/ModulaTela1.png" alt="Tela de Login">
+</div>
+
+---
 
 ## 📁 Estrutura do repositório 
 ```txt

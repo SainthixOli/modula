@@ -1,31 +1,149 @@
+.retangulos-container {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    margin: 20px 0;
+    justify-content: center;
+    align-items: center;
+}
+/* Container principal flex para login e retângulos lado a lado */
+
+.login {
+    flex: 1;
+    max-width: 400px;
+    margin-left: 60px;
+}
+
+.retangulos-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 20px;
+}
+/* Alinha logo e texto MODULA lado a lado */
+.logo-modula-container {
+    display: flex;
+    align-items: left;
+    justify-content: left;
+    gap: 16px;
+    margin-bottom: 40px;
+
+}
+
+.logo-modula-container .Logo {
+    width: 80px;
+    height: auto;
+}
+
+.logo-modula-container .modula-text {
+    font-family: 'Arial', sans-serif;
+    font-size: 3rem;
+    color: #333;
+    font-weight: bold;
+}
 body, html {
     height: 100%;
     margin: 0;
-    padding: 0;
+    gap: 320px;
     box-sizing: border-box;
 }
 
-.center-container {
+.Titulo {
+    font-family: 'Arial', sans-serif;
+    font-size: 3rem;
+    color: #333;
+    margin-bottom: 100px;
+}
+
+.logo
+{
+    width: 80px;
+    height: auto;
+    margin-bottom: 20px;
+}
+
+.login{
+    font-family: 'Arial', sans-serif;
+    font-size: 1.5rem;
+    color: #333;
+    margin-bottom: 5px;
+    flex-direction: column;
+}
+
+
+/* container que segura os dois grupos */
+/* Container dos retângulos para alinhar à direita no flex principal */
+/* container que segura os dois grupos */
+.retangulos-container {
     display: flex;
     flex-direction: column;
+    align-items: flex-end;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+/* cada grupo de imagens vira grid */
+.retangulo1, .retangulo2 {
+    float: right;
+    display: grid;
+    grid-template-columns: repeat(4, 120px);
+    gap: 16px;
+    margin-right: 80px;
+    justify-content: end;
+}
+
+/* imagens padronizadas com efeito de flutuação */
+.retangulo1 img, .retangulo2 img {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    animation: flutuar 4s ease-in-out infinite;
+}
+
+/* efeito de flutuação */
+@keyframes flutuar {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+}
+
+.classp{
+    font-family: 'Arial', sans-serif;
+    font-size: 1.0rem;
+    color: #555;
+
+    margin-bottom: 40px;
+    flex-direction: column;
+    text-align: left;}
+
+.center-container {
+    font-family: 'Arial', sans-serif;
+    font-size: 1.0rem;
+    color: #555;
+    margin-top: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: row;
     align-items: center;
     justify-content: center;
     height: 100vh;
+    gap: 120px;
 }
 
 .center-container h1,
 .center-container h2,
 .center-container h3 {
-    margin: 10px 0;
+    margin: 5px 0;
 }
 
 #Entrar {
+    font-family: 'Arial', sans-serif;
     margin-top: 20px;
     padding: 10px 30px;
     font-size: 1rem;
     cursor: pointer;
     border-radius: 5px;
-    border: 1px solid #888;
+    border: 1px solid #555;
     background: #f5f5f5;
     transition: background 0.2s;
 }
