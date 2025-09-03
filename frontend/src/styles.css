@@ -1,3 +1,115 @@
+/* Estilo do formulário de login moderno */
+.login {
+    background: none;
+    box-shadow: none;
+    border-radius: 0;
+    padding: 0;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: -8px;
+}
+
+.input-group2 {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0px;
+}
+
+.input-group label {
+    font-size: 0.95rem;
+    color: #666;
+    margin-bottom: 6px;
+    font-weight: 500;
+    letter-spacing: 1px;
+}
+
+.input-login {
+    background: #f7f7f7;
+    border: none;
+    border-radius: 12px;
+    padding: 16px 18px;
+    font-size: 1.1rem;
+    color: #222;
+    font-weight: bold;
+    margin-bottom: 0;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+
+.input-login:focus {
+    outline: 2px solid #1a7c7c;
+}
+
+.password-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.eye-icon {
+    position: absolute;
+    right: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.3rem;
+    color: #888;
+    cursor: pointer;
+    user-select: none;
+}
+
+.login-btn {
+    width: 100%;
+    background: #1a7c7c;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 18px 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-top: -2px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background 0.2s;
+}
+.login-btn:hover {
+    background: #176b6b;
+}
+.arrow {
+    font-size: 1.3rem;
+    font-weight: bold;
+}
+
+.adm {
+    font-size: 0.95rem;
+    color: #888;
+    margin-top: 10px;
+    margin-bottom: 18px;
+}
+
+.recuperar-senha {
+    text-align: center;
+    margin-top: 32px;
+    font-size: 1.05rem;
+    color: #666;
+}
+.recuperar-link {
+    color: #1a7c7c;
+    font-weight: bold;
+    text-decoration: none;
+    margin-left: 4px;
+    transition: color 0.2s;
+}
+.recuperar-link:hover {
+    color: #176b6b;
+    text-decoration: underline;
+}
 @import url('https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+Antique:wght@400;700&display=swap');
 
 /* Faremos o import da fonte "ChantillySerial" via Google Fonts se disponível, ou usaremos uma alternativa */
@@ -50,7 +162,7 @@ body, html {
     height: auto;
 }
 
-.modula-text {
+.modula-text{
     font-family: 'Arial', sans-serif;
     font-size: 1.5em;
     color: #06495A;
@@ -58,14 +170,25 @@ body, html {
     letter-spacing: 1px;
 }
 
-.classp {
+.classp{
     font-family: 'Poppins', sans-serif; /* Usando uma fonte alternativa */
     font-size: 0.8rem;
     color: #555;
-    margin-bottom: 50px;
+    margin-bottom: 20px;
     margin-top: -35px;
     text-align: left;
 }
+
+.adm{
+   font-family: 'Poppins', sans-serif; /* Usando uma fonte alternativa */
+    font-size: 0.8rem;
+    color: #555;
+    margin-bottom: 20px;
+    margin-top: 1px;
+    text-align: left;
+
+}
+
 
 .login label {
     font-size: 0.9rem;
