@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Médico</title>
+
+    <link rel="stylesheet" href="style.css">
+    
+
+</head>
+   <body>
+    <input type="checkbox" id="theme-toggle" class="theme-toggle-input">
+
+    <aside class="sidebar">
+        <div class="logo">
+            <img src="./assets/modula.png" alt="Modula Logo">
+            <span style="color: #06495A;">Módula</span>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="#" class="active"><i class="fas fa-home"></i> Home</a></li>
+                <li><a href="#"><i class="fas fa-calendar-alt"></i> Calendário</a></li>
+                <li><a href="#"><i class="fas fa-users"></i> Pacientes</a></li>
+                <li><a href="#" class="nav-link" data-target="modal-relatorios"><i class="fas fa-chart-line"></i> Relatórios</a></li>
+                <li><a href="#" class="nav-link" data-target="modal-ajustes"><i class="fas fa-cog"></i> Ajustes</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main>
+        <div class="main-content">
+            <header class="main-header">
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Pesquisar..." id="global-search">
+                </div>
+                <div class="user-profile-container">
+                    <div class="user-profile">
+                        <div class="icons">
+                            <label class="theme-switch-icon" for="theme-toggle">
+                                <i class="fas fa-moon"></i> <i class="fas fa-sun"></i>  </label>
+                            <i class="fas fa-bell" id="bell-icon"></i>
+                        </div>
+                        <div class="profile-pic" id="profile-pic-trigger">
+                            <img src="./assets/perfilDoutor.JPG" alt="Dr. Oliver">
+                            <span>Dr. Oliver</span>
+                        </div>
+                    </div>
+                    <div class="dropdown-menu" id="profile-dropdown">
+                        <a href="#">Meu Perfil</a>
+                        <a href="#">Configurações</a>
+                        <a href="#" class="logout">Sair</a>
+                    </div>
+                    <div class="dropdown-menu" id="notifications-dropdown">
+                        <a href="#">Notificação 1...</a>
+                        <a href="#">Notificação 2...</a>
+                    </div>
+                </div>
+            </header>
+
+            <div class="greeting">
+                <h1><span>Bom dia</span> Dr. Oliver!</h1>
+            </div>
+
+            <div class="card stats-card">
+                <div class="stats-content">
+                    <div class="stats-item">
+                        <p>Visitas para hoje</p>
+                        <h2 id="stats-visits">00</h2>
+                    </div>
+                    <div class="sub-stats">
+                        <div class="sub-stats-item">
+                            <h3 id="stats-new-patients">00</h3>
+                            <p>Novos Pacientes <span class="percentage" id="stats-new-percentage">0% <i class="fas fa-arrow-up"></i></span></p>
+                        </div>
+                        <div class="sub-stats-item">
+                            <h3 id="stats-old-patients">00</h3>
+                            <p>Antigos Pacientes <span class="percentage" id="stats-old-percentage">0% <i class="fas fa-arrow-down"></i></span></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="profile-image-circle">
+                    <img src="./assets/perfilDoutor.JPG" alt="Dr. Oliver">
+                </div>
+            </div>
+
+            <div class="patient-consultation">
+                <div class="card patient-list">
+                    <div class="card-header">
+                        <h2>Lista de Pacientes</h2>
+                        <span>Hoje <i class="fas fa-chevron-down"></i></span>
+                    </div>
+                    <ul id="patient-list-ul">
+                        <li class="empty-state">
+                            <p>Nenhum paciente para hoje.</p>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="card consultation-details">
+                    <div class="patient-header"> 
+                        <div class="patient-initials">--</div> 
+                        <div> 
+                            <h3>Selecione um Paciente</h3> 
+                            <p>Os detalhes da consulta aparecerão aqui.</p> 
+                        </div> 
+                    </div>
+                    <div class="consultation-item-placeholder">
+                        <i class="fas fa-file-medical"></i>
+                        <p>Aguardando seleção...</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <aside class="right-sidebar">
+            <div class="card calendar">
+                <div class="card-header">
+                    <select id="calendar-month-year" class="calendar-select">
+                        <option value="2025-09">Setembro 2025</option>
+                        <option value="2025-10">Outubro 2025</option>
+                        <option value="2025-11">Novembro 2025</option>
+                        <option value="2025-12">Dezembro 2025</option>
+                    </select>
+                    <div class="calendar-nav">
+                        <i class="fas fa-chevron-left" id="prev-month"></i>
+                        <i class="fas fa-chevron-right" id="next-month"></i>
+                    </div>
+                </div>
+                <div class="calendar-grid" id="calendar-dates">
+                    <div class="day-name">DOM</div><div class="day-name">SEG</div><div class="day-name">TER</div><div class="day-name">QUA</div><div class="day-name">QUI</div><div class="day-name">SEX</div><div class="day-name">SAB</div>
+                    <div class="date-num other-month">31</div>
+                    <div class="date-num">1</div><div class="date-num">2</div><div class="date-num">3</div><div class="date-num">4</div><div class="date-num">5</div><div class="date-num">6</div>
+                    <div class="date-num">7</div><div class="date-num">8</div><div class="date-num">9</div><div class="date-num active">10</div><div class="date-num">11</div><div class="date-num">12</div><div class="date-num">13</div>
+                    <div class="date-num">14</div><div class="date-num">15</div><div class="date-num">16</div><div class="date-num">17</div><div class="date-num">18</div><div class="date-num">19</div><div class="date-num">20</div>
+                    <div class="date-num">21</div><div class="date-num">22</div><div class="date-num">23</div><div class="date-num">24</div><div class="date-num">25</div><div class="date-num">26</div><div class="date-num">27</div>
+                    <div class="date-num">28</div><div class="date-num">29</div><div class="date-num">30</div>
+                </div>
+            </div>
+            
+            <div class="card upcoming-appointment">
+                <div class="card-header">
+                    <h2>Chegando</h2>
+                    <a href="#">Ver Todos</a>
+                </div>
+                <div class="empty-state">
+                    <p>Nenhum compromisso chegando.</p>
+                </div>
+            </div>
+
+            <div class="card chat">
+                <div class="chat-header">
+                    <h2>Médicos</h2>
+                    <div class="avatars">
+                         <img src="https://i.pravatar.cc/150?img=11" alt="avatar">
+                         <img src="https://i.pravatar.cc/150?img=12" alt="avatar">
+                    </div>
+                </div>
+                <div class="chat-messages" id="chat-messages">
+                    </div>
+                <div class="chat-input-area">
+                    <input type="text" id="chat-input" placeholder="Digite uma mensagem...">
+                    <button id="chat-send-btn"><i class="fas fa-paper-plane"></i></button>
+                </div>
+            </div>
+        </aside>
+    </main>
+    
+    <div id="modal-relatorios" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Relatórios</h2>
+            <p>Aqui ficará o conteúdo da página de relatórios...</p>
+        </div>
+    </div>
+
+    <div id="modal-ajustes" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Ajustes</h2>
+            <p>Outras configurações aparecerão aqui.</p>
+        </div>
+    </div>
+</body>
+</html>

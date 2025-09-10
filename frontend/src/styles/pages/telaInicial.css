@@ -1,0 +1,775 @@
+
+:root {
+    --bg-color: #F5F7FA;
+    --sidebar-bg: #FFFFFF;
+    --main-text-color: #2D3748;
+    --secondary-text-color: #718096;
+    --primary-color: #6A65D8;
+    --active-bg: #F0F0FF;
+    --card-bg: #FFFFFF;
+    --border-color: #E2E8F0;
+    --shadow: 0px 10px 15px -3px rgba(0,0,0,0.05);
+    --blue-gradient: linear-gradient(100deg, #81C7F8, #A0EAFB);
+}
+
+body.dark-theme {
+    --bg-color: #1A202C;
+    --sidebar-bg: #2D3748;
+    --main-text-color: #F7FAFC;
+    --secondary-text-color: #A0AEC0;
+    --card-bg: #2D3748;
+    --border-color: #4A5568;
+}
+
+/* Esconde o checkbox real */
+.theme-toggle-input {
+    display: none;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--main-text-color);
+    display: flex;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    top: 0; 
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-image: url('../../assets/fundo.png'); 
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    z-index: -1; 
+}
+
+/* --- Layout Principal --- */
+.sidebar { 
+    width: 240px; 
+    background-color: var(--sidebar-bg); 
+    padding: 2rem 1.5rem; 
+    height: 100vh; 
+    position: sticky; 
+    top: 0; 
+    display: flex; 
+    flex-direction: column; 
+}
+
+main { 
+    flex-grow: 1; 
+    padding: 2rem; 
+    display: grid; 
+    grid-template-columns: 2fr 1fr; 
+    gap: 2rem; 
+}
+
+.main-content { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 2rem;
+}
+
+.right-sidebar { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 2rem; 
+}
+
+/* --- Componentes Gerais --- */
+.card { 
+    background-color: var(--card-bg); 
+    border-radius: 20px; 
+    padding: 1.5rem; 
+    box-shadow: var(--shadow); 
+    transition: background-color 0.3s; 
+}
+
+.card-header { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin-bottom: 1.5rem; 
+}
+
+.card-header h2 { 
+    font-size: 1.2rem; 
+    font-weight: 600; 
+}
+
+.card-header a { 
+    text-decoration: none; 
+    color: var(--primary-color); 
+    font-weight: 500; 
+    font-size: 0.9rem; 
+}
+
+/* --- Barra Lateral (Sidebar) --- */
+.sidebar .logo { 
+    display: flex; /* Alinha os itens lado a lado */
+    align-items: center; /* Centraliza verticalmente */
+    gap: 10px; /* Cria um espaço entre a imagem e o texto */
+    font-size: 1.5rem; 
+    font-weight: 700; 
+    margin-bottom: 3rem; 
+    color: #06495A;
+}
+
+.sidebar .logo img {
+    height: 30px; /* Define uma altura melhor para o logo */
+    width: auto; /* Mantém a proporção da imagem */
+}
+
+.sidebar nav ul { 
+    list-style: none; 
+}
+
+.sidebar nav ul li a { 
+    display: flex; 
+    align-items: center; 
+    padding: 0.9rem 1rem; 
+    border-radius: 10px; 
+    text-decoration: none; 
+    color: var(--secondary-text-color); 
+    font-weight: 500; 
+    margin-bottom: 0.5rem; 
+    transition: all 0.2s ease; 
+}
+
+.sidebar nav ul li a i { 
+    margin-right: 1rem; 
+    width: 20px; 
+    text-align: center; 
+}
+
+.sidebar nav ul li a.active, 
+.sidebar nav ul li a:hover { 
+    background-color: var(--active-bg); 
+    color: var(--primary-color); 
+}
+
+/* --- Cabeçalho Principal (Header) --- */
+.main-header { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+}
+
+.search-bar { 
+    position: relative; 
+    width: 300px; 
+}
+
+.search-bar input { 
+    width: 100%; 
+    padding: 0.7rem 1rem 0.7rem 2.5rem; 
+    border-radius: 12px; 
+    border: 1px solid var(--border-color); 
+    background-color: var(--card-bg); 
+    font-family: 'Poppins', sans-serif; 
+}
+
+.search-bar i { 
+    position: absolute; 
+    left: 1rem; 
+    top: 50%; 
+    transform: translateY(-50%); 
+    color: var(--secondary-text-color); 
+}
+
+.user-profile-container { 
+    position: relative; 
+}
+
+.user-profile { 
+    display: flex; 
+    align-items: center; 
+    gap: 1.5rem; 
+    cursor: pointer; 
+}
+
+.user-profile .icons { 
+    display: flex; 
+    gap: 1.5rem; 
+    font-size: 1.2rem; 
+    color: var(--secondary-text-color); 
+}
+
+.user-profile .profile-pic { 
+    display: flex; 
+    align-items: center; 
+    gap: 0.5rem; 
+}
+
+.user-profile .profile-pic img { 
+    width: 40px; 
+    height: 40px; 
+    border-radius: 50%; 
+    object-fit: cover; 
+}
+
+/* --- Saudação e Card de Estatísticas --- */
+.greeting h1 { 
+    font-size: 1.8rem; 
+    font-weight: 600;
+    color: #3E36B0;
+}
+
+.greeting h1 span { 
+    font-weight: 100;
+    font-size: 1.2rem; 
+}
+
+.stats-card {
+    display: flex; /* Muda para flexbox */
+    flex-direction: column; /* Empilha o conteúdo */
+    position: relative; /* Para posicionar a imagem de perfil absoluta */
+    background: var(--blue-gradient);
+    color: #fff;
+    overflow: hidden;
+    min-height: 200px; /* Ajustei a altura mínima, você pode adaptar */
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+    padding: 1.5rem; /* Adiciona padding de volta */
+    justify-content: space-between; /* Espaça o conteúdo */
+}
+
+
+.stats-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 1.5rem;
+}
+
+.profile-image-circle {
+    position: absolute; /* Posição absoluta dentro do .stats-card */
+    top: 20px; /* Distância do topo */
+    right: 20px; /* Distância da direita */
+    width: 130px; /* Tamanho da bolinha */
+    height: 130px;
+    border-radius: 50%; /* Transforma em círculo */
+    overflow: hidden; /* Corta o excesso da imagem */
+    border: 3px solid rgba(255, 255, 255, 0.5); /* Borda branca suave */
+    box-shadow: 0 0 0 5px rgba(255, 255, 255, 0.2); /* Sombra para destacar */
+}
+
+.profile-image-circle img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Garante que a imagem preencha o círculo */
+    object-position: center; /* Centraliza a imagem */
+}
+
+.greeting {
+    margin-bottom: 1rem;
+}
+
+.stats-item h2 {
+    font-size: 3.5rem;
+    font-weight: 700;
+}
+
+.stats-item p {
+    font-size: 1rem;
+    font-weight: 500;
+    opacity: 0.9;
+}
+
+.sub-stats {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+}
+
+.sub-stats-item {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 1rem;
+    border-radius: 15px;
+    width: 100%;
+}
+
+.sub-stats-item h3 {
+    font-size: 1.8rem;
+}
+
+.sub-stats-item p {
+    font-size: 0.9rem;
+}
+
+.stats-card .kanye-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* --- Lista de Pacientes e Consulta --- */
+.patient-consultation { 
+    display: grid; 
+    grid-template-columns: 1fr 1.5fr; 
+    gap: 2rem; 
+    align-items: flex-start; 
+}
+
+.patient-list ul { 
+    list-style: none; 
+}
+
+.patient-item { 
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; 
+    margin-bottom: 1rem; 
+}
+
+.patient-info { 
+    display: flex; 
+    align-items: center; 
+    gap: 1rem; 
+}
+
+.patient-initials { 
+    width: 40px; 
+    height: 40px; 
+    border-radius: 50%; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    font-weight: 600; 
+    color: var(--primary-color); 
+    background-color: var(--active-bg); 
+}
+
+.patient-details h4 { 
+    font-size: 1rem; 
+    font-weight: 600; 
+}
+
+.patient-details p { 
+    font-size: 0.85rem; 
+    color: var(--secondary-text-color); 
+}
+
+.patient-time { 
+    padding: 0.4rem 0.8rem; 
+    border-radius: 8px; 
+    font-weight: 500; 
+    border: none; 
+    cursor: pointer; 
+}
+
+.time-pink { background-color: #FFF0F0; color: #F56565; }
+.time-blue { background-color: #EBF8FF; color: #4299E1; }
+.time-green { background-color: #F0FFF4; color: #48BB78; }
+
+.consultation-details .patient-header { 
+    display: flex; 
+    align-items: center; 
+    gap: 1rem; 
+    margin-bottom: 1.5rem; 
+}
+
+.consultation-details .patient-header h3 { 
+    font-size: 1.2rem; 
+    font-weight: 600;
+}
+
+.consultation-details .patient-header p { 
+    font-size: 0.9rem; 
+    color: var(--secondary-text-color); 
+}
+
+.symptoms { 
+    display: flex; 
+    justify-content: space-around; 
+    margin-bottom: 1.5rem; 
+    text-align: center; 
+}
+
+.symptom i { 
+    font-size: 1.8rem; 
+    color: var(--primary-color); 
+    margin-bottom: 0.5rem; 
+}
+
+.symptom p { 
+    font-weight: 500; 
+}
+
+.consultation-item { 
+    margin-bottom: 1.2rem; 
+    border-bottom: 1px solid var(--border-color); 
+    padding-bottom: 1.2rem; 
+}
+
+.consultation-item:last-child { 
+    border-bottom: none; 
+    margin-bottom: 0; 
+    padding-bottom: 0; 
+}
+
+.consultation-item strong { 
+    display: block; 
+    margin-bottom: 0.5rem; 
+    font-weight: 600; 
+}
+
+.consultation-item p { 
+    color: var(--secondary-text-color); 
+    line-height: 1.6; 
+}
+
+.consultation-item a { 
+    color: var(--primary-color); 
+    text-decoration: none; 
+    font-weight: 500; 
+}
+
+/* --- Calendário e Barra Lateral Direita --- */
+.calendar-select {
+    background-color: transparent;
+    border: none;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 1.2rem;
+    color: var(--main-text-color);
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+        
+.calendar-nav i { 
+    color: var(--secondary-text-color); 
+    cursor: pointer; 
+}
+        
+.calendar-grid { 
+    display: grid; 
+    grid-template-columns: repeat(7, 1fr); 
+    gap: 0.5rem; 
+    text-align: center; 
+}
+
+.calendar-grid div { 
+    padding: 0.5rem; 
+    font-weight: 500; 
+}
+
+.calendar-grid .day-name { 
+    color: var(--secondary-text-color); 
+    font-size: 0.8rem; 
+}
+
+.calendar-grid .date-num {
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+    border-radius: 8px;
+}
+
+.calendar-grid .date-num:not(.other-month):hover {
+    background-color: var(--active-bg);
+    color: var(--primary-color);
+}
+        
+.calendar-grid .date-num.selected,
+.calendar-grid .date-num.active {
+    background-color: var(--primary-color);
+    color: #fff;
+    font-weight: 700;
+}
+        
+.calendar-grid .date-num.other-month { 
+    color: #CBD5E0; 
+}
+        
+.upcoming-appointment .appointment-item { 
+    display: flex; 
+    align-items: center; 
+    gap: 1rem; 
+}
+        
+.upcoming-appointment .icon-wrapper { 
+    width: 40px; 
+    height: 40px; 
+    background-color: var(--active-bg); 
+    border-radius: 10px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    font-size: 1.2rem; 
+    color: var(--primary-color); 
+}
+        
+.upcoming-appointment h4 { 
+    font-weight: 600; 
+    font-size: 1rem; 
+}
+
+.upcoming-appointment p { 
+    font-size: 0.9rem; 
+    color: var(--secondary-text-color); 
+}
+        
+.chat .chat-header h2 { 
+    font-size: 1.2rem; 
+}
+
+.chat .chat-header .avatars { 
+    display: flex; 
+}
+
+.chat .chat-header .avatars img { 
+    width: 30px; 
+    height: 30px; 
+    border-radius: 50%; 
+    border: 2px solid #fff; 
+    margin-left: -10px; 
+}
+        
+.chat-messages { 
+    margin-top: 1.5rem; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 1rem; 
+    max-height: 200px; 
+    overflow-y: auto; 
+}
+        
+.chat-bubble { 
+    display: flex; 
+    gap: 0.7rem; 
+    max-width: 80%; 
+}
+        
+.chat-bubble img { 
+    width: 35px; 
+    height: 35px; 
+    border-radius: 50%; 
+}
+        
+.chat-bubble p { 
+    padding: 0.8rem 1rem; 
+    border-radius: 15px; 
+    line-height: 1.5; 
+}
+        
+.received p { 
+    background-color: var(--bg-color); 
+    border-top-left-radius: 0; 
+}
+        
+.sent { 
+    align-self: flex-end; 
+    flex-direction: row-reverse; 
+}
+        
+.sent p { 
+    background-color: #007BFF; 
+    color: #fff; 
+    border-top-right-radius: 0; 
+}
+        
+.chat-input-area {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    gap: 0.5rem;
+}
+
+.chat-input-area input {
+    flex-grow: 1;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-color);
+    border-radius: 8px;
+    padding: 0.5rem;
+    color: var(--main-text-color);
+}
+
+.chat-input-area button {
+    border: none;
+    background-color: var(--primary-color);
+    color: #fff;
+    padding: 0 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+/* --- Elementos Funcionais (Dropdowns, Modals, etc.) --- */
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 110%;
+    right: 0;
+    background-color: var(--card-bg);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
+    width: 200px;
+    z-index: 10;
+}
+
+.dropdown-menu.active {
+    display: block;
+}
+
+.dropdown-menu a {
+    display: block;
+    padding: 0.8rem 1rem;
+    text-decoration: none;
+    color: var(--main-text-color);
+}
+
+.dropdown-menu a:hover {
+    background-color: var(--bg-color);
+}
+
+.dropdown-menu a.logout {
+    color: #E53E3E;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 100;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.5);
+    justify-content: center;
+    align-items: center;
+}
+
+.modal.active {
+    display: flex;
+}
+
+.modal-content {
+    background-color: var(--bg-color);
+    margin: auto;
+    padding: 2rem;
+    border-radius: 15px;
+    width: 80%;
+    max-width: 800px;
+    position: relative;
+}
+
+.close-modal {
+    color: var(--secondary-text-color);
+    position: absolute;
+    top: 1rem;
+    right: 1.5rem;
+    font-size: 1.8rem;
+    font-weight: bold;
+    cursor: pointer;
+}
+        
+.theme-switch-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.theme-switch {
+    display: inline-block;
+    height: 24px;
+    position: relative;
+    width: 50px;
+}
+
+.theme-switch input {
+    display:none;
+}
+
+.slider {
+    background-color: #ccc;
+    bottom: 0;
+    cursor: pointer;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    transition: .4s;
+    border-radius: 34px;
+}
+
+.slider:before {
+    background-color: #fff;
+    bottom: 4px;
+    content: "";
+    height: 16px;
+    left: 4px;
+    position: absolute;
+    transition: .4s;
+    width: 16px;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: var(--primary-color);
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+
+/* --- Classes de Estado (Vazio, Escondido, etc.) --- */
+.is-hidden {
+    display: none !important;
+}
+        
+.empty-state {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: var(--secondary-text-color);
+}
+
+.empty-state p {
+    margin: 0;
+}
+
+.consultation-item-placeholder {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--secondary-text-color);
+    opacity: 0.7;
+}
+
+.consultation-item-placeholder i {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+/* A MÁGICA: Quando o input estiver marcado, aplica o tema escuro em todos os seus "irmãos" */
+#theme-toggle:checked ~ aside,
+#theme-toggle:checked ~ main,
+#theme-toggle:checked ~ .modal .modal-content {
+    --bg-color: #1A202C;
+    --sidebar-bg: #2D3748;
+    --main-text-color: #F7FAFC;
+    --secondary-text-color: #A0AEC0;
+    --card-bg: #2D3748;
+    --border-color: #4A5568;
+
+    /* Adiciona uma transição suave na troca de tema */
+    transition: background-color 0.3s, color 0.3s;
+}
+
+/* Garante que a transição seja aplicada nos elementos filhos também */
+#theme-toggle:checked ~ * .card,
+#theme-toggle:checked ~ * input,
+#theme-toggle:checked ~ * a {
+    transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+}
