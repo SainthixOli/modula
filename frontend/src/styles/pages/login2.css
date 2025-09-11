@@ -1,21 +1,52 @@
 /* frontend/src/styles/pages/login.css */
+
+body {
+    margin: 0;
+    overflow: hidden;
+}
+
 .center-container {
     display: flex;
     align-items: center;
     justify-content: center;
+    gap: 400px; /* Aumentei um pouco o gap para separar os dois blocos */
     height: 100vh;
-    gap: 120px;
+    width: 120%;
     padding: 20px;
-    overflow: auto;
+    box-sizing: border-box;
 }
 
+/* 1. MANTEMOS O FORMULÁRIO PEQUENO */
 .login-form {
-    flex: 1;
-    max-width: 400px;
-    margin-left: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 380px;
+    max-width: 320px;
+    margin-left: 180px;
     display: flex;
     flex-direction: column;
 }
+
+/* 2. FIXAMOS O TAMANHO DO GRID */
+.decorative-grid {
+    flex: 0.9; 
+    width: 650px;   /* MUDANÇA 2: Adicionada uma largura fixa. Ajuste se precisar. */
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 60px; /* Aumentei o gap de volta para 15px */
+}
+
+.decorative-grid img {
+    width: 120%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    border-radius: 10px;
+    transition: transform 0.5s cubic-bezier(0.20, 0.40, 0.40, 0.90);
+}
+
+
+/* --- Estilos restantes (sem alterações) --- */
 
 .logo-container {
     display: flex;
@@ -67,21 +98,3 @@
     color: #176b6b;
     text-decoration: underline;
 }
-
-.decorative-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 160px);
-    grid-template-rows: repeat(6, 160px); /* Ajustado para 6 linhas para caber as 24 imagens */
-    gap: 20px;
-    justify-content: center;
-    align-items: center;
-}
-
-.decorative-grid img {
-    width: 160px;
-    height: 160px;
-    object-fit: cover;
-    border-radius: 10px;
-    transition: transform 0.5s cubic-bezier(0.20, 0.40, 0.40, 0.90);
-}
-
