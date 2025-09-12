@@ -1,16 +1,12 @@
 document.addEventListener('DOMContentLoaded', () => {
     
-    // Função para rotacionar as imagens decorativas
+    // Função para rotacionar as imagens decorativas (mantida como está)
     function iniciarRotacaoDeImagens() {
-        // CORREÇÃO: A gente precisa selecionar as imagens DENTRO do grid, e não o grid inteiro.
-        // Trocado de '.decorative-grid' para '.decorative-grid img'
         const imagens = document.querySelectorAll('.decorative-grid img');
-
         if (imagens.length === 0) {
-            console.log('Nenhuma imagem encontrada para animar. Verifique a classe ".decorative-grid img" no HTML.');
+            console.log('Nenhuma imagem encontrada para animar.');
             return;
         }
-
         imagens.forEach((img, index) => {
             setTimeout(() => {
                 let anguloAtual = 0;
@@ -22,10 +18,18 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Inicia a função de rotação
     iniciarRotacaoDeImagens();
 
-    // NOTA: A lógica dos botões 'Entrar', 'irlogin' e 'voltar' foi removida
-    // porque os botões com esses IDs não existem neste arquivo HTML.
-    // Eles provavelmente pertencem a outras páginas, como a de cadastro ou uma página inicial.
+    // ---- CORREÇÃO APLICADA AQUI ----
+    // Usando querySelector para encontrar o botão pela classe
+    const loginButton = document.querySelector(".btn.btn-primary");
+
+    if (loginButton) {
+        loginButton.addEventListener("click", function(event) {
+            event.preventDefault(); // Impede o envio do formulário
+            window.location.href = "/pagina-que-nao-existe"; // Redireciona para uma URL inválida
+        });
+    } else {
+        console.error("Botão de login não encontrado! Verifique o seletor '.btn.btn-primary'.");
+    }
 });
