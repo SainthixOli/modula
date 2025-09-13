@@ -56,18 +56,22 @@ O sistema segue o padrão **MVC (Model-View-Controller)** adaptado para APIs:
 
 ## 📊 STATUS ATUAL DO PROJETO
 
-### ✅ **IMPLEMENTADO (30%)**
+### ✅ **IMPLEMENTADO (30% -> 50%)**
 - Configuração base do servidor Express
 - Sistema completo de autenticação JWT
 - Modelos User e Patient
 - Middlewares de segurança e tratamento de erros
 - Estrutura de banco PostgreSQL com Sequelize
+- Sistema de Autenticação (100%)
+- Modelos User e Patient (100%)
+- Módulo Administração (100%) ← NOVO
+- Associações entre modelos (100%) ← NOVO
+
 
 ### 🔄 **EM DESENVOLVIMENTO (0%)**
 - Atualmente nenhum módulo está em desenvolvimento ativo
 
-### ⏳ **PENDENTE (70%)**
-- Módulo de Administração (dashboard, CRUD profissionais)
+### ⏳ **PENDENTE (70% -> 50%)**
 - Módulo do Profissional (dashboard, gestão pacientes)
 - Sistema de Anamnese Digital
 - Sistema de Consultas e Sessões
@@ -327,6 +331,21 @@ backend/
 - `findByCpf(cpf)` - Busca paciente por CPF
 - `getStatsByProfessional(userId)` - Estatísticas por profissional
 - `findWithRecentAppointments(userId, days)` - Pacientes com consultas recentes
+
+## 🏢 MÓDULO ADMINISTRAÇÃO (100% COMPLETO)
+
+### Arquivos Implementados:
+- `src/models/index.js` - Associações entre modelos
+- `src/routes/admin.js` - 12 endpoints administrativos
+- `src/controllers/adminController.js` - 11 funções de controle
+- `src/middleware/adminValidations.js` - 8 middlewares de validação
+
+### Endpoints Funcionais:
+- Dashboard com estatísticas em tempo real
+- CRUD completo de profissionais com validações
+- Sistema de ativação/desativação
+- Reset de senhas com senhas temporárias
+- Relatórios detalhados de produtividade
 
 ## 🛡️ SISTEMA DE SEGURANÇA (100% COMPLETO)
 
