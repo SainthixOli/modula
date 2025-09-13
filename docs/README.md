@@ -84,8 +84,13 @@ Certifica-te de que tens as seguintes ferramentas instaladas:
 
 ### Tela de Login  
   <div align="center">
-  <img src="../design/figma-screenshots/ModulaTela1.png" alt="Tela de Login">
-</div>
+  <img src="../design/figma-screenshots/ModulaTela1.png" alt="Tela de Login"> 
+  </div>
+
+  ### Tela Inicial
+  <div align="center">
+    <img src="../design/figma-screenshots/ModulaTela2.png" alt="Tela Inicial">
+  </div>
 
 ---
 

@@ -1,0 +1,87 @@
+/* frontend/src/styles/pages/login.css */
+.center-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    gap: 120px;
+    padding: 20px;
+    overflow: auto;
+}
+
+.login-form {
+    flex: 1;
+    max-width: 400px;
+    margin-left: 60px;
+    display: flex;
+    flex-direction: column;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 40px;
+}
+
+.logo-container .logo-img {
+    width: 80px;
+}
+
+.logo-container .logo-text {
+    font-family: 'Arial', sans-serif;
+    font-size: 1.5em;
+    color: #06495A;
+    font-weight: bold;
+}
+
+.login-divider {
+    font-size: 0.8rem;
+    color: #555;
+    margin-bottom: 20px;
+    margin-top: -35px;
+}
+
+.login-info-text {
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.8rem;
+    color: #555;
+    margin-bottom: 20px;
+    padding-top: 10px;
+}
+
+.login-recovery-link {
+    text-align: center;
+    margin-top: 32px;
+    font-size: 1.05rem;
+    color: #666;
+}
+
+.login-recovery-link a {
+    color: #1a7c7c;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.login-recovery-link a:hover {
+    color: #176b6b;
+    text-decoration: underline;
+}
+
+.decorative-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 160px);
+    grid-template-rows: repeat(6, 160px); /* Ajustado para 6 linhas para caber as 24 imagens */
+    gap: 20px;
+    justify-content: center;
+    align-items: center;
+}
+
+.decorative-grid img {
+    width: 160px;
+    height: 160px;
+    object-fit: cover;
+    border-radius: 10px;
+    transition: transform 0.5s cubic-bezier(0.20, 0.40, 0.40, 0.90);
+}
+

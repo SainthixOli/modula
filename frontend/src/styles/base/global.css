@@ -1,0 +1,17 @@
+@import url('https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+Antique:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400&display=swap');
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css');
+
+/* Reset básico e estilos globais */
+body, html {
+    height: 100%;
+    margin: 0;
+    box-sizing: border-box;
+    background-color: transparent;
+    font-family: 'Poppins', sans-serif;
+    color: #555;
+}
+
+*, *::before, *::after {
+    box-sizing: inherit;
+}
