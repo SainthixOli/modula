@@ -1,82 +1,88 @@
-**# 📚 MÓDULA BACKEND - GUIA COMPLETO DE DESENVOLVIMENTO
 
-DOCUMENTO PARA EQUIPE DE DESENVOLVIMENTO
-Este é um guia completo e detalhado para que qualquer desenvolvedor possa dar continuidade ao projeto Backend do Módula. Contém todas as informações sobre o que existe, o que precisa ser implementado e como fazer.
+### **# 📚 MÓDULA BACKEND - GUIA COMPLETO DE DESENVOLVIMENTO
 
+> **DOCUMENTO PARA EQUIPE DE DESENVOLVIMENTO**  
+> Este é um guia completo e detalhado para que qualquer desenvolvedor possa dar continuidade ao projeto Backend do Módula. Contém todas as informações sobre o que existe, o que precisa ser implementado e como fazer.
 
-📋 ÍNDICE GERAL
+---
 
-VISÃO GERAL DO PROJETO
-ARQUITETURA E ESTRUTURA ATUAL
-SISTEMA IMPLEMENTADO
-ROADMAP DE DESENVOLVIMENTO
-GUIA DE IMPLEMENTAÇÃO POR MÓDULO
-NOMENCLATURA E PADRÕES
-VALIDAÇÕES E SEGURANÇA
-TESTING E QUALIDADE
+## 📋 ÍNDICE GERAL
 
+1. [VISÃO GERAL DO PROJETO](#1-visão-geral-do-projeto)
+2. [ARQUITETURA E ESTRUTURA ATUAL](#2-arquitetura-e-estrutura-atual)
+3. [SISTEMA IMPLEMENTADO](#3-sistema-implementado)
+4. [ROADMAP DE DESENVOLVIMENTO](#4-roadmap-de-desenvolvimento)
+5. [GUIA DE IMPLEMENTAÇÃO POR MÓDULO](#5-guia-de-implementação-por-módulo)
+6. [NOMENCLATURA E PADRÕES](#6-nomenclatura-e-padrões)
+7. [VALIDAÇÕES E SEGURANÇA](#7-validações-e-segurança)
+8. [TESTING E QUALIDADE](#8-testing-e-qualidade)
 
-1. VISÃO GERAL DO PROJETO
-🎯 OBJETIVO DO SISTEMA
-O Módula é uma plataforma completa de gestão para clínicas e consultórios de saúde que digitaliza e centraliza:
+---
 
-Gestão de Usuários: Administradores e profissionais de saúde
-Gestão de Pacientes: Cadastro completo, histórico e prontuário digital
-Anamnese Digital: Questionários estruturados e personalizáveis
-Registro de Consultas: Evolução dos pacientes e histórico de sessões
-Sistema de Transferências: Mudança de pacientes entre profissionais
-Relatórios: Estatísticas e análises da clínica
+# 1. VISÃO GERAL DO PROJETO
 
-🏗️ ARQUITETURA TÉCNICA
-Stack Tecnológica
+## 🎯 OBJETIVO DO SISTEMA
 
-Runtime: Node.js 16+
-Framework Web: Express.js 4.18+
-Banco de Dados: PostgreSQL 12+
-ORM: Sequelize 6+ (Object-Relational Mapping)
-Autenticação: JSON Web Tokens (JWT) + bcryptjs
-Validação: Joi (Schema validation)
-Email: Nodemailer
-Segurança: Helmet, CORS, Rate Limiting
-Testes: Jest + Supertest
-Documentação: Swagger/OpenAPI (futura implementação)
+O **Módula** é uma plataforma completa de gestão para clínicas e consultórios de saúde que digitaliza e centraliza:
 
-Padrão Arquitetural
-O sistema segue o padrão MVC (Model-View-Controller) adaptado para APIs:
+- **Gestão de Usuários:** Administradores e profissionais de saúde
+- **Gestão de Pacientes:** Cadastro completo, histórico e prontuário digital
+- **Anamnese Digital:** Questionários estruturados e personalizáveis
+- **Registro de Consultas:** Evolução dos pacientes e histórico de sessões
+- **Sistema de Transferências:** Mudança de pacientes entre profissionais
+- **Relatórios:** Estatísticas e análises da clínica
 
-Models: Definição de dados e relacionamentos (Sequelize)
-Controllers: Lógica de negócio e processamento
-Routes: Definição de endpoints da API
-Middlewares: Interceptadores para autenticação, validação e tratamento de erros
-Services: Lógica de negócio complexa e reutilizável
+## 🏗️ ARQUITETURA TÉCNICA
 
-📊 STATUS ATUAL DO PROJETO
-✅ IMPLEMENTADO (30%)
+### **Stack Tecnológica**
+- **Runtime:** Node.js 16+
+- **Framework Web:** Express.js 4.18+
+- **Banco de Dados:** PostgreSQL 12+
+- **ORM:** Sequelize 6+ (Object-Relational Mapping)
+- **Autenticação:** JSON Web Tokens (JWT) + bcryptjs
+- **Validação:** Joi (Schema validation)
+- **Email:** Nodemailer
+- **Segurança:** Helmet, CORS, Rate Limiting
+- **Testes:** Jest + Supertest
+- **Documentação:** Swagger/OpenAPI (futura implementação)
 
-Configuração base do servidor Express
-Sistema completo de autenticação JWT
-Modelos User e Patient
-Middlewares de segurança e tratamento de erros
-Estrutura de banco PostgreSQL com Sequelize
+### **Padrão Arquitetural**
+O sistema segue o padrão **MVC (Model-View-Controller)** adaptado para APIs:
+- **Models:** Definição de dados e relacionamentos (Sequelize)
+- **Controllers:** Lógica de negócio e processamento
+- **Routes:** Definição de endpoints da API
+- **Middlewares:** Interceptadores para autenticação, validação e tratamento de erros
+- **Services:** Lógica de negócio complexa e reutilizável
 
-🔄 EM DESENVOLVIMENTO (0%)
+## 📊 STATUS ATUAL DO PROJETO
 
-Atualmente nenhum módulo está em desenvolvimento ativo
+### ✅ **IMPLEMENTADO (30%)**
+- Configuração base do servidor Express
+- Sistema completo de autenticação JWT
+- Modelos User e Patient
+- Middlewares de segurança e tratamento de erros
+- Estrutura de banco PostgreSQL com Sequelize
 
-⏳ PENDENTE (70%)
+### 🔄 **EM DESENVOLVIMENTO (0%)**
+- Atualmente nenhum módulo está em desenvolvimento ativo
 
-Módulo de Administração (dashboard, CRUD profissionais)
-Módulo do Profissional (dashboard, gestão pacientes)
-Sistema de Anamnese Digital
-Sistema de Consultas e Sessões
-Sistema de Transferências
-Relatórios e Estatísticas
-Testes automatizados
-Documentação da API
+### ⏳ **PENDENTE (70%)**
+- Módulo de Administração (dashboard, CRUD profissionais)
+- Módulo do Profissional (dashboard, gestão pacientes)
+- Sistema de Anamnese Digital
+- Sistema de Consultas e Sessões
+- Sistema de Transferências
+- Relatórios e Estatísticas
+- Testes automatizados
+- Documentação da API
 
+---
 
-2. ARQUITETURA E ESTRUTURA ATUAL
-📁 ORGANIZAÇÃO DE DIRETÓRIOS
+# 2. ARQUITETURA E ESTRUTURA ATUAL
+
+## 📁 ORGANIZAÇÃO DE DIRETÓRIOS
+
+```
 backend/
 ├── src/                          # Código fonte principal
 │   ├── config/                   # Configurações do sistema
@@ -103,1178 +109,1026 @@ backend/
 ├── package.json                ✅ Dependências e scripts
 ├── .env.example               ✅ Template de variáveis de ambiente
 └── README.md                  ✅ Documentação básica
-🔧 CONFIGURAÇÕES PRINCIPAIS
-server.js - Configuração do Servidor
-Funcionalidades Implementadas:
-
-Inicialização do Express
-Configuração de middlewares de segurança (Helmet, CORS)
-Rate limiting (100 requisições por 15 minutos)
-Parser JSON para requisições
-Logging de requisições (Morgan)
-Conexão com banco de dados
-Rotas principais
-Tratamento de erros global
-
-Middlewares Ativos:
-
-helmet() - Headers de segurança HTTP
-cors() - Política de compartilhamento de recursos
-rateLimit() - Proteção contra ataques de força bruta
-express.json() - Parser de JSON
-morgan('combined') - Logs detalhados de requisições
-
-database.js - Configuração do Banco
-Funcionalidades Implementadas:
-
-Configuração de conexão PostgreSQL
-Pool de conexões otimizado (máx 20, mín 0)
-Configurações específicas por ambiente (dev/test/prod)
-SSL para produção
-Timezone configurado para Brasília (-03:00)
-Definições padrão para modelos (timestamps, underscored)
-
-
-3. SISTEMA IMPLEMENTADO
-🔐 MÓDULO DE AUTENTICAÇÃO (100% COMPLETO)
-auth.js - Rotas de Autenticação
-Endpoints Implementados:
-1. POST /api/auth/login
-
-Finalidade: Autenticar usuários (admin/profissional)
-Input: { email, password }
-Processo: Valida dados → Busca usuário → Verifica senha → Atualiza último login → Gera tokens
-Output: { user_data, access_token, refresh_token }
-Validações: Email formato válido, senha mínimo 6 caracteres
-Segurança: Senha hasheada com bcrypt, tokens JWT
-
-2. POST /api/auth/refresh-token
-
-Finalidade: Renovar access token expirado
-Input: { refresh_token }
-Processo: Valida refresh token → Verifica usuário ativo → Gera novo access token
-Output: { access_token }
-Validações: Refresh token válido e não expirado
-
-3. POST /api/auth/forgot-password
-
-Finalidade: Solicitar recuperação de senha via email
-Input: { email }
-Processo: Busca usuário → Gera token único → Envia email com link
-Output: Confirmação de envio
-Segurança: Token expira em 1 hora, hasheado no banco
-
-4. POST /api/auth/reset-password
-
-Finalidade: Redefinir senha com token de recuperação
-Input: { token, password, confirmPassword }
-Processo: Valida token → Verifica expiração → Atualiza senha → Marca não primeiro acesso
-Validações: Senha complexa (8+ chars, maiúscula, minúscula, número, especial)
-
-5. POST /api/auth/first-access
-
-Finalidade: Alteração obrigatória de senha no primeiro login
-Input: { password, confirmPassword }
-Processo: Verifica primeiro acesso → Atualiza senha → Marca como acessado → Gera novos tokens
-Segurança: Força alteração de senha temporária
-
-6. POST /api/auth/validate-token
-
-Finalidade: Verificar se token ainda é válido
-Input: Token no header Authorization
-Output: Dados do usuário autenticado
-
-7. POST /api/auth/logout
-
-Finalidade: Finalizar sessão do usuário
-Processo: Confirma logout (futura implementação de blacklist)
-
-auth.js - Middlewares de Autenticação
-Middlewares Implementados:
-1. validateToken(req, res, next)
-
-Função: Validar JWT em todas as rotas protegidas
-Processo: Extrai token → Decodifica JWT → Busca usuário → Verifica status ativo
-Adiciona ao req: req.user, req.userId, req.userType
-Erros Tratados: Token ausente, inválido, expirado, usuário inexistente/inativo
-
-2. requireAdmin(req, res, next)
-
-Função: Permitir acesso apenas para administradores
-Uso: Deve ser usado APÓS validateToken
-Verifica: Se req.user.user_type === 'admin'
-
-3. requireProfessional(req, res, next)
-
-Função: Permitir acesso apenas para profissionais
-Uso: Deve ser usado APÓS validateToken
-Verifica: Se req.user.user_type === 'professional'
-
-4. requireUserTypes(allowedTypes)
-
-Função: Middleware flexível para múltiplos tipos
-Uso: requireUserTypes(['admin', 'professional'])
-Verifica: Se tipo do usuário está na lista permitida
-
-5. checkFirstAccess(req, res, next)
-
-Função: Forçar alteração de senha no primeiro acesso
-Processo: Verifica is_first_access → Permite apenas rotas de alteração de senha
-
-6. checkResourceOwnership(model, idParam)
-
-Função: Verificar se recurso pertence ao usuário (exceto admin)
-Uso: Proteger dados de pacientes de outros profissionais
-Processo: Busca recurso → Verifica resource.user_id === req.userId
-
-Funções Utilitárias:
-1. generateToken(user)
-
-Função: Gerar JWT access token
-Payload: userId, email, userType, isFirstAccess
-Expiração: 24h (configurável via ENV)
-
-2. generateRefreshToken(user)
-
-Função: Gerar JWT refresh token
-Payload: userId, type: 'refresh'
-Expiração: 7 dias (configurável via ENV)
-
-3. validateRefreshToken(req, res, next)
-
-Função: Middleware específico para validar refresh tokens
-Processo: Valida refresh token → Verifica tipo → Busca usuário
-
-👥 MODELOS DE DADOS (90% COMPLETO)
-User.js - Modelo de Usuários
-Campos do Modelo:
-
-id - UUID único (chave primária)
-full_name - Nome completo (2-150 chars, obrigatório)
-email - Email único (formato válido, lowercase)
-professional_register - CRP/CRM (3-20 chars, único)
-password - Senha hasheada (bcrypt rounds 12)
-user_type - ENUM: 'admin' | 'professional'
-status - ENUM: 'active' | 'inactive' | 'suspended'
-is_first_access - Boolean (padrão true)
-reset_password_token - String para recuperação
-reset_password_expires - Timestamp de expiração
-last_login - Data do último acesso
-metadata - JSONB para dados extras
-
-Hooks Implementados:
-
-beforeCreate - Hash da senha antes de salvar
-beforeUpdate - Hash da senha se alterada
-afterFind - Remove campos sensíveis da resposta
-
-Métodos de Instância:
-
-validatePassword(password) - Compara senha com hash bcrypt
-generateResetToken() - Gera token de recuperação SHA256
-isAdmin() - Verifica se user_type é 'admin'
-isProfessional() - Verifica se user_type é 'professional'
-isActive() - Verifica se status é 'active'
-updateLastLogin() - Atualiza campo last_login
-
-Métodos Estáticos:
-
-findByEmail(email) - Busca usuário por email
-findByResetToken(token) - Busca por token de recuperação válido
-findActiveProfessionals() - Lista profissionais ativos
-
-Patient.js - Modelo de Pacientes
-Campos do Modelo:
-Identificação:
-
-id - UUID único
-user_id - FK para profissional responsável (obrigatório)
-full_name - Nome completo (2-150 chars)
-birth_date - Data nascimento (DATEONLY)
-gender - ENUM: 'male'|'female'|'other'|'not_informed'
-
-Documentos:
-
-cpf - CPF formatado (único)
-rg - RG do paciente
-
-Contato:
-
-phone - Telefone (10-20 chars)
-email - Email opcional
-address - JSONB com endereço completo
-emergency_contact - JSONB com contato de emergência
-
-Dados Pessoais:
-
-marital_status - ENUM: 'single'|'married'|'divorced'|'widowed'|'other'
-occupation - Profissão (100 chars)
-insurance_info - JSONB com dados do convênio
-
-Dados Clínicos:
-
-status - ENUM: 'active'|'inactive'|'discharged'|'transferred'
-medical_history - TEXT histórico médico
-current_medications - TEXT medicações atuais
-allergies - TEXT alergias conhecidas
-notes - TEXT observações gerais
-
-Controle:
-
-first_appointment - Data primeira consulta
-last_appointment - Data última consulta
-metadata - JSONB dados extras
-
-Métodos de Instância:
-
-getAge() - Calcula idade baseada na data de nascimento
-isActive() - Verifica se status é 'active'
-updateLastAppointment() - Atualiza data da última consulta
-getBasicInfo() - Retorna dados básicos sem informações sensíveis
-
-Métodos Estáticos:
-
-findActiveByProfessional(userId) - Pacientes ativos de um profissional
-findByCpf(cpf) - Busca paciente por CPF
-getStatsByProfessional(userId) - Estatísticas por profissional
-findWithRecentAppointments(userId, days) - Pacientes com consultas recentes
-
-🛡️ SISTEMA DE SEGURANÇA (100% COMPLETO)
-errorHandler.js - Tratamento de Erros
-Tipos de Erro Tratados:
-
-ValidationError (Sequelize) - Erros de validação de dados
-UniqueConstraintError - Violação de constraint única (email duplicado)
-ForeignKeyConstraintError - Violação de chave estrangeira
-CastError - Formato de ID inválido
-SyntaxError - JSON malformado
-JsonWebTokenError - Token JWT inválido
-TokenExpiredError - Token JWT expirado
-
-Classes Customizadas:
-1. AppError
-
-Função: Erro customizado da aplicação
-Propriedades: message, statusCode, code, isOperational
-Uso: throw new AppError('Mensagem', 400, 'CODIGO_ERRO')
-
-Funções Utilitárias:
-
-asyncHandler(fn) - Wrapper para capturar erros em funções async
-createValidationError(field, message) - Criar erro de validação
-createAuthorizationError(message) - Criar erro de autorização
-createAuthenticationError(message) - Criar erro de autenticação
-createNotFoundError(resource) - Criar erro de recurso não encontrado
-
-Middleware Global:
-
-errorHandler(error, req, res, next) - Captura todos os erros da aplicação
-notFound(req, res, next) - Captura rotas inexistentes (404)
-
-
-4. ROADMAP DE DESENVOLVIMENTO
-🗓️ CRONOGRAMA GERAL
-FASE 1: ADMINISTRAÇÃO (Semanas 1-2)
-
-Objetivo: Sistema completo de gestão administrativa
-Entregáveis: Dashboard admin, CRUD profissionais, gestão transferências
-Prioridade: ALTA - Base para todo o sistema
-
-FASE 2: PROFISSIONAIS (Semanas 3-4)
-
-Objetivo: Interface completa para profissionais de saúde
-Entregáveis: Dashboard profissional, gestão pacientes, agenda básica
-Prioridade: ALTA - Core do sistema
-
-FASE 3: ANAMNESE DIGITAL (Semanas 5-6)
-
-Objetivo: Sistema de anamnese estruturada e personalizável
-Entregáveis: Modelo Anamnese, formulário dinâmico, validações específicas
-Prioridade: MÉDIA - Diferencial competitivo
-
-FASE 4: CONSULTAS E SESSÕES (Semanas 7-8)
-
-Objetivo: Registro completo de evolução dos pacientes
-Entregáveis: Modelo Session, histórico, relatórios de evolução
-Prioridade: MÉDIA - Essencial para continuidade
-
-FASE 5: TRANSFERÊNCIAS (Semana 9)
-
-Objetivo: Sistema de transferência de pacientes entre profissionais
-Entregáveis: Modelo Transfer, workflow de aprovação, notificações
-Prioridade: BAIXA - Funcionalidade específica
-
-FASE 6: RELATÓRIOS E ANALYTICS (Semana 10)
-
-Objetivo: Dashboards avançados e relatórios gerenciais
-Entregáveis: Estatísticas detalhadas, gráficos, exportações
-Prioridade: BAIXA - Nice to have
-
-
-5. GUIA DE IMPLEMENTAÇÃO POR MÓDULO
-🏢 MÓDULO ADMINISTRAÇÃO
-Objetivo
+```
+
+## 🔧 CONFIGURAÇÕES PRINCIPAIS
+
+### **server.js - Configuração do Servidor**
+**Funcionalidades Implementadas:**
+- Inicialização do Express
+- Configuração de middlewares de segurança (Helmet, CORS)
+- Rate limiting (100 requisições por 15 minutos)
+- Parser JSON para requisições
+- Logging de requisições (Morgan)
+- Conexão com banco de dados
+- Rotas principais
+- Tratamento de erros global
+
+**Middlewares Ativos:**
+- `helmet()` - Headers de segurança HTTP
+- `cors()` - Política de compartilhamento de recursos
+- `rateLimit()` - Proteção contra ataques de força bruta
+- `express.json()` - Parser de JSON
+- `morgan('combined')` - Logs detalhados de requisições
+
+### **database.js - Configuração do Banco**
+**Funcionalidades Implementadas:**
+- Configuração de conexão PostgreSQL
+- Pool de conexões otimizado (máx 20, mín 0)
+- Configurações específicas por ambiente (dev/test/prod)
+- SSL para produção
+- Timezone configurado para Brasília (-03:00)
+- Definições padrão para modelos (timestamps, underscored)
+
+---
+
+# 3. SISTEMA IMPLEMENTADO
+
+## 🔐 MÓDULO DE AUTENTICAÇÃO (100% COMPLETO)
+
+### **auth.js - Rotas de Autenticação**
+
+#### **Endpoints Implementados:**
+
+**1. `POST /api/auth/login`**
+- **Finalidade:** Autenticar usuários (admin/profissional)
+- **Input:** `{ email, password }`
+- **Processo:** Valida dados → Busca usuário → Verifica senha → Atualiza último login → Gera tokens
+- **Output:** `{ user_data, access_token, refresh_token }`
+- **Validações:** Email formato válido, senha mínimo 6 caracteres
+- **Segurança:** Senha hasheada com bcrypt, tokens JWT
+
+**2. `POST /api/auth/refresh-token`**
+- **Finalidade:** Renovar access token expirado
+- **Input:** `{ refresh_token }`
+- **Processo:** Valida refresh token → Verifica usuário ativo → Gera novo access token
+- **Output:** `{ access_token }`
+- **Validações:** Refresh token válido e não expirado
+
+**3. `POST /api/auth/forgot-password`**
+- **Finalidade:** Solicitar recuperação de senha via email
+- **Input:** `{ email }`
+- **Processo:** Busca usuário → Gera token único → Envia email com link
+- **Output:** Confirmação de envio
+- **Segurança:** Token expira em 1 hora, hasheado no banco
+
+**4. `POST /api/auth/reset-password`**
+- **Finalidade:** Redefinir senha com token de recuperação
+- **Input:** `{ token, password, confirmPassword }`
+- **Processo:** Valida token → Verifica expiração → Atualiza senha → Marca não primeiro acesso
+- **Validações:** Senha complexa (8+ chars, maiúscula, minúscula, número, especial)
+
+**5. `POST /api/auth/first-access`**
+- **Finalidade:** Alteração obrigatória de senha no primeiro login
+- **Input:** `{ password, confirmPassword }`
+- **Processo:** Verifica primeiro acesso → Atualiza senha → Marca como acessado → Gera novos tokens
+- **Segurança:** Força alteração de senha temporária
+
+**6. `POST /api/auth/validate-token`**
+- **Finalidade:** Verificar se token ainda é válido
+- **Input:** Token no header Authorization
+- **Output:** Dados do usuário autenticado
+
+**7. `POST /api/auth/logout`**
+- **Finalidade:** Finalizar sessão do usuário
+- **Processo:** Confirma logout (futura implementação de blacklist)
+
+### **auth.js - Middlewares de Autenticação**
+
+#### **Middlewares Implementados:**
+
+**1. `validateToken(req, res, next)`**
+- **Função:** Validar JWT em todas as rotas protegidas
+- **Processo:** Extrai token → Decodifica JWT → Busca usuário → Verifica status ativo
+- **Adiciona ao req:** `req.user`, `req.userId`, `req.userType`
+- **Erros Tratados:** Token ausente, inválido, expirado, usuário inexistente/inativo
+
+**2. `requireAdmin(req, res, next)`**
+- **Função:** Permitir acesso apenas para administradores
+- **Uso:** Deve ser usado APÓS validateToken
+- **Verifica:** Se `req.user.user_type === 'admin'`
+
+**3. `requireProfessional(req, res, next)`**
+- **Função:** Permitir acesso apenas para profissionais
+- **Uso:** Deve ser usado APÓS validateToken
+- **Verifica:** Se `req.user.user_type === 'professional'`
+
+**4. `requireUserTypes(allowedTypes)`**
+- **Função:** Middleware flexível para múltiplos tipos
+- **Uso:** `requireUserTypes(['admin', 'professional'])`
+- **Verifica:** Se tipo do usuário está na lista permitida
+
+**5. `checkFirstAccess(req, res, next)`**
+- **Função:** Forçar alteração de senha no primeiro acesso
+- **Processo:** Verifica `is_first_access` → Permite apenas rotas de alteração de senha
+
+**6. `checkResourceOwnership(model, idParam)`**
+- **Função:** Verificar se recurso pertence ao usuário (exceto admin)
+- **Uso:** Proteger dados de pacientes de outros profissionais
+- **Processo:** Busca recurso → Verifica `resource.user_id === req.userId`
+
+#### **Funções Utilitárias:**
+
+**1. `generateToken(user)`**
+- **Função:** Gerar JWT access token
+- **Payload:** userId, email, userType, isFirstAccess
+- **Expiração:** 24h (configurável via ENV)
+
+**2. `generateRefreshToken(user)`**
+- **Função:** Gerar JWT refresh token
+- **Payload:** userId, type: 'refresh'
+- **Expiração:** 7 dias (configurável via ENV)
+
+**3. `validateRefreshToken(req, res, next)`**
+- **Função:** Middleware específico para validar refresh tokens
+- **Processo:** Valida refresh token → Verifica tipo → Busca usuário
+
+## 👥 MODELOS DE DADOS (90% COMPLETO)
+
+### **User.js - Modelo de Usuários**
+
+#### **Campos do Modelo:**
+- `id` - UUID único (chave primária)
+- `full_name` - Nome completo (2-150 chars, obrigatório)
+- `email` - Email único (formato válido, lowercase)
+- `professional_register` - CRP/CRM (3-20 chars, único)
+- `password` - Senha hasheada (bcrypt rounds 12)
+- `user_type` - ENUM: 'admin' | 'professional'
+- `status` - ENUM: 'active' | 'inactive' | 'suspended'
+- `is_first_access` - Boolean (padrão true)
+- `reset_password_token` - String para recuperação
+- `reset_password_expires` - Timestamp de expiração
+- `last_login` - Data do último acesso
+- `metadata` - JSONB para dados extras
+
+#### **Hooks Implementados:**
+- `beforeCreate` - Hash da senha antes de salvar
+- `beforeUpdate` - Hash da senha se alterada
+- `afterFind` - Remove campos sensíveis da resposta
+
+#### **Métodos de Instância:**
+- `validatePassword(password)` - Compara senha com hash bcrypt
+- `generateResetToken()` - Gera token de recuperação SHA256
+- `isAdmin()` - Verifica se user_type é 'admin'
+- `isProfessional()` - Verifica se user_type é 'professional'
+- `isActive()` - Verifica se status é 'active'
+- `updateLastLogin()` - Atualiza campo last_login
+
+#### **Métodos Estáticos:**
+- `findByEmail(email)` - Busca usuário por email
+- `findByResetToken(token)` - Busca por token de recuperação válido
+- `findActiveProfessionals()` - Lista profissionais ativos
+
+### **Patient.js - Modelo de Pacientes**
+
+#### **Campos do Modelo:**
+**Identificação:**
+- `id` - UUID único
+- `user_id` - FK para profissional responsável (obrigatório)
+- `full_name` - Nome completo (2-150 chars)
+- `birth_date` - Data nascimento (DATEONLY)
+- `gender` - ENUM: 'male'|'female'|'other'|'not_informed'
+
+**Documentos:**
+- `cpf` - CPF formatado (único)
+- `rg` - RG do paciente
+
+**Contato:**
+- `phone` - Telefone (10-20 chars)
+- `email` - Email opcional
+- `address` - JSONB com endereço completo
+- `emergency_contact` - JSONB com contato de emergência
+
+**Dados Pessoais:**
+- `marital_status` - ENUM: 'single'|'married'|'divorced'|'widowed'|'other'
+- `occupation` - Profissão (100 chars)
+- `insurance_info` - JSONB com dados do convênio
+
+**Dados Clínicos:**
+- `status` - ENUM: 'active'|'inactive'|'discharged'|'transferred'
+- `medical_history` - TEXT histórico médico
+- `current_medications` - TEXT medicações atuais
+- `allergies` - TEXT alergias conhecidas
+- `notes` - TEXT observações gerais
+
+**Controle:**
+- `first_appointment` - Data primeira consulta
+- `last_appointment` - Data última consulta
+- `metadata` - JSONB dados extras
+
+#### **Métodos de Instância:**
+- `getAge()` - Calcula idade baseada na data de nascimento
+- `isActive()` - Verifica se status é 'active'
+- `updateLastAppointment()` - Atualiza data da última consulta
+- `getBasicInfo()` - Retorna dados básicos sem informações sensíveis
+
+#### **Métodos Estáticos:**
+- `findActiveByProfessional(userId)` - Pacientes ativos de um profissional
+- `findByCpf(cpf)` - Busca paciente por CPF
+- `getStatsByProfessional(userId)` - Estatísticas por profissional
+- `findWithRecentAppointments(userId, days)` - Pacientes com consultas recentes
+
+## 🛡️ SISTEMA DE SEGURANÇA (100% COMPLETO)
+
+### **errorHandler.js - Tratamento de Erros**
+
+#### **Tipos de Erro Tratados:**
+- **ValidationError (Sequelize)** - Erros de validação de dados
+- **UniqueConstraintError** - Violação de constraint única (email duplicado)
+- **ForeignKeyConstraintError** - Violação de chave estrangeira
+- **CastError** - Formato de ID inválido
+- **SyntaxError** - JSON malformado
+- **JsonWebTokenError** - Token JWT inválido
+- **TokenExpiredError** - Token JWT expirado
+
+#### **Classes Customizadas:**
+
+**1. `AppError`**
+- **Função:** Erro customizado da aplicação
+- **Propriedades:** message, statusCode, code, isOperational
+- **Uso:** `throw new AppError('Mensagem', 400, 'CODIGO_ERRO')`
+
+#### **Funções Utilitárias:**
+- `asyncHandler(fn)` - Wrapper para capturar erros em funções async
+- `createValidationError(field, message)` - Criar erro de validação
+- `createAuthorizationError(message)` - Criar erro de autorização
+- `createAuthenticationError(message)` - Criar erro de autenticação
+- `createNotFoundError(resource)` - Criar erro de recurso não encontrado
+
+#### **Middleware Global:**
+- `errorHandler(error, req, res, next)` - Captura todos os erros da aplicação
+- `notFound(req, res, next)` - Captura rotas inexistentes (404)
+
+---
+
+# 4. ROADMAP DE DESENVOLVIMENTO
+
+## 🗓️ CRONOGRAMA GERAL
+
+### **FASE 1: ADMINISTRAÇÃO (Semanas 1-2)**
+- **Objetivo:** Sistema completo de gestão administrativa
+- **Entregáveis:** Dashboard admin, CRUD profissionais, gestão transferências
+- **Prioridade:** ALTA - Base para todo o sistema
+
+### **FASE 2: PROFISSIONAIS (Semanas 3-4)**
+- **Objetivo:** Interface completa para profissionais de saúde
+- **Entregáveis:** Dashboard profissional, gestão pacientes, agenda básica
+- **Prioridade:** ALTA - Core do sistema
+
+### **FASE 3: ANAMNESE DIGITAL (Semanas 5-6)**
+- **Objetivo:** Sistema de anamnese estruturada e personalizável
+- **Entregáveis:** Modelo Anamnese, formulário dinâmico, validações específicas
+- **Prioridade:** MÉDIA - Diferencial competitivo
+
+### **FASE 4: CONSULTAS E SESSÕES (Semanas 7-8)**
+- **Objetivo:** Registro completo de evolução dos pacientes
+- **Entregáveis:** Modelo Session, histórico, relatórios de evolução
+- **Prioridade:** MÉDIA - Essencial para continuidade
+
+### **FASE 5: TRANSFERÊNCIAS (Semana 9)**
+- **Objetivo:** Sistema de transferência de pacientes entre profissionais
+- **Entregáveis:** Modelo Transfer, workflow de aprovação, notificações
+- **Prioridade:** BAIXA - Funcionalidade específica
+
+### **FASE 6: RELATÓRIOS E ANALYTICS (Semana 10)**
+- **Objetivo:** Dashboards avançados e relatórios gerenciais
+- **Entregáveis:** Estatísticas detalhadas, gráficos, exportações
+- **Prioridade:** BAIXA - Nice to have
+
+---
+
+# 5. GUIA DE IMPLEMENTAÇÃO POR MÓDULO
+
+## 🏢 MÓDULO ADMINISTRAÇÃO
+
+### **Objetivo**
 Sistema completo para administradores gerenciarem a clínica, incluindo profissionais, estatísticas e transferências.
-Arquivos a Criar:
-src/routes/admin.js
-Responsabilidade: Definir todos os endpoints administrativos
-Endpoints Necessários:
 
-GET /api/admin/dashboard - Carregar dashboard com estatísticas
-GET /api/admin/professionals - Listar profissionais com filtros e paginação
-POST /api/admin/professionals - Criar novo profissional
-GET /api/admin/professionals/:id - Obter detalhes de um profissional
-PUT /api/admin/professionals/:id - Atualizar dados do profissional
-PUT /api/admin/professionals/:id/status - Ativar/desativar profissional
-POST /api/admin/professionals/:id/reset-password - Resetar senha
-GET /api/admin/transfers - Listar solicitações de transferência
-PUT /api/admin/transfers/:id/approve - Aprovar transferência
-PUT /api/admin/transfers/:id/reject - Rejeitar transferência
-GET /api/admin/stats/overview - Estatísticas gerais
-GET /api/admin/stats/monthly - Dados mensais
+### **Arquivos a Criar:**
 
-Middlewares Necessários:
+#### **`src/routes/admin.js`**
+**Responsabilidade:** Definir todos os endpoints administrativos
 
-validateToken (já aplicado no server.js)
-requireAdmin (verificar se é admin)
-Middlewares de validação específicos para cada endpoint
+**Endpoints Necessários:**
+1. `GET /api/admin/dashboard` - Carregar dashboard com estatísticas
+2. `GET /api/admin/professionals` - Listar profissionais com filtros e paginação
+3. `POST /api/admin/professionals` - Criar novo profissional
+4. `GET /api/admin/professionals/:id` - Obter detalhes de um profissional
+5. `PUT /api/admin/professionals/:id` - Atualizar dados do profissional
+6. `PUT /api/admin/professionals/:id/status` - Ativar/desativar profissional
+7. `POST /api/admin/professionals/:id/reset-password` - Resetar senha
+8. `GET /api/admin/transfers` - Listar solicitações de transferência
+9. `PUT /api/admin/transfers/:id/approve` - Aprovar transferência
+10. `PUT /api/admin/transfers/:id/reject` - Rejeitar transferência
+11. `GET /api/admin/stats/overview` - Estatísticas gerais
+12. `GET /api/admin/stats/monthly` - Dados mensais
 
-src/controllers/adminController.js
-Responsabilidade: Lógica de negócio para operações administrativas
-Funções Obrigatórias:
-1. getDashboard(req, res)
+**Middlewares Necessários:**
+- `validateToken` (já aplicado no server.js)
+- `requireAdmin` (verificar se é admin)
+- Middlewares de validação específicos para cada endpoint
 
-Objetivo: Carregar dados do dashboard administrativo
-Dados Necessários:
+#### **`src/controllers/adminController.js`**
+**Responsabilidade:** Lógica de negócio para operações administrativas
 
-Número de profissionais ativos/inativos
-Total de pacientes na clínica
-Pacientes ativos/inativos
-Transferências pendentes
-Consultas do mês atual
-Novos cadastros da semana
+**Funções Obrigatórias:**
 
+**1. `getDashboard(req, res)`**
+- **Objetivo:** Carregar dados do dashboard administrativo
+- **Dados Necessários:**
+  - Número de profissionais ativos/inativos
+  - Total de pacientes na clínica
+  - Pacientes ativos/inativos
+  - Transferências pendentes
+  - Consultas do mês atual
+  - Novos cadastros da semana
+- **Processamento:** Agregar dados de múltiplas tabelas
+- **Retorno:** Objeto com todas as estatísticas formatadas
 
-Processamento: Agregar dados de múltiplas tabelas
-Retorno: Objeto com todas as estatísticas formatadas
+**2. `listProfessionals(req, res)`**
+- **Objetivo:** Listar profissionais com filtros e paginação
+- **Parâmetros Query:**
+  - `page` - Página atual (padrão 1)
+  - `limit` - Itens por página (padrão 20)
+  - `search` - Busca por nome, email ou registro
+  - `status` - Filtro por status
+  - `sortBy` - Campo de ordenação
+  - `order` - ASC ou DESC
+- **Processamento:** Construir query dinâmica com where conditions
+- **Retorno:** Array de profissionais + metadados de paginação
 
-2. listProfessionals(req, res)
+**3. `createProfessional(req, res)`**
+- **Objetivo:** Criar novo profissional no sistema
+- **Validações Necessárias:**
+  - Email único
+  - Registro profissional único (se informado)
+  - Dados obrigatórios presentes
+- **Processamento:**
+  - Gerar senha temporária segura
+  - Criar usuário no banco
+  - Enviar email com credenciais (implementação futura)
+  - Log da operação
+- **Retorno:** Dados do profissional criado + senha temporária (apenas uma vez)
+- **Cuidados:** Nunca retornar senha em outras operações
 
-Objetivo: Listar profissionais com filtros e paginação
-Parâmetros Query:
+**4. `getProfessionalById(req, res)`**
+- **Objetivo:** Obter detalhes completos de um profissional
+- **Processamento:**
+  - Buscar profissional por ID
+  - Incluir estatísticas básicas (número de pacientes)
+  - Incluir data de último login
+- **Retorno:** Dados completos do profissional (exceto senha)
 
-page - Página atual (padrão 1)
-limit - Itens por página (padrão 20)
-search - Busca por nome, email ou registro
-status - Filtro por status
-sortBy - Campo de ordenação
-order - ASC ou DESC
+**5. `updateProfessional(req, res)`**
+- **Objetivo:** Atualizar dados de um profissional
+- **Campos Atualizáveis:**
+  - full_name, email, professional_register
+  - Não permitir alteração de senha aqui
+- **Validações:** Email único, registro único
+- **Processamento:** Validar dados → Atualizar → Log da alteração
+- **Retorno:** Dados atualizados
 
+**6. `toggleProfessionalStatus(req, res)`**
+- **Objetivo:** Ativar/desativar profissional
+- **Processamento:**
+  - Verificar status atual
+  - Alternar entre 'active' e 'inactive'
+  - Não permitir exclusão, apenas desativação
+  - Log da operação
+- **Retorno:** Status atualizado
 
-Processamento: Construir query dinâmica com where conditions
-Retorno: Array de profissionais + metadados de paginação
+**7. `resetProfessionalPassword(req, res)`**
+- **Objetivo:** Gerar nova senha temporária
+- **Processamento:**
+  - Gerar senha temporária segura
+  - Atualizar no banco
+  - Marcar como primeiro acesso
+  - Enviar email com nova senha
+  - Log da operação
+- **Retorno:** Confirmação da operação
+- **Segurança:** Não retornar senha na resposta (enviar só por email)
 
-3. createProfessional(req, res)
+#### **`src/middleware/adminValidations.js`**
+**Responsabilidade:** Schemas Joi para validação de dados administrativos
 
-Objetivo: Criar novo profissional no sistema
-Validações Necessárias:
+**Schemas Necessários:**
 
-Email único
-Registro profissional único (se informado)
-Dados obrigatórios presentes
+**1. `createProfessionalSchema`**
+- Campos obrigatórios: full_name, email
+- Campos opcionais: professional_register
+- Validações específicas de formato
 
+**2. `updateProfessionalSchema`**
+- Todos os campos opcionais
+- Pelo menos um campo deve estar presente
+- Mesmas validações de formato
 
-Processamento:
+**3. `transferActionSchema`**
+- Campo obrigatório: action ('approve' | 'reject')
+- Campo opcional: reason (obrigatório para reject)
 
-Gerar senha temporária segura
-Criar usuário no banco
-Enviar email com credenciais (implementação futura)
-Log da operação
+### **Funcionalidades Específicas:**
 
+#### **Dashboard Administrativo**
+**Dados a Exibir:**
+- Cards com números principais (profissionais, pacientes, transferências)
+- Gráfico de evolução mensal de cadastros
+- Lista de últimas atividades
+- Alertas de sistema (contas inativas, transferências pendentes)
 
-Retorno: Dados do profissional criado + senha temporária (apenas uma vez)
-Cuidados: Nunca retornar senha em outras operações
+#### **Gestão de Profissionais**
+**Funcionalidades:**
+- Tabela com todos os profissionais
+- Filtros por status, busca por nome/email
+- Paginação com controle de itens por página
+- Ações: visualizar, editar, ativar/desativar, resetar senha
+- Modal de criação com formulário validado
+- Modal de confirmação para ações críticas
 
-4. getProfessionalById(req, res)
+#### **Sistema de Transferências**
+**Workflow:**
+1. Profissional solicita transferência de paciente
+2. Admin recebe notificação
+3. Admin pode aprovar ou rejeitar com motivo
+4. Se aprovado, paciente é transferido
+5. Histórico da transferência é mantido
+6. Ambos profissionais são notificados
 
-Objetivo: Obter detalhes completos de um profissional
-Processamento:
+---
 
-Buscar profissional por ID
-Incluir estatísticas básicas (número de pacientes)
-Incluir data de último login
+## 👨‍⚕️ MÓDULO PROFISSIONAL
 
-
-Retorno: Dados completos do profissional (exceto senha)
-
-5. updateProfessional(req, res)
-
-Objetivo: Atualizar dados de um profissional
-Campos Atualizáveis:
-
-full_name, email, professional_register
-Não permitir alteração de senha aqui
-
-
-Validações: Email único, registro único
-Processamento: Validar dados → Atualizar → Log da alteração
-Retorno: Dados atualizados
-
-6. toggleProfessionalStatus(req, res)
-
-Objetivo: Ativar/desativar profissional
-Processamento:
-
-Verificar status atual
-Alternar entre 'active' e 'inactive'
-Não permitir exclusão, apenas desativação
-Log da operação
-
-
-Retorno: Status atualizado
-
-7. resetProfessionalPassword(req, res)
-
-Objetivo: Gerar nova senha temporária
-Processamento:
-
-Gerar senha temporária segura
-Atualizar no banco
-Marcar como primeiro acesso
-Enviar email com nova senha
-Log da operação
-
-
-Retorno: Confirmação da operação
-Segurança: Não retornar senha na resposta (enviar só por email)
-
-src/middleware/adminValidations.js
-Responsabilidade: Schemas Joi para validação de dados administrativos
-Schemas Necessários:
-1. createProfessionalSchema
-
-Campos obrigatórios: full_name, email
-Campos opcionais: professional_register
-Validações específicas de formato
-
-2. updateProfessionalSchema
-
-Todos os campos opcionais
-Pelo menos um campo deve estar presente
-Mesmas validações de formato
-
-3. transferActionSchema
-
-Campo obrigatório: action ('approve' | 'reject')
-Campo opcional: reason (obrigatório para reject)
-
-Funcionalidades Específicas:
-Dashboard Administrativo
-Dados a Exibir:
-
-Cards com números principais (profissionais, pacientes, transferências)
-Gráfico de evolução mensal de cadastros
-Lista de últimas atividades
-Alertas de sistema (contas inativas, transferências pendentes)
-
-Gestão de Profissionais
-Funcionalidades:
-
-Tabela com todos os profissionais
-Filtros por status, busca por nome/email
-Paginação com controle de itens por página
-Ações: visualizar, editar, ativar/desativar, resetar senha
-Modal de criação com formulário validado
-Modal de confirmação para ações críticas
-
-Sistema de Transferências
-Workflow:
-
-Profissional solicita transferência de paciente
-Admin recebe notificação
-Admin pode aprovar ou rejeitar com motivo
-Se aprovado, paciente é transferido
-Histórico da transferência é mantido
-Ambos profissionais são notificados
-
-
-👨‍⚕️ MÓDULO PROFISSIONAL
-Objetivo
+### **Objetivo**
 Interface completa para profissionais gerenciarem seus pacientes, consultas e agenda.
-Arquivos a Criar:
-src/routes/professional.js
-Responsabilidade: Endpoints para operações dos profissionais
-Endpoints Necessários:
 
-GET /api/professional/dashboard - Dashboard com visão geral
-GET /api/professional/patients - Listar meus pacientes
-POST /api/professional/patients - Cadastrar novo paciente
-GET /api/professional/patients/:id - Detalhes de um paciente
-PUT /api/professional/patients/:id - Atualizar paciente
-PUT /api/professional/patients/:id/status - Alterar status do paciente
-POST /api/professional/patients/:id/transfer - Solicitar transferência
-GET /api/professional/schedule/today - Agenda de hoje
-GET /api/professional/schedule/week - Agenda da semana
-GET /api/professional/stats - Minhas estatísticas
+### **Arquivos a Criar:**
 
-src/controllers/professionalController.js
-Responsabilidade: Lógica específica para profissionais
-Funções Obrigatórias:
-1. getDashboard(req, res)
+#### **`src/routes/professional.js`**
+**Responsabilidade:** Endpoints para operações dos profissionais
 
-Objetivo: Carregar dashboard do profissional
-Dados Necessários:
+**Endpoints Necessários:**
+1. `GET /api/professional/dashboard` - Dashboard com visão geral
+2. `GET /api/professional/patients` - Listar meus pacientes
+3. `POST /api/professional/patients` - Cadastrar novo paciente
+4. `GET /api/professional/patients/:id` - Detalhes de um paciente
+5. `PUT /api/professional/patients/:id` - Atualizar paciente
+6. `PUT /api/professional/patients/:id/status` - Alterar status do paciente
+7. `POST /api/professional/patients/:id/transfer` - Solicitar transferência
+8. `GET /api/professional/schedule/today` - Agenda de hoje
+9. `GET /api/professional/schedule/week` - Agenda da semana
+10. `GET /api/professional/stats` - Minhas estatísticas
 
-Total de pacientes ativos
-Consultas agendadas para hoje
-Consultas da semana
-Pacientes cadastrados recentemente
-Anamneses pendentes
-Próximas consultas
+#### **`src/controllers/professionalController.js`**
+**Responsabilidade:** Lógica específica para profissionais
 
+**Funções Obrigatórias:**
 
-Filtro: Apenas dados do profissional logado (req.userId)
+**1. `getDashboard(req, res)`**
+- **Objetivo:** Carregar dashboard do profissional
+- **Dados Necessários:**
+  - Total de pacientes ativos
+  - Consultas agendadas para hoje
+  - Consultas da semana
+  - Pacientes cadastrados recentemente
+  - Anamneses pendentes
+  - Próximas consultas
+- **Filtro:** Apenas dados do profissional logado (req.userId)
 
-2. getMyPatients(req, res)
+**2. `getMyPatients(req, res)`**
+- **Objetivo:** Listar pacientes do profissional logado
+- **Filtros Query:**
+  - `status` - Status do paciente
+  - `search` - Busca por nome ou CPF
+  - `page`, `limit` - Paginação
+  - `hasRecentAppointment` - Filtro por consultas recentes
+- **Processamento:** Buscar apenas pacientes onde `user_id = req.userId`
+- **Retorno:** Lista de pacientes com dados básicos
 
-Objetivo: Listar pacientes do profissional logado
-Filtros Query:
+**3. `createPatient(req, res)`**
+- **Objetivo:** Cadastrar novo paciente
+- **Validações:**
+  - CPF único (se informado)
+  - Email único (se informado)
+  - Dados obrigatórios presentes
+- **Processamento:**
+  - Associar ao profissional logado (user_id = req.userId)
+  - Criar paciente no banco
+  - Log da operação
+- **Retorno:** Dados do paciente criado + sugestão de próximo passo (anamnese)
 
-status - Status do paciente
-search - Busca por nome ou CPF
-page, limit - Paginação
-hasRecentAppointment - Filtro por consultas recentes
+**4. `getPatientById(req, res)`**
+- **Objetivo:** Obter detalhes completos de um paciente
+- **Segurança:** Verificar se paciente pertence ao profissional logado
+- **Dados Incluídos:**
+  - Todas as informações do paciente
+  - Estatísticas (número de consultas, última consulta)
+  - Status da anamnese
+- **Retorno:** Dados completos organizados por seções
 
+**5. `updatePatient(req, res)`**
+- **Objetivo:** Atualizar dados de um paciente
+- **Segurança:** Verificar ownership antes de atualizar
+- **Campos Permitidos:** Todos exceto user_id
+- **Processamento:** Validar dados → Atualizar → Log
+- **Retorno:** Dados atualizados
 
-Processamento: Buscar apenas pacientes onde user_id = req.userId
-Retorno: Lista de pacientes com dados básicos
+**6. `requestPatientTransfer(req, res)`**
+- **Objetivo:** Solicitar transferência de paciente para outro profissional
+- **Dados Necessários:**
+  - ID do profissional destino
+  - Motivo da transferência
+- **Processamento:**
+  - Verificar se paciente pertence ao profissional
+  - Validar se profissional destino existe e está ativo
+  - Criar registro de transferência com status 'pending'
+  - Notificar administradores
+  - Log da solicitação
+- **Retorno:** Confirmação da solicitação
 
-3. createPatient(req, res)
+**7. `getTodaySchedule(req, res)`**
+- **Objetivo:** Obter agenda do dia atual
+- **Processamento:**
+  - Buscar consultas/sessões agendadas para hoje
+  - Incluir dados básicos dos pacientes
+  - Ordenar por horário
+- **Retorno:** Lista de consultas do dia
 
-Objetivo: Cadastrar novo paciente
-Validações:
+### **Funcionalidades Específicas:**
 
-CPF único (se informado)
-Email único (se informado)
-Dados obrigatórios presentes
+#### **Dashboard do Profissional**
+**Dados a Exibir:**
+- Cards com números principais (pacientes ativos, consultas hoje)
+- Lista de consultas do dia com horários
+- Pacientes cadastrados recentemente
+- Anamneses pendentes de preenchimento
+- Ações rápidas (novo paciente, nova consulta)
 
+#### **Gestão de Pacientes**
+**Funcionalidades:**
+- Tabela com todos os meus pacientes
+- Filtros por status, busca por nome/CPF
+- Ações: visualizar prontuário, editar, anamnese, nova consulta
+- Modal de cadastro com formulário completo
+- Validações em tempo real
 
-Processamento:
+---
 
-Associar ao profissional logado (user_id = req.userId)
-Criar paciente no banco
-Log da operação
+## 📋 MÓDULO ANAMNESE DIGITAL
 
-
-Retorno: Dados do paciente criado + sugestão de próximo passo (anamnese)
-
-4. getPatientById(req, res)
-
-Objetivo: Obter detalhes completos de um paciente
-Segurança: Verificar se paciente pertence ao profissional logado
-Dados Incluídos:
-
-Todas as informações do paciente
-Estatísticas (número de consultas, última consulta)
-Status da anamnese
-
-
-Retorno: Dados completos organizados por seções
-
-5. updatePatient(req, res)
-
-Objetivo: Atualizar dados de um paciente
-Segurança: Verificar ownership antes de atualizar
-Campos Permitidos: Todos exceto user_id
-Processamento: Validar dados → Atualizar → Log
-Retorno: Dados atualizados
-
-6. requestPatientTransfer(req, res)
-
-Objetivo: Solicitar transferência de paciente para outro profissional
-Dados Necessários:
-
-ID do profissional destino
-Motivo da transferência
-
-
-Processamento:
-
-Verificar se paciente pertence ao profissional
-Validar se profissional destino existe e está ativo
-Criar registro de transferência com status 'pending'
-Notificar administradores
-Log da solicitação
-
-
-Retorno: Confirmação da solicitação
-
-7. getTodaySchedule(req, res)
-
-Objetivo: Obter agenda do dia atual
-Processamento:
-
-Buscar consultas/sessões agendadas para hoje
-Incluir dados básicos dos pacientes
-Ordenar por horário
-
-
-Retorno: Lista de consultas do dia
-
-Funcionalidades Específicas:
-Dashboard do Profissional
-Dados a Exibir:
-
-Cards com números principais (pacientes ativos, consultas hoje)
-Lista de consultas do dia com horários
-Pacientes cadastrados recentemente
-Anamneses pendentes de preenchimento
-Ações rápidas (novo paciente, nova consulta)
-
-Gestão de Pacientes
-Funcionalidades:
-
-Tabela com todos os meus pacientes
-Filtros por status, busca por nome/CPF
-Ações: visualizar prontuário, editar, anamnese, nova consulta
-Modal de cadastro com formulário completo
-Validações em tempo real
-
-
-📋 MÓDULO ANAMNESE DIGITAL
-Objetivo
+### **Objetivo**
 Sistema completo de anamnese digital estruturada e personalizável para coleta de dados iniciais dos pacientes.
-Arquivos a Criar:
-src/models/Anamnesis.js
-Responsabilidade: Modelo de dados para anamneses
-Campos Necessários:
-Identificação:
 
-id - UUID único
-patient_id - FK para paciente (obrigatório)
-user_id - FK para profissional responsável
-created_at, updated_at - Timestamps automáticos
-
-Status e Controle:
-
-status - ENUM: 'draft' | 'in_progress' | 'completed'
-completion_percentage - INTEGER (0-100)
-completed_at - DATETIME (quando foi finalizada)
-last_modified_section - String (última seção editada)
-
-Seções da Anamnese:
-1. História Pessoal:
-
-personal_history - JSONB com:
-
-Local de nascimento
-Escolaridade
-Estado civil
-Filhos (quantidade)
-Religião/crenças
-Situação socioeconômica
-
-
-
-2. História Familiar:
-
-family_history - JSONB com:
-
-Dados dos pais (vivos, idade, saúde)
-Irmãos e suas condições
-Histórico de doenças mentais na família
-Doenças genéticas
-Relacionamento familiar
-
-
-
-3. História Médica:
-
-medical_history - JSONB com:
-
-Doenças crônicas
-Cirurgias realizadas
-Internações
-Medicações atuais
-Alergias conhecidas
-Acompanhamento médico atual
-
-
-
-4. História Psicológica:
-
-psychological_history - JSONB com:
-
-Tratamentos psicológicos anteriores
-Internações psiquiátricas
-Uso de medicação psiquiátrica
-Tentativas de autolesão
-Eventos traumáticos
-
-
-
-5. Queixa Atual:
-
-current_complaint - JSONB com:
-
-Queixa principal
-Quando começou
-Fatores desencadeantes
-Como afeta a vida
-O que já tentou para resolver
-
-
-
-6. Estilo de Vida:
-
-lifestyle - JSONB com:
-
-Padrão de sono
-Alimentação
-Atividade física
-Vida social
-Trabalho/estudos
-Uso de substâncias
-
-
-
-7. Objetivos do Tratamento:
-
-treatment_goals - JSONB com:
-
-Objetivos do paciente
-Expectativas com o tratamento
-Disponibilidade para sessões
-Suporte familiar
-
-
-
-Metadados:
-
-metadata - JSONB para dados extras
-notes - TEXT para observações do profissional
-
-Métodos Necessários:
-
-calculateCompletionPercentage() - Calcular % preenchido
-isCompleted() - Verificar se está completa
-markAsCompleted() - Finalizar anamnese
-getSummary() - Resumo para exibição
-validateSection(sectionName) - Validar seção específica
-
-src/routes/anamnesis.js
-Endpoints Necessários:
-
-GET /api/patients/:patientId/anamnesis - Obter anamnese do paciente
-POST /api/patients/:patientId/anamnesis - Criar nova anamnese
-PUT /api/patients/:patientId/anamnesis - Atualizar anamnese completa
-PUT /api/patients/:patientId/anamnesis/section/:section - Atualizar seção específica
-POST /api/patients/:patientId/anamnesis/complete - Marcar como completa
-GET /api/professional/anamnesis/pending - Anamneses pendentes
-
-src/controllers/anamnesisController.js
-Funções Obrigatórias:
-1. getPatientAnamnesis(req, res)
-
-Objetivo: Obter anamnese de um paciente específico
-Segurança: Verificar se paciente pertence ao profissional
-Processamento:
-
-Buscar anamnese existente
-Se não existe, retornar estrutura vazia
-Calcular percentual de preenchimento
-
-
-Retorno: Dados da anamnese organizados por seções
-
-2. createAnamnesis(req, res)
-
-Objetivo: Criar nova anamnese para paciente
-Validações:
-
-Verificar se paciente existe
-Verificar se não existe anamnese ativa
-Validar propriedade do paciente
-
-
-Processamento:
-
-Criar registro inicial
-Status 'draft'
-Associar ao profissional e paciente
-
-
-Retorno: Anamnese criada
-
-3. updateAnamnesisSection(req, res)
-
-Objetivo: Atualizar seção específica da anamnese
-Parâmetros: section (personal_history, family_history, etc.)
-Validações:
-
-Validar se seção existe
-Validar dados da seção
-Verificar propriedade
-
-
-Processamento:
-
-Atualizar seção específica
-Recalcular percentual de completude
-Atualizar last_modified_section
-Auto-save (salvar automaticamente)
-
-
-Retorno: Seção atualizada + novo percentual
-
-4. completeAnamnesis(req, res)
-
-Objetivo: Marcar anamnese como finalizada
-Validações:
-
-Verificar se todas as seções obrigatórias estão preenchidas
-Pelo menos 80% de completude
-
-
-Processamento:
-
-Alterar status para 'completed'
-Definir completed_at
-Calcular completude final
-
-
-Retorno: Confirmação de finalização
-
-Funcionalidades Específicas:
-Interface de Anamnese
-Características:
-
-Formulário multi-step com progresso visual
-Auto-save a cada 30 segundos
-Validação em tempo real
-Seções colapsáveis
-Indicador de campos obrigatórios
-Possibilidade de salvar rascunho
-
-Validações Específicas
-Regras de Negócio:
-
-Seções obrigatórias: current_complaint, personal_history, medical_history
-Seções opcionais: family_history, psychological_history
-Campos obrigatórios dentro de cada seção
-Validações de formato (datas, números, etc.)
-
-
-📊 MÓDULO CONSULTAS E SESSÕES
-Objetivo
+### **Arquivos a Criar:**
+
+#### **`src/models/Anamnesis.js`**
+**Responsabilidade:** Modelo de dados para anamneses
+
+**Campos Necessários:**
+
+**Identificação:**
+- `id` - UUID único
+- `patient_id` - FK para paciente (obrigatório)
+- `user_id` - FK para profissional responsável
+- `created_at`, `updated_at` - Timestamps automáticos
+
+**Status e Controle:**
+- `status` - ENUM: 'draft' | 'in_progress' | 'completed'
+- `completion_percentage` - INTEGER (0-100)
+- `completed_at` - DATETIME (quando foi finalizada)
+- `last_modified_section` - String (última seção editada)
+
+**Seções da Anamnese:**
+
+**1. História Pessoal:**
+- `personal_history` - JSONB com:
+  - Local de nascimento
+  - Escolaridade
+  - Estado civil
+  - Filhos (quantidade)
+  - Religião/crenças
+  - Situação socioeconômica
+
+**2. História Familiar:**
+- `family_history` - JSONB com:
+  - Dados dos pais (vivos, idade, saúde)
+  - Irmãos e suas condições
+  - Histórico de doenças mentais na família
+  - Doenças genéticas
+  - Relacionamento familiar
+
+**3. História Médica:**
+- `medical_history` - JSONB com:
+  - Doenças crônicas
+  - Cirurgias realizadas
+  - Internações
+  - Medicações atuais
+  - Alergias conhecidas
+  - Acompanhamento médico atual
+
+**4. História Psicológica:**
+- `psychological_history` - JSONB com:
+  - Tratamentos psicológicos anteriores
+  - Internações psiquiátricas
+  - Uso de medicação psiquiátrica
+  - Tentativas de autolesão
+  - Eventos traumáticos
+
+**5. Queixa Atual:**
+- `current_complaint` - JSONB com:
+  - Queixa principal
+  - Quando começou
+  - Fatores desencadeantes
+  - Como afeta a vida
+  - O que já tentou para resolver
+
+**6. Estilo de Vida:**
+- `lifestyle` - JSONB com:
+  - Padrão de sono
+  - Alimentação
+  - Atividade física
+  - Vida social
+  - Trabalho/estudos
+  - Uso de substâncias
+
+**7. Objetivos do Tratamento:**
+- `treatment_goals` - JSONB com:
+  - Objetivos do paciente
+  - Expectativas com o tratamento
+  - Disponibilidade para sessões
+  - Suporte familiar
+
+**Metadados:**
+- `metadata` - JSONB para dados extras
+- `notes` - TEXT para observações do profissional
+
+**Métodos Necessários:**
+- `calculateCompletionPercentage()` - Calcular % preenchido
+- `isCompleted()` - Verificar se está completa
+- `markAsCompleted()` - Finalizar anamnese
+- `getSummary()` - Resumo para exibição
+- `validateSection(sectionName)` - Validar seção específica
+
+#### **`src/routes/anamnesis.js`**
+**Endpoints Necessários:**
+1. `GET /api/patients/:patientId/anamnesis` - Obter anamnese do paciente
+2. `POST /api/patients/:patientId/anamnesis` - Criar nova anamnese
+3. `PUT /api/patients/:patientId/anamnesis` - Atualizar anamnese completa
+4. `PUT /api/patients/:patientId/anamnesis/section/:section` - Atualizar seção específica
+5. `POST /api/patients/:patientId/anamnesis/complete` - Marcar como completa
+6. `GET /api/professional/anamnesis/pending` - Anamneses pendentes
+
+#### **`src/controllers/anamnesisController.js`**
+
+**Funções Obrigatórias:**
+
+**1. `getPatientAnamnesis(req, res)`**
+- **Objetivo:** Obter anamnese de um paciente específico
+- **Segurança:** Verificar se paciente pertence ao profissional
+- **Processamento:**
+  - Buscar anamnese existente
+  - Se não existe, retornar estrutura vazia
+  - Calcular percentual de preenchimento
+- **Retorno:** Dados da anamnese organizados por seções
+
+**2. `createAnamnesis(req, res)`**
+- **Objetivo:** Criar nova anamnese para paciente
+- **Validações:**
+  - Verificar se paciente existe
+  - Verificar se não existe anamnese ativa
+  - Validar propriedade do paciente
+- **Processamento:**
+  - Criar registro inicial
+  - Status 'draft'
+  - Associar ao profissional e paciente
+- **Retorno:** Anamnese criada
+
+**3. `updateAnamnesisSection(req, res)`**
+- **Objetivo:** Atualizar seção específica da anamnese
+- **Parâmetros:** section (personal_history, family_history, etc.)
+- **Validações:**
+  - Validar se seção existe
+  - Validar dados da seção
+  - Verificar propriedade
+- **Processamento:**
+  - Atualizar seção específica
+  - Recalcular percentual de completude
+  - Atualizar last_modified_section
+  - Auto-save (salvar automaticamente)
+- **Retorno:** Seção atualizada + novo percentual
+
+**4. `completeAnamnesis(req, res)`**
+- **Objetivo:** Marcar anamnese como finalizada
+- **Validações:**
+  - Verificar se todas as seções obrigatórias estão preenchidas
+  - Pelo menos 80% de completude
+- **Processamento:**
+  - Alterar status para 'completed'
+  - Definir completed_at
+  - Calcular completude final
+- **Retorno:** Confirmação de finalização
+
+### **Funcionalidades Específicas:**
+
+#### **Interface de Anamnese**
+**Características:**
+- Formulário multi-step com progresso visual
+- Auto-save a cada 30 segundos
+- Validação em tempo real
+- Seções colapsáveis
+- Indicador de campos obrigatórios
+- Possibilidade de salvar rascunho
+
+#### **Validações Específicas**
+**Regras de Negócio:**
+- Seções obrigatórias: current_complaint, personal_history, medical_history
+- Seções opcionais: family_history, psychological_history
+- Campos obrigatórios dentro de cada seção
+- Validações de formato (datas, números, etc.)
+
+---
+
+## 📊 MÓDULO CONSULTAS E SESSÕES
+
+### **Objetivo**
 Sistema completo para registro de consultas/sessões e acompanhamento da evolução dos pacientes.
-Arquivos a Criar:
-src/models/Session.js
-Responsabilidade: Modelo para registro de consultas/sessões
-Campos Necessários:
-Identificação:
 
-id - UUID único
-patient_id - FK para paciente (obrigatório)
-user_id - FK para profissional
-session_number - INTEGER (número sequencial por paciente)
+### **Arquivos a Criar:**
 
-Dados da Sessão:
+#### **`src/models/Session.js`**
+**Responsabilidade:** Modelo para registro de consultas/sessões
 
-session_date - DATETIME (data e hora da sessão)
-session_type - ENUM: 'first_consultation' | 'follow_up' | 'emergency' | 'discharge'
-duration_minutes - INTEGER (duração em minutos)
-session_status - ENUM: 'scheduled' | 'completed' | 'cancelled' | 'no_show'
+**Campos Necessários:**
 
-Conteúdo:
+**Identificação:**
+- `id` - UUID único
+- `patient_id` - FK para paciente (obrigatório)
+- `user_id` - FK para profissional
+- `session_number` - INTEGER (número sequencial por paciente)
 
-session_notes - TEXT (evolução da sessão)
-patient_mood - STRING (humor do paciente)
-main_topics - JSONB (array com tópicos abordados)
-interventions_used - JSONB (técnicas utilizadas)
-homework_assigned - TEXT (tarefas para casa)
+**Dados da Sessão:**
+- `session_date` - DATETIME (data e hora da sessão)
+- `session_type` - ENUM: 'first_consultation' | 'follow_up' | 'emergency' | 'discharge'
+- `duration_minutes` - INTEGER (duração em minutos)
+- `session_status` - ENUM: 'scheduled' | 'completed' | 'cancelled' | 'no_show'
 
-Avaliação:
+**Conteúdo:**
+- `session_notes` - TEXT (evolução da sessão)
+- `patient_mood` - STRING (humor do paciente)
+- `main_topics` - JSONB (array com tópicos abordados)
+- `interventions_used` - JSONB (técnicas utilizadas)
+- `homework_assigned` - TEXT (tarefas para casa)
 
-progress_assessment - ENUM: 'improved' | 'stable' | 'worsened' | 'no_change'
-patient_engagement - INTEGER (1-10, engajamento do paciente)
-treatment_adherence - ENUM: 'full' | 'partial' | 'minimal' | 'none'
+**Avaliação:**
+- `progress_assessment` - ENUM: 'improved' | 'stable' | 'worsened' | 'no_change'
+- `patient_engagement` - INTEGER (1-10, engajamento do paciente)
+- `treatment_adherence` - ENUM: 'full' | 'partial' | 'minimal' | 'none'
 
-Planejamento:
+**Planejamento:**
+- `next_session_date` - DATETIME (próxima sessão agendada)
+- `next_session_goals` - TEXT (objetivos para próxima sessão)
+- `treatment_plan_updates` - TEXT (ajustes no plano de tratamento)
 
-next_session_date - DATETIME (próxima sessão agendada)
-next_session_goals - TEXT (objetivos para próxima sessão)
-treatment_plan_updates - TEXT (ajustes no plano de tratamento)
+**Metadados:**
+- `metadata` - JSONB
+- `is_billable` - BOOLEAN (se deve ser faturada)
+- `payment_status` - ENUM: 'pending' | 'paid' | 'cancelled'
 
-Metadados:
+**Métodos Necessários:**
+- `getDuration()` - Calcular duração formatada
+- `isCompleted()` - Verificar se sessão foi realizada
+- `getFormattedNotes()` - Notas formatadas para exibição
+- `calculateProgress()` - Progresso desde última sessão
+- `getNextSessionInfo()` - Informações da próxima sessão
 
-metadata - JSONB
-is_billable - BOOLEAN (se deve ser faturada)
-payment_status - ENUM: 'pending' | 'paid' | 'cancelled'
+**Métodos Estáticos:**
+- `getPatientHistory(patientId)` - Histórico completo do paciente
+- `getSessionStats(userId)` - Estatísticas do profissional
+- `findByDateRange(userId, startDate, endDate)` - Sessões por período
 
-Métodos Necessários:
+#### **`src/routes/sessions.js`**
+**Endpoints Necessários:**
+1. `GET /api/patients/:patientId/sessions` - Histórico de sessões
+2. `POST /api/patients/:patientId/sessions` - Registrar nova sessão
+3. `GET /api/sessions/:id` - Obter sessão específica
+4. `PUT /api/sessions/:id` - Atualizar sessão
+5. `DELETE /api/sessions/:id` - Cancelar sessão
+6. `GET /api/professional/sessions/today` - Minhas sessões de hoje
+7. `GET /api/professional/sessions/week` - Sessões da semana
+8. `POST /api/sessions/:id/reschedule` - Reagendar sessão
 
-getDuration() - Calcular duração formatada
-isCompleted() - Verificar se sessão foi realizada
-getFormattedNotes() - Notas formatadas para exibição
-calculateProgress() - Progresso desde última sessão
-getNextSessionInfo() - Informações da próxima sessão
+#### **`src/controllers/sessionController.js`**
 
-Métodos Estáticos:
+**Funções Obrigatórias:**
 
-getPatientHistory(patientId) - Histórico completo do paciente
-getSessionStats(userId) - Estatísticas do profissional
-findByDateRange(userId, startDate, endDate) - Sessões por período
+**1. `getPatientSessions(req, res)`**
+- **Objetivo:** Obter histórico completo de sessões do paciente
+- **Parâmetros Query:**
+  - `page`, `limit` - Paginação
+  - `dateFrom`, `dateTo` - Filtro por período
+  - `sessionType` - Filtro por tipo
+- **Processamento:**
+  - Verificar propriedade do paciente
+  - Buscar sessões ordenadas por data (mais recente primeiro)
+  - Incluir estatísticas (total sessões, frequência média)
+- **Retorno:** Lista de sessões + estatísticas
 
-src/routes/sessions.js
-Endpoints Necessários:
+**2. `createSession(req, res)`**
+- **Objetivo:** Registrar nova sessão/consulta
+- **Validações:**
+  - Verificar se paciente existe e pertence ao profissional
+  - Validar data da sessão (não no futuro distante)
+  - Verificar se não há conflito de horário
+- **Processamento:**
+  - Calcular session_number sequencial
+  - Criar registro da sessão
+  - Atualizar last_appointment do paciente
+  - Log da operação
+- **Retorno:** Sessão criada
 
-GET /api/patients/:patientId/sessions - Histórico de sessões
-POST /api/patients/:patientId/sessions - Registrar nova sessão
-GET /api/sessions/:id - Obter sessão específica
-PUT /api/sessions/:id - Atualizar sessão
-DELETE /api/sessions/:id - Cancelar sessão
-GET /api/professional/sessions/today - Minhas sessões de hoje
-GET /api/professional/sessions/week - Sessões da semana
-POST /api/sessions/:id/reschedule - Reagendar sessão
+**3. `updateSession(req, res)`**
+- **Objetivo:** Atualizar dados de uma sessão
+- **Validações:**
+  - Verificar propriedade da sessão
+  - Não permitir alteração de sessions antigas (> 7 dias)
+- **Campos Atualizáveis:** notes, assessment, interventions, homework
+- **Processamento:** Validar → Atualizar → Log
+- **Retorno:** Sessão atualizada
 
-src/controllers/sessionController.js
-Funções Obrigatórias:
-1. getPatientSessions(req, res)
+**4. `getTodaySessions(req, res)`**
+- **Objetivo:** Obter sessões agendadas para hoje
+- **Processamento:**
+  - Buscar sessões do profissional para data atual
+  - Incluir dados básicos dos pacientes
+  - Ordenar por horário
+- **Retorno:** Lista de sessões do dia
 
-Objetivo: Obter histórico completo de sessões do paciente
-Parâmetros Query:
+### **Funcionalidades Específicas:**
 
-page, limit - Paginação
-dateFrom, dateTo - Filtro por período
-sessionType - Filtro por tipo
+#### **Editor de Sessões**
+**Características:**
+- Editor de texto rico para notas
+- Templates pré-definidos
+- Auto-save durante digitação
+- Validação de campos obrigatórios
+- Cronômetro de sessão
 
+#### **Histórico do Paciente**
+**Funcionalidades:**
+- Timeline das sessões
+- Gráfico de evolução
+- Filtros por período e tipo
+- Exportação em PDF
+- Comparação entre sessões
 
-Processamento:
+---
 
-Verificar propriedade do paciente
-Buscar sessões ordenadas por data (mais recente primeiro)
-Incluir estatísticas (total sessões, frequência média)
+## 🔄 MÓDULO TRANSFERÊNCIAS
 
-
-Retorno: Lista de sessões + estatísticas
-
-2. createSession(req, res)
-
-Objetivo: Registrar nova sessão/consulta
-Validações:
-
-Verificar se paciente existe e pertence ao profissional
-Validar data da sessão (não no futuro distante)
-Verificar se não há conflito de horário
-
-
-Processamento:
-
-Calcular session_number sequencial
-Criar registro da sessão
-Atualizar last_appointment do paciente
-Log da operação
-
-
-Retorno: Sessão criada
-
-3. updateSession(req, res)
-
-Objetivo: Atualizar dados de uma sessão
-Validações:
-
-Verificar propriedade da sessão
-Não permitir alteração de sessions antigas (> 7 dias)
-
-
-Campos Atualizáveis: notes, assessment, interventions, homework
-Processamento: Validar → Atualizar → Log
-Retorno: Sessão atualizada
-
-4. getTodaySessions(req, res)
-
-Objetivo: Obter sessões agendadas para hoje
-Processamento:
-
-Buscar sessões do profissional para data atual
-Incluir dados básicos dos pacientes
-Ordenar por horário
-
-
-Retorno: Lista de sessões do dia
-
-Funcionalidades Específicas:
-Editor de Sessões
-Características:
-
-Editor de texto rico para notas
-Templates pré-definidos
-Auto-save durante digitação
-Validação de campos obrigatórios
-Cronômetro de sessão
-
-Histórico do Paciente
-Funcionalidades:
-
-Timeline das sessões
-Gráfico de evolução
-Filtros por período e tipo
-Exportação em PDF
-Comparação entre sessões
-
-
-🔄 MÓDULO TRANSFERÊNCIAS
-Objetivo
+### **Objetivo**
 Sistema para transferência de pacientes entre profissionais com workflow de aprovação.
-Arquivos a Criar:
-src/models/Transfer.js
-Responsabilidade: Modelo para solicitações de transferência
-Campos Necessários:
 
-id - UUID único
-patient_id - FK para paciente
-from_user_id - FK profissional atual
-to_user_id - FK profissional destino
-requested_at - DATETIME da solicitação
-processed_at - DATETIME do processamento
-processed_by - FK admin que processou
-status - ENUM: 'pending' | 'approved' | 'rejected' | 'completed'
-reason - TEXT (motivo da transferência)
-rejection_reason - TEXT (motivo da rejeição)
-notes - TEXT (observações adicionais)
-metadata - JSONB
+### **Arquivos a Criar:**
 
-Métodos Necessários:
+#### **`src/models/Transfer.js`**
+**Responsabilidade:** Modelo para solicitações de transferência
 
-approve(adminId, notes) - Aprovar transferência
-reject(adminId, reason) - Rejeitar transferência
-complete() - Finalizar transferência
-isPending() - Verificar se está pendente
+**Campos Necessários:**
+- `id` - UUID único
+- `patient_id` - FK para paciente
+- `from_user_id` - FK profissional atual
+- `to_user_id` - FK profissional destino
+- `requested_at` - DATETIME da solicitação
+- `processed_at` - DATETIME do processamento
+- `processed_by` - FK admin que processou
+- `status` - ENUM: 'pending' | 'approved' | 'rejected' | 'completed'
+- `reason` - TEXT (motivo da transferência)
+- `rejection_reason` - TEXT (motivo da rejeição)
+- `notes` - TEXT (observações adicionais)
+- `metadata` - JSONB
 
-src/routes/transfers.js
-Endpoints Necessários:
+**Métodos Necessários:**
+- `approve(adminId, notes)` - Aprovar transferência
+- `reject(adminId, reason)` - Rejeitar transferência
+- `complete()` - Finalizar transferência
+- `isPending()` - Verificar se está pendente
 
-POST /api/transfers - Solicitar transferência (profissional)
-GET /api/transfers/my-requests - Minhas solicitações (profissional)
-GET /api/admin/transfers/pending - Transferências pendentes (admin)
-PUT /api/admin/transfers/:id/approve - Aprovar (admin)
-PUT /api/admin/transfers/:id/reject - Rejeitar (admin)
-GET /api/admin/transfers/history - Histórico (admin)
+#### **`src/routes/transfers.js`**
+**Endpoints Necessários:**
+1. `POST /api/transfers` - Solicitar transferência (profissional)
+2. `GET /api/transfers/my-requests` - Minhas solicitações (profissional)
+3. `GET /api/admin/transfers/pending` - Transferências pendentes (admin)
+4. `PUT /api/admin/transfers/:id/approve` - Aprovar (admin)
+5. `PUT /api/admin/transfers/:id/reject` - Rejeitar (admin)
+6. `GET /api/admin/transfers/history` - Histórico (admin)
 
-src/controllers/transferController.js
-Funções Obrigatórias:
-1. requestTransfer(req, res)
+#### **`src/controllers/transferController.js`**
 
-Objetivo: Criar solicitação de transferência
-Dados Necessários: patient_id, to_user_id, reason
-Validações:
+**Funções Obrigatórias:**
 
-Paciente pertence ao profissional solicitante
-Profissional destino existe e está ativo
-Não existe transferência pendente para este paciente
+**1. `requestTransfer(req, res)`**
+- **Objetivo:** Criar solicitação de transferência
+- **Dados Necessários:** patient_id, to_user_id, reason
+- **Validações:**
+  - Paciente pertence ao profissional solicitante
+  - Profissional destino existe e está ativo
+  - Não existe transferência pendente para este paciente
+- **Processamento:** Criar registro → Notificar admins
+- **Retorno:** Confirmação da solicitação
 
+**2. `processTransfer(req, res)` (Admin)**
+- **Objetivo:** Aprovar ou rejeitar transferência
+- **Ações:** approve | reject
+- **Processamento para Aprovação:**
+  - Alterar user_id do paciente
+  - Marcar transferência como approved
+  - Notificar ambos profissionais
+- **Processamento para Rejeição:**
+  - Marcar como rejected
+  - Salvar motivo da rejeição
+  - Notificar profissional solicitante
 
-Processamento: Criar registro → Notificar admins
-Retorno: Confirmação da solicitação
+### **Funcionalidades Específicas:**
 
-2. processTransfer(req, res) (Admin)
+#### **Workflow de Transferência**
+1. Profissional solicita transferência
+2. Sistema valida dados
+3. Admin recebe notificação
+4. Admin analisa e decide
+5. Sistema executa transferência se aprovada
+6. Notificações são enviadas
+7. Histórico é mantido
 
-Objetivo: Aprovar ou rejeitar transferência
-Ações: approve | reject
-Processamento para Aprovação:
+---
 
-Alterar user_id do paciente
-Marcar transferência como approved
-Notificar ambos profissionais
+## 📈 MÓDULO RELATÓRIOS E ESTATÍSTICAS
 
-
-Processamento para Rejeição:
-
-Marcar como rejected
-Salvar motivo da rejeição
-Notificar profissional solicitante
-
-
-
-Funcionalidades Específicas:
-Workflow de Transferência
-
-Profissional solicita transferência
-Sistema valida dados
-Admin recebe notificação
-Admin analisa e decide
-Sistema executa transferência se aprovada
-Notificações são enviadas
-Histórico é mantido
-
-
-📈 MÓDULO RELATÓRIOS E ESTATÍSTICAS
-Objetivo
+### **Objetivo**
 Sistema avançado de relatórios gerenciais e estatísticas para administradores e profissionais.
-Arquivos a Criar:
-src/services/reportService.js
-Responsabilidade: Lógica complexa para geração de relatórios
-Funções Necessárias:
-1. generateOverviewReport(userId, dateRange)
 
-Objetivo: Relatório geral de atividades
-Dados: Número de sessões, pacientes atendidos, evolução mensal
-Filtros: Por profissional, período, status
+### **Arquivos a Criar:**
 
-2. generatePatientEvolutionReport(patientId)
+#### **`src/services/reportService.js`**
+**Responsabilidade:** Lógica complexa para geração de relatórios
 
-Objetivo: Relatório de evolução de um paciente
-Dados: Timeline de sessões, progressos, observações
-Formato: Dados estruturados para gráficos
+**Funções Necessárias:**
 
-3. generateClinicStatsReport(dateRange) (Admin)
+**1. `generateOverviewReport(userId, dateRange)`**
+- **Objetivo:** Relatório geral de atividades
+- **Dados:** Número de sessões, pacientes atendidos, evolução mensal
+- **Filtros:** Por profissional, período, status
 
-Objetivo: Estatísticas gerais da clínica
-Dados: Produtividade, pacientes por profissional, tendências
-Formato: Dashboard executivo
+**2. `generatePatientEvolutionReport(patientId)`**
+- **Objetivo:** Relatório de evolução de um paciente
+- **Dados:** Timeline de sessões, progressos, observações
+- **Formato:** Dados estruturados para gráficos
 
-src/utils/chartHelpers.js
-Responsabilidade: Funções auxiliares para geração de dados para gráficos
-Funções:
+**3. `generateClinicStatsReport(dateRange)`** (Admin)
+- **Objetivo:** Estatísticas gerais da clínica
+- **Dados:** Produtividade, pacientes por profissional, tendências
+- **Formato:** Dashboard executivo
 
-formatDataForLineChart(data) - Dados para gráfico de linha
-formatDataForBarChart(data) - Dados para gráfico de barras
-calculateTrends(data) - Calcular tendências
-generateColorPalette(count) - Paleta de cores automática
+#### **`src/utils/chartHelpers.js`**
+**Responsabilidade:** Funções auxiliares para geração de dados para gráficos
 
+**Funções:**
+- `formatDataForLineChart(data)` - Dados para gráfico de linha
+- `formatDataForBarChart(data)` - Dados para gráfico de barras
+- `calculateTrends(data)` - Calcular tendências
+- `generateColorPalette(count)` - Paleta de cores automática
 
-6. NOMENCLATURA E PADRÕES
-📝 CONVENÇÕES DE NOMENCLATURA
-Arquivos e Diretórios
+---
 
-Arquivos: camelCase - adminController.js, userValidations.js
-Modelos: PascalCase - User.js, Patient.js, Session.js
-Rotas: lowercase - auth.js, admin.js, professional.js
-Diretórios: lowercase - models/, controllers/, middleware/
+# 6. NOMENCLATURA E PADRÕES
 
-Variáveis e Funções
+## 📝 CONVENÇÕES DE NOMENCLATURA
 
-Variáveis: camelCase - const userId = req.userId
-Funções: camelCase - getUserById(), createPatient()
-Constantes: UPPER_SNAKE_CASE - const MAX_LOGIN_ATTEMPTS = 5
-Parâmetros Query: snake_case - ?page=1&per_page=20&sort_by=name
+### **Arquivos e Diretórios**
+- **Arquivos:** camelCase - `adminController.js`, `userValidations.js`
+- **Modelos:** PascalCase - `User.js`, `Patient.js`, `Session.js`
+- **Rotas:** lowercase - `auth.js`, `admin.js`, `professional.js`
+- **Diretórios:** lowercase - `models/`, `controllers/`, `middleware/`
 
-Banco de Dados
+### **Variáveis e Funções**
+- **Variáveis:** camelCase - `const userId = req.userId`
+- **Funções:** camelCase - `getUserById()`, `createPatient()`
+- **Constantes:** UPPER_SNAKE_CASE - `const MAX_LOGIN_ATTEMPTS = 5`
+- **Parâmetros Query:** snake_case - `?page=1&per_page=20&sort_by=name`
 
-Tabelas: snake_case plural - users, patients, sessions
-Campos: snake_case - full_name, created_at, user_id
-Índices: formato idx_table_column - idx_users_email
-Foreign Keys: formato fk_table_column - fk_patients_user_id
+### **Banco de Dados**
+- **Tabelas:** snake_case plural - `users`, `patients`, `sessions`
+- **Campos:** snake_case - `full_name`, `created_at`, `user_id`
+- **Índices:** formato `idx_table_column` - `idx_users_email`
+- **Foreign Keys:** formato `fk_table_column` - `fk_patients_user_id`
 
-APIs e Endpoints
+### **APIs e Endpoints**
+- **Recursos:** plural - `/api/users`, `/api/patients`
+- **Ações:** verbos HTTP - `GET /users`, `POST /users`, `PUT /users/:id`
+- **Parâmetros:** kebab-case - `/api/admin/professionals/:id/reset-password`
 
-Recursos: plural - /api/users, /api/patients
-Ações: verbos HTTP - GET /users, POST /users, PUT /users/:id
-Parâmetros: kebab-case - /api/admin/professionals/:id/reset-password
+## 🎯 PADRÕES DE CÓDIGO
 
-🎯 PADRÕES DE CÓDIGO
-Estrutura de Controllers
+### **Estrutura de Controllers**
+```
 Padrão para todas as funções de controller:
 
 1. VALIDAÇÃO
@@ -1296,8 +1150,11 @@ Padrão para todas as funções de controller:
    - Usar try/catch com asyncHandler
    - Lançar erros específicos (AppError)
    - Logs apropriados
-Padrão de Resposta API
-javascript// SUCESSO
+```
+
+### **Padrão de Resposta API**
+```javascript
+// SUCESSO
 {
   "success": true,
   "message": "Descrição da operação realizada",
@@ -1320,7 +1177,10 @@ javascript// SUCESSO
   "details": ["Lista de detalhes específicos"],
   "field": "campo_com_erro"
 }
-Estrutura de Validação Joi
+```
+
+### **Estrutura de Validação Joi**
+```
 Padrão para todos os schemas:
 
 1. CAMPOS OBRIGATÓRIOS primeiro
@@ -1328,7 +1188,10 @@ Padrão para todos os schemas:
 3. MENSAGENS PERSONALIZADAS em português
 4. VALIDAÇÕES ESPECÍFICAS (formato, tamanho, etc.)
 5. SCHEMAS REUTILIZÁVEIS para campos comuns
-Tratamento de Erros
+```
+
+### **Tratamento de Erros**
+```
 Hierarquia de erros:
 
 1. ERROS DE VALIDAÇÃO (400) - Dados inválidos
@@ -1337,94 +1200,95 @@ Hierarquia de erros:
 4. ERROS DE RECURSO (404) - Não encontrado
 5. ERROS DE CONFLITO (409) - Duplicação
 6. ERROS INTERNOS (500) - Problemas do servidor
+```
 
-7. VALIDAÇÕES E SEGURANÇA
-🔒 CHECKLIST DE SEGURANÇA
-Autenticação e Autorização
+---
 
- JWT implementado com chaves seguras
- Refresh tokens para renovação
- Verificação de propriedade de recursos
- Middleware de autorização por roles
- Rate limiting específico por endpoint
- Blacklist de tokens (logout)
- Two-factor authentication (2FA) - Futuro
+# 7. VALIDAÇÕES E SEGURANÇA
 
-Validação de Dados
+## 🔒 CHECKLIST DE SEGURANÇA
 
- Validação com Joi em todas as entradas
- Sanitização de dados
- Validação de tipos e formatos
- Validação de arquivo uploads - Futuro
- Validação de tamanho de requests
- Escape de HTML/SQL injection
+### **Autenticação e Autorização**
+- [x] JWT implementado com chaves seguras
+- [x] Refresh tokens para renovação
+- [x] Verificação de propriedade de recursos
+- [x] Middleware de autorização por roles
+- [ ] Rate limiting específico por endpoint
+- [ ] Blacklist de tokens (logout)
+- [ ] Two-factor authentication (2FA) - Futuro
 
-Banco de Dados
+### **Validação de Dados**
+- [x] Validação com Joi em todas as entradas
+- [x] Sanitização de dados
+- [x] Validação de tipos e formatos
+- [ ] Validação de arquivo uploads - Futuro
+- [ ] Validação de tamanho de requests
+- [ ] Escape de HTML/SQL injection
 
- ORM (Sequelize) previne SQL injection
- Índices para performance
- Constraints de integridade
- Criptografia de dados sensíveis
- Backup automatizado
- Auditoria de operações
+### **Banco de Dados**
+- [x] ORM (Sequelize) previne SQL injection
+- [x] Índices para performance
+- [x] Constraints de integridade
+- [ ] Criptografia de dados sensíveis
+- [ ] Backup automatizado
+- [ ] Auditoria de operações
 
-Headers e Configurações
+### **Headers e Configurações**
+- [x] Helmet para headers seguros
+- [x] CORS configurado adequadamente
+- [x] Rate limiting global
+- [ ] Content Security Policy (CSP)
+- [ ] HTTPS obrigatório em produção
+- [ ] Logs de segurança
 
- Helmet para headers seguros
- CORS configurado adequadamente
- Rate limiting global
- Content Security Policy (CSP)
- HTTPS obrigatório em produção
- Logs de segurança
+## ⚠️ CUIDADOS ESPECÍFICOS
 
-⚠️ CUIDADOS ESPECÍFICOS
-Dados Sensíveis
+### **Dados Sensíveis**
+- **NUNCA retornar senhas** em APIs
+- **Hashear senhas** antes de armazenar
+- **Criptografar tokens** de recuperação
+- **Logs não devem** conter dados pessoais
+- **Validar inputs** para prevenir XSS
 
-NUNCA retornar senhas em APIs
-Hashear senhas antes de armazenar
-Criptografar tokens de recuperação
-Logs não devem conter dados pessoais
-Validar inputs para prevenir XSS
+### **Propriedade de Recursos**
+- **Sempre verificar** se recurso pertence ao usuário
+- **Admins podem** acessar todos os recursos
+- **Profissionais apenas** seus próprios recursos
+- **Middleware específico** para verificação de ownership
 
-Propriedade de Recursos
+### **Rate Limiting**
+- **Global:** 100 req/15min por IP
+- **Login:** 5 tentativas/15min por IP
+- **Reset senha:** 3 tentativas/hora por email
+- **APIs críticas:** Limites específicos
 
-Sempre verificar se recurso pertence ao usuário
-Admins podem acessar todos os recursos
-Profissionais apenas seus próprios recursos
-Middleware específico para verificação de ownership
+---
 
-Rate Limiting
+# 8. TESTING E QUALIDADE
 
-Global: 100 req/15min por IP
-Login: 5 tentativas/15min por IP
-Reset senha: 3 tentativas/hora por email
-APIs críticas: Limites específicos
+## 🧪 ESTRATÉGIA DE TESTES
 
+### **Tipos de Teste**
 
-8. TESTING E QUALIDADE
-🧪 ESTRATÉGIA DE TESTES
-Tipos de Teste
-1. Testes Unitários (70%)
+#### **1. Testes Unitários (70%)**
+- **Objetivo:** Testar funções isoladamente
+- **Foco:** Models, Services, Utils
+- **Ferramentas:** Jest
+- **Coverage:** Mínimo 80% por arquivo
 
-Objetivo: Testar funções isoladamente
-Foco: Models, Services, Utils
-Ferramentas: Jest
-Coverage: Mínimo 80% por arquivo
+#### **2. Testes de Integração (20%)**
+- **Objetivo:** Testar endpoints da API
+- **Foco:** Routes + Controllers + Database
+- **Ferramentas:** Jest + Supertest
+- **Coverage:** Todos os endpoints principais
 
-2. Testes de Integração (20%)
+#### **3. Testes End-to-End (10%)**
+- **Objetivo:** Testar fluxos completos
+- **Foco:** Workflows críticos
+- **Cenários:** Login → Criar paciente → Anamnese → Sessão
 
-Objetivo: Testar endpoints da API
-Foco: Routes + Controllers + Database
-Ferramentas: Jest + Supertest
-Coverage: Todos os endpoints principais
-
-3. Testes End-to-End (10%)
-
-Objetivo: Testar fluxos completos
-Foco: Workflows críticos
-Cenários: Login → Criar paciente → Anamnese → Sessão
-
-Estrutura de Testes
+### **Estrutura de Testes**
+```
 tests/
 ├── unit/
 │   ├── models/
@@ -1442,8 +1306,12 @@ tests/
 └── fixtures/
     ├── users.js
     └── patients.js
-Padrões de Teste
-Teste de Endpoint
+```
+
+### **Padrões de Teste**
+
+#### **Teste de Endpoint**
+```
 Estrutura padrão:
 
 describe('Endpoint Name', () => {
@@ -1475,89 +1343,86 @@ describe('Endpoint Name', () => {
     });
   });
 });
-Dados de Teste (Fixtures)
+```
 
-Usuários: Admin, profissional ativo, profissional inativo
-Pacientes: Com todos os campos, mínimo necessário
-Tokens: Válidos, expirados, inválidos
-Senhas: Válidas, inválidas, temporárias
+### **Dados de Teste (Fixtures)**
+- **Usuários:** Admin, profissional ativo, profissional inativo
+- **Pacientes:** Com todos os campos, mínimo necessário
+- **Tokens:** Válidos, expirados, inválidos
+- **Senhas:** Válidas, inválidas, temporárias
 
-Mocks Necessários
+### **Mocks Necessários**
+- **Email Service:** Para não enviar emails reais
+- **Database:** Usar banco de teste
+- **External APIs:** Mock de APIs externas
+- **Date/Time:** Para testes consistentes
 
-Email Service: Para não enviar emails reais
-Database: Usar banco de teste
-External APIs: Mock de APIs externas
-Date/Time: Para testes consistentes
+## 📊 QUALITY ASSURANCE
 
-📊 QUALITY ASSURANCE
-Code Review Checklist
+### **Code Review Checklist**
+- [ ] Código segue padrões definidos
+- [ ] Validações adequadas implementadas
+- [ ] Tratamento de erros correto
+- [ ] Logs apropriados
+- [ ] Testes cobrem cenários principais
+- [ ] Documentação atualizada
+- [ ] Performance adequada
+- [ ] Segurança verificada
 
- Código segue padrões definidos
- Validações adequadas implementadas
- Tratamento de erros correto
- Logs apropriados
- Testes cobrem cenários principais
- Documentação atualizada
- Performance adequada
- Segurança verificada
+### **Métricas de Qualidade**
+- **Code Coverage:** Mínimo 80%
+- **ESLint:** Zero warnings/errors
+- **Performance:** Resposta < 200ms (endpoints básicos)
+- **Memory:** Sem memory leaks
+- **Security:** Vulnerabilidades conhecidas
 
-Métricas de Qualidade
+---
 
-Code Coverage: Mínimo 80%
-ESLint: Zero warnings/errors
-Performance: Resposta < 200ms (endpoints básicos)
-Memory: Sem memory leaks
-Security: Vulnerabilidades conhecidas
+# 9. CRONOGRAMA DETALHADO
 
+## 📅 PLANO DE EXECUÇÃO
 
-9. CRONOGRAMA DETALHADO
-📅 PLANO DE EXECUÇÃO
-SEMANA 1: MÓDULO ADMINISTRAÇÃO
-Dias 1-2: Fundação
+### **SEMANA 1: MÓDULO ADMINISTRAÇÃO**
 
-Criar estrutura de controllers/
-Implementar src/routes/admin.js
-Criar src/controllers/adminController.js
-Implementar validações básicas
+#### **Dias 1-2: Fundação**
+- Criar estrutura de controllers/
+- Implementar `src/routes/admin.js`
+- Criar `src/controllers/adminController.js`
+- Implementar validações básicas
 
-Dias 3-4: CRUD Profissionais
+#### **Dias 3-4: CRUD Profissionais**
+- Função `listProfessionals` com paginação
+- Função `createProfessional` com validações
+- Função `updateProfessional`
+- Sistema de ativação/desativação
 
-Função listProfessionals com paginação
-Função createProfessional com validações
-Função updateProfessional
-Sistema de ativação/desativação
+#### **Dia 5: Dashboard e Testes**
+- Função `getDashboard` com estatísticas
+- Testes básicos do módulo admin
+- Integração com frontend
 
-Dia 5: Dashboard e Testes
+### **SEMANA 2: MÓDULO PROFISSIONAL**
 
-Função getDashboard com estatísticas
-Testes básicos do módulo admin
-Integração com frontend
+#### **Dias 1-2: Base Profissional**
+- Criar `src/routes/professional.js`
+- Implementar `src/controllers/professionalController.js`
+- Dashboard do profissional
 
-SEMANA 2: MÓDULO PROFISSIONAL
-Dias 1-2: Base Profissional
+#### **Dias 3-4: Gestão Pacientes**
+- CRUD completo de pacientes
+- Sistema de busca e filtros
+- Validações específicas
 
-Criar src/routes/professional.js
-Implementar src/controllers/professionalController.js
-Dashboard do profissional
+#### **Dia 5: Funcionalidades Extras**
+- Agenda básica
+- Solicitação de transferências
+- Testes do módulo
 
-Dias 3-4: Gestão Pacientes
-
-CRUD completo de pacientes
-Sistema de busca e filtros
-Validações específicas
-
-Dia 5: Funcionalidades Extras
-
-Agenda básica
-Solicitação de transferências
-Testes do módulo
-
-SEMANA 3-4: ANAMNESE DIGITAL
-
-Modelo Anamnesis completo
-Interface de formulário
-Sistema de auto-save
-Validações por seção
+### **SEMANA 3-4: ANAMNESE DIGITAL**
+- Modelo Anamnesis completo
+- Interface de formulário
+- Sistema de auto-save
+- Validações por seção
 
 ---
 
