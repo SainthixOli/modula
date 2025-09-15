@@ -773,3 +773,48 @@ input:checked + .slider:before {
 #theme-toggle:checked ~ * a {
     transition: background-color 0.3s, color 0.3s, border-color 0.3s;
 }
+
+/* SUBSTITUA O BLOCO ANTIGO POR ESTE */
+
+.upcoming-list {
+    list-style: none;
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem; /* AFASTA um pouco mais os agendamentos na vertical */
+}
+
+.upcoming-item {
+    display: flex;
+    align-items: center; /* Alinha o ícone com o bloco de texto */
+    gap: 1rem;
+}
+
+.item-icon {
+    flex-shrink: 0;
+    width: 40px; /* Ícone um pouco menor para ficar mais enxuto */
+    height: 40px;
+    border-radius: 50%; /* Deixa o ícone redondo, mais moderno */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem; /* Tamanho do ícone interno */
+    color: #fff;
+}
+
+/* Cores para diferenciar os tipos de evento */
+.item-icon.green { background-color: #38A169; }
+.item-icon.blue { background-color: #3182CE; }
+.item-icon.orange { background-color: #DD6B20; }
+
+.item-info h4 {
+    font-weight: 600;
+    font-size: 0.95rem; /* Ajuste fino no tamanho da fonte */
+    color: var(--main-text-color);
+    margin-bottom: 3px; /* Espaço entre o título e a data */
+}
+
+.item-info p {
+    font-size: 0.8rem; /* Data um pouco menor para dar hierarquia */
+    color: var(--secondary-text-color);
+}

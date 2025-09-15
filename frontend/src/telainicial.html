@@ -19,8 +19,8 @@
         </div>
         <nav>
             <ul>
-                <li><a href="#" class="active"><i class="fas fa-home"></i> Home</a></li>
-                <li><a href="#"><i class="fas fa-calendar-alt"></i> Calendário</a></li>
+                <li><a href="./TelaInicial.html" class="active"><i class="fas fa-home"></i> Home</a></li>
+                <li><a href="./calendario.html"><i class="fas fa-calendar-alt"></i> Calendário</a></li>
                 <li><a href="#"><i class="fas fa-users"></i> Pacientes</a></li>
                 <li><a href="#" class="nav-link" data-target="modal-relatorios"><i class="fas fa-chart-line"></i> Relatórios</a></li>
                 <li><a href="#" class="nav-link" data-target="modal-ajustes"><i class="fas fa-cog"></i> Ajustes</a></li>
@@ -39,7 +39,8 @@
                     <div class="user-profile">
                         <div class="icons">
                             <label class="theme-switch-icon" for="theme-toggle">
-                                <i class="fas fa-moon"></i> <i class="fas fa-sun"></i>  </label>
+                                <i class="fas fa-moon"></i> <i class="fas fa-sun"></i>
+                            </label>
                             <i class="fas fa-bell" id="bell-icon"></i>
                         </div>
                         <div class="profile-pic" id="profile-pic-trigger">
@@ -112,42 +113,60 @@
                     </div>
                 </div>
             </div>
-
         </div>
 
         <aside class="right-sidebar">
             <div class="card calendar">
                 <div class="card-header">
-                    <select id="calendar-month-year" class="calendar-select">
-                        <option value="2025-09">Setembro 2025</option>
-                        <option value="2025-10">Outubro 2025</option>
-                        <option value="2025-11">Novembro 2025</option>
-                        <option value="2025-12">Dezembro 2025</option>
-                    </select>
+                    <span id="calendar-month-year"></span>
                     <div class="calendar-nav">
                         <i class="fas fa-chevron-left" id="prev-month"></i>
                         <i class="fas fa-chevron-right" id="next-month"></i>
                     </div>
                 </div>
                 <div class="calendar-grid" id="calendar-dates">
-                    <div class="day-name">DOM</div><div class="day-name">SEG</div><div class="day-name">TER</div><div class="day-name">QUA</div><div class="day-name">QUI</div><div class="day-name">SEX</div><div class="day-name">SAB</div>
-                    <div class="date-num other-month">31</div>
-                    <div class="date-num">1</div><div class="date-num">2</div><div class="date-num">3</div><div class="date-num">4</div><div class="date-num">5</div><div class="date-num">6</div>
-                    <div class="date-num">7</div><div class="date-num">8</div><div class="date-num">9</div><div class="date-num active">10</div><div class="date-num">11</div><div class="date-num">12</div><div class="date-num">13</div>
-                    <div class="date-num">14</div><div class="date-num">15</div><div class="date-num">16</div><div class="date-num">17</div><div class="date-num">18</div><div class="date-num">19</div><div class="date-num">20</div>
-                    <div class="date-num">21</div><div class="date-num">22</div><div class="date-num">23</div><div class="date-num">24</div><div class="date-num">25</div><div class="date-num">26</div><div class="date-num">27</div>
-                    <div class="date-num">28</div><div class="date-num">29</div><div class="date-num">30</div>
+                    </div>
+                <div class="calendar-footer">
+                    <a href="calendario.html" class="btn-view-full">
+                        Ver Calendário Completo <i class="fas fa-arrow-right"></i>
+                    </a>
                 </div>
             </div>
             
-            <div class="card upcoming-appointment">
+        <div class="card upcoming-appointment">
                 <div class="card-header">
                     <h2>Chegando</h2>
                     <a href="#">Ver Todos</a>
                 </div>
-                <div class="empty-state">
-                    <p>Nenhum compromisso chegando.</p>
-                </div>
+                <ul class="upcoming-list" id="upcoming-list">
+                    <li class="upcoming-item">
+                        <div class="item-icon green">
+                            <i class="fas fa-user-friends"></i>
+                        </div>
+                        <div class="item-info">
+                            <h4>Consulta - João da Silva</h4>
+                            <p>Amanhã, 16 de Setembro - 10:30</p>
+                        </div>
+                    </li>
+                    <li class="upcoming-item">
+                        <div class="item-icon blue">
+                            <i class="fas fa-briefcase-medical"></i>
+                        </div>
+                        <div class="item-info">
+                            <h4>Retorno - Maria Oliveira</h4>
+                            <p>Quarta, 17 de Setembro - 14:00</p>
+                        </div>
+                    </li>
+                    <li class="upcoming-item">
+                        <div class="item-icon orange">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="item-info">
+                            <h4>Reunião de Equipa</h4>
+                            <p>Sexta, 19 de Setembro - 09:00</p>
+                        </div>
+                    </li>
+                </ul>
             </div>
 
             <div class="card chat">
@@ -183,5 +202,7 @@
             <p>Outras configurações aparecerão aqui.</p>
         </div>
     </div>
+    
+    <script src="./js/telaInicial.js"></script>
 </body>
 </html>

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Módula - Calendário Anual</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <input type="checkbox" id="theme-toggle" class="theme-toggle-input">
+
+    <aside class="sidebar">
+        <div class="logo">
+            <img src="./assets/modula.png" alt="Modula Logo">
+            <span style="color: #06495A;">Módula</span>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="TelaInicial.html"><i class="fas fa-home"></i> Home</a></li>
+                <li><a href="calendario.html" class="active"><i class="fas fa-calendar-alt"></i> Calendário</a></li>
+                <li><a href="#"><i class="fas fa-users"></i> Pacientes</a></li>
+                <li><a href="#" class="nav-link" data-target="modal-relatorios"><i class="fas fa-chart-line"></i> Relatórios</a></li>
+                <li><a href="#" class="nav-link" data-target="modal-ajustes"><i class="fas fa-cog"></i> Ajustes</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main class="calendar-main">
+        <div class="calendar-content">
+            <header class="calendar-header">
+                <div class="year-selector">
+                    <i class="fas fa-chevron-left nav-arrow" id="prev-year-btn"></i>
+                    <h2 id="current-year"></h2>
+                    <i class="fas fa-chevron-right nav-arrow" id="next-year-btn"></i>
+                </div>
+                <button class="btn btn-primary"><i class="fas fa-plus"></i> Novo Agendamento</button>
+            </header>
+
+            <div class="year-grid" id="year-grid-container">
+                </div>
+        </div>
+
+        <aside class="day-details-panel" id="details-panel">
+            <button class="close-panel-btn" id="close-panel">&times;</button>
+            <h3 id="details-panel-date">Agendamentos</h3>
+            <div class="appointment-details-list" id="details-panel-content">
+                <p class="empty-state">Nenhum agendamento para este dia.</p>
+            </div>
+        </aside>
+    </main>
+    
+    <div id="month-details-modal" class="modal">
+        <div class="modal-content large">
+            <span class="close-modal" id="close-modal-btn">&times;</span>
+            <div id="modal-calendar-content">
+                </div>
+        </div>
+    </div>
+
+    </main>
+    
+    <div id="month-details-modal" class="modal">
+        </div>
+
+    <div id="new-appointment-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Novo Agendamento</h2>
+
+            <form id="new-appointment-form" class="appointment-form">
+                <div class="form-group">
+                    <label for="search-patient">Paciente</label>
+                    <input type="text" id="search-patient" name="patient" placeholder="Digite para buscar um paciente...">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="appointment-date">Data</label>
+                        <input type="date" id="appointment-date" name="date">
+                    </div>
+                    <div class="form-group">
+                        <label for="appointment-type">Tipo de Consulta</label>
+                        <select id="appointment-type" name="type">
+                            <option value="consulta">Consulta</option>
+                            <option value="retorno">Retorno</option>
+                            <option value="procedimento">Procedimento</option>
+                            <option value="exame">Exame</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="start-time">Hora Início</label>
+                        <input type="time" id="start-time" name="start-time">
+                    </div>
+                    <div class="form-group">
+                        <label for="end-time">Hora Fim</label>
+                        <input type="time" id="end-time" name="end-time">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="appointment-notes">Observações</label>
+                    <textarea id="appointment-notes" name="notes" rows="3" placeholder="Adicione notas sobre o agendamento..."></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="margin-top: 1rem;">Salvar Agendamento</button>
+            </form>
+        </div>
+    </div>
+    <script src="./js/calendario.js"></script>
+</body>
+</html>
