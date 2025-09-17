@@ -71,7 +71,7 @@
 .decorative-grid {
     display: grid;
     grid-template-columns: repeat(4, 160px);
-    grid-template-rows: repeat(6, 160px); /* Ajustado para 6 linhas para caber as 24 imagens */
+    grid-template-rows: repeat(6, 160px); 
     gap: 20px;
     justify-content: center;
     align-items: center;

@@ -1,6 +1,6 @@
-/* --- ESTILOS DA PÁGINA DE CALENDÁRIO (VISÃO ANUAL) --- */
+/* --- ESTILOS DA PÁGINA DE CALENDÁRIO --- */
 
-/* Layout principal da página */
+/* --- Layout Principal --- */
 .calendar-main {
     display: flex;
     flex-grow: 1;
@@ -14,7 +14,7 @@
     flex-direction: column;
 }
 
-/* Cabeçalho com Seletor de Ano */
+/* --- Cabeçalho e Seletor de Ano --- */
 .calendar-header {
     display: flex;
     justify-content: space-between;
@@ -45,18 +45,16 @@
     padding: 12px 20px;
 }
 
-/* Grade Anual com os 12 meses */
+/* --- Grade Anual (Visão com 12 meses) --- */
 .year-grid {
     display: grid;
-    /* 4 colunas em telas grandes, 3 em tablets, 2 em celulares */
     grid-template-columns: repeat(4, 1fr);
     gap: 1.5rem;
     flex-grow: 1;
-    overflow-y: auto; /* Adiciona scroll se os meses não couberem na altura */
-    padding: 5px; /* Pequeno respiro para o scroll */
+    overflow-y: auto;
+    padding: 5px;
 }
 
-/* Card de cada Mês */
 .month-card {
     background-color: var(--card-bg);
     border: 1px solid var(--border-color);
@@ -79,7 +77,6 @@
     margin-bottom: 1rem;
 }
 
-/* Mini-grid para os dias dentro de cada card de mês */
 .mini-calendar-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
@@ -96,54 +93,28 @@
     font-weight: 600;
 }
 
-/* Modal (Pop-up) para a Visão Detalhada do Mês */
+/* --- Modal da Visão Mensal Detalhada --- */
 .modal-content.large {
-    max-width: 1000px; /* Faz o modal do calendário ser maior */
+    max-width: 1000px;
     height: 80vh;
     display: flex;
     flex-direction: column;
 }
 
 #modal-calendar-content {
-    flex-grow: 1; /* Garante que o conteúdo do calendário ocupe o espaço do modal */
+    flex-grow: 1;
     display: flex;
     flex-direction: column;
 }
 
-
-/* --- Media Queries para Responsividade da Visão Anual --- */
-
-/* Para Tablets */
-@media (max-width: 1200px) {
-    .year-grid {
-        grid-template-columns: repeat(3, 1fr);
-    }
-}
-
-/* Para Celulares */
-@media (max-width: 768px) {
-    .year-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    .calendar-header {
-        flex-direction: column;
-        gap: 1.5rem;
-    }
-}
-
-/* --- ESTILOS PARA O CALENDÁRIO DETALHADO DENTRO DO MODAL --- */
-
-/* Grelha Principal do Calendário Detalhado */
 .calendar-grid-full {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    /* Altura mínima para as células, permitindo que cresçam */
     grid-auto-rows: minmax(60px, auto); 
     gap: 5px;
-    flex-grow: 1; /* Faz a grelha ocupar o espaço vertical restante */
+    flex-grow: 1;
 }
 
-/* Nomes dos dias da semana (Domingo, Segunda...) */
 .day-name-full {
     font-weight: 600;
     font-size: 0.9rem;
@@ -152,7 +123,6 @@
     padding-bottom: 0.5rem;
 }
 
-/* Célula de cada dia */
 .day-cell {
     background-color: var(--card-bg);
     border: 1px solid var(--border-color);
@@ -172,11 +142,10 @@
 
 .day-cell .day-number {
     font-weight: 500;
-    align-self: flex-end; /* Alinha o número do dia à direita */
+    align-self: flex-end;
     margin-bottom: 0.25rem;
 }
 
-/* Estilos para dias de outros meses (para preencher a grelha) */
 .day-cell.other-month {
     background-color: transparent;
     border-color: transparent;
@@ -184,7 +153,6 @@
     opacity: 0.5;
 }
 
-/* Destaque para o dia de hoje */
 .day-cell.today .day-number {
     background-color: var(--primary-color);
     color: #fff;
@@ -195,22 +163,22 @@
     text-align: center;
 }
 
+/* --- Painel Lateral de Detalhes do Dia --- */
 .day-details-panel h3 {
-    margin-bottom: 1.5rem; /* Ajustei a margem inferior */
-    padding-top: 1rem; /* Adiciona espaço acima do título */
+    margin-bottom: 1.5rem;
+    padding-top: 1rem;
     font-size: 1.3rem;
 }
 
-/* A NOVA "CAIXINHA" PARA OS AGENDAMENTOS */
 .appointment-list-box {
-    background-color: rgba(200, 200, 210, 0.2); /* Cinza bem clarinho com opacidade */
+    background-color: rgba(200, 200, 210, 0.2);
     border-radius: 12px;
     padding: 1rem;
 }
 
 .appointment-detail-item {
-    display: flex; /* Alinha o horário e as informações lado a lado */
-    align-items: flex-start; /* Alinha no topo */
+    display: flex;
+    align-items: center; /* Alinhamento melhorado */
     gap: 1rem;
     margin-bottom: 1rem;
 }
@@ -219,55 +187,6 @@
     margin-bottom: 0;
 }
 
-.appointment-detail-item .time {
-    font-weight: 600;
-    flex-basis: 50px;
-    padding-top: 2px;
-    color: var(--secondary-text-color); /* Cor mais sutil para a hora */
-}
-
-.appointment-detail-item .info {
-    border-left: 3px solid;
-    padding-left: 1rem;
-    flex-grow: 1;
-}
-
-/* COR MAIS VISÍVEL PARA O TEXTO PRINCIPAL */
-.appointment-detail-item h4 {
-    font-size: 1rem;
-    color: var(--main-text-color); /* Usa a cor de texto principal do tema */
-    font-weight: 600;
-}
-
-.appointment-detail-item p {
-    font-size: 0.9rem;
-    color: var(--secondary-text-color);
-}
-
-.appointment-form .form-row {
-    display: flex;
-    gap: 1.5rem;
-}
-
-.appointment-form .form-row .form-group {
-    flex: 1; /* Faz os campos dividirem o espaço igualmente */
-}
-
-.appointment-form label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 500;
-}
-
-.appointment-form input,
-.appointment-form select,
-.appointment-form textarea {
-    width: 100%;
-}
-
-/* Adicione no final do arquivo */
-
-/* Estilo para os ícones no painel de detalhes do dia */
 .appointment-detail-item .item-icon-details {
     flex-shrink: 0;
     width: 45px;
@@ -283,3 +202,32 @@
 .item-icon-details.green { background-color: #38A169; }
 .item-icon-details.blue { background-color: #3182CE; }
 .item-icon-details.orange { background-color: #DD6B20; }
+
+.appointment-detail-item .info h4 {
+    font-size: 1rem;
+    color: var(--main-text-color);
+    font-weight: 600;
+}
+
+.appointment-detail-item .info p {
+    font-size: 0.9rem;
+    color: var(--secondary-text-color);
+}
+
+
+/* --- Media Queries --- */
+@media (max-width: 1200px) {
+    .year-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .year-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .calendar-header {
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+}

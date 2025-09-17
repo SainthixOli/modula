@@ -12,19 +12,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const detailsPanelDate = document.getElementById('details-panel-date');
     const detailsPanelContent = document.getElementById('details-panel-content');
     const closePanelButton = document.getElementById('close-panel');
-    // --- NOVO: Elementos do Modal de Novo Agendamento ---
     const newAppointmentModal = document.getElementById('new-appointment-modal');
     const newAppointmentButton = document.querySelector('.calendar-header .btn-primary');
     const closeNewAppointmentModalButton = newAppointmentModal.querySelector('.close-modal');
-
-    // ... (resto das suas constantes)
 
     // --- ESTADO INICIAL ---
     let currentYear = new Date().getFullYear();
     const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
 
-    // --- NOVO: DADOS "FAKE" (MOCK DATA) PARA SIMULAR O BACKEND ---
-    // --- NOVO: DADOS "FAKE" (MOCK DATA) COM ÍCONES ---
+    // --- DADOS "FAKE" (MOCK DATA) ---
     const mockAgendamentos = {
         '2025-9-15': [
             { hora: '09:00', paciente: 'Carlos Pereira', tipo: 'Consulta', status: 'green', icon: 'fa-user-doctor' },
@@ -36,78 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // --- FUNÇÕES DE RENDERIZAÇÃO ---
-    // (As funções renderAnnualView e createMiniCalendar continuam as mesmas)
-    function renderAnnualView(year) { /* ...código existente... */ }
-    function createMiniCalendar(year, month) { /* ...código existente... */ }
-    function renderDetailedMonthView(year, month) { /* ...código existente... */ }
-    
-    // --- NOVO: FUNÇÃO PARA EXIBIR OS AGENDAMENTOS NO PAINEL ---
-    
 
-// --- FUNÇÃO PARA EXIBIR OS AGENDAMENTOS NO PAINEL (VERSÃO ATUALIZADA) ---
-// --- FUNÇÃO PARA EXIBIR OS AGENDAMENTOS NO PAINEL (VERSÃO COM ÍCONES) ---
-    function exibirAgendamentos(agendamentos) {
-        detailsPanelContent.innerHTML = ''; 
-
-        if (!agendamentos || agendamentos.length === 0) {
-            detailsPanelContent.innerHTML = `<p class="empty-state">Nenhum agendamento para este dia.</p>`;
-            return;
-        }
-
-        const listBox = document.createElement('div');
-        listBox.className = 'appointment-list-box';
-
-        agendamentos.forEach(agendamento => {
-            const itemDiv = document.createElement('div');
-            itemDiv.className = 'appointment-detail-item';
-            
-            // ATUALIZADO: Adicionamos o ícone aqui
-            itemDiv.innerHTML = `
-                <div class="item-icon-details ${agendamento.status}">
-                    <i class="fas ${agendamento.icon}"></i>
-                </div>
-                <div class="info">
-                    <h4>${agendamento.tipo} - ${agendamento.paciente}</h4>
-                    <p>Horário: ${agendamento.hora}</p>
-                </div>
-            `;
-            listBox.appendChild(itemDiv);
-        });
-
-        detailsPanelContent.appendChild(listBox);
-    }
-
-
-    // --- LÓGICA DOS CLIQUES ---
-    // (A lógica dos botões prev/next, closeModal, closePanel continua a mesma)
-    
-    // ATUALIZADO: Lógica de clique na grelha detalhada
-function setupDetailedGridListener(grid, year, month) {
-    grid.addEventListener('click', (event) => {
-        const dayCell = event.target.closest('.day-cell:not(.other-month)');
-        if(dayCell) {
-            const day = dayCell.dataset.day;
-                
-            // Atualiza o título do painel
-            detailsPanelDate.textContent = `Agendamentos - ${day} de ${monthNames[month]}`;
-                
-            // Abre o painel
-            detailsPanel.classList.add('active');
-            
-            // SIMULA A BUSCA: Cria a chave e procura nos dados "fake"
-            const chaveDaData = `${year}-${month + 1}-${day}`;
-            const agendamentosDoDia = mockAgendamentos[chaveDaData];
-            
-            // Chama a função para exibir os resultados
-            exibirAgendamentos(agendamentosDoDia);
-        }
-    });
-}
-
-    // --- A PARTIR DAQUI, COLE O RESTO DO CÓDIGO QUE VOCÊ JÁ TINHA ---
-    // (Cole as funções renderAnnualView, createMiniCalendar, etc. aqui)
-
-    // --- FUNÇÕES COMPLETAS (COPIE E COLE SUBSTITUINDO AS SUAS ANTIGAS) ---
     function renderAnnualView(year) {
         currentYearElement.textContent = year;
         yearGridContainer.innerHTML = '';
@@ -124,6 +49,7 @@ function setupDetailedGridListener(grid, year, month) {
             yearGridContainer.appendChild(monthCard);
         }
     }
+
     function createMiniCalendar(year, month) {
         const miniGrid = document.createElement('div');
         miniGrid.className = 'mini-calendar-grid';
@@ -148,6 +74,7 @@ function setupDetailedGridListener(grid, year, month) {
         }
         return miniGrid;
     }
+
     function renderDetailedMonthView(year, month) {
         modalContent.innerHTML = '';
         const header = document.createElement('header');
@@ -184,10 +111,48 @@ function setupDetailedGridListener(grid, year, month) {
             detailedGrid.appendChild(dayCell);
         }
         modalContent.appendChild(detailedGrid);
-        // ATUALIZADO: Chama a nova função de setup
         setupDetailedGridListener(detailedGrid, year, month);
     }
-    
+
+    function exibirAgendamentos(agendamentos) {
+        detailsPanelContent.innerHTML = '';
+        if (!agendamentos || agendamentos.length === 0) {
+            detailsPanelContent.innerHTML = `<p class="empty-state">Nenhum agendamento para este dia.</p>`;
+            return;
+        }
+        const listBox = document.createElement('div');
+        listBox.className = 'appointment-list-box';
+        agendamentos.forEach(agendamento => {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'appointment-detail-item';
+            itemDiv.innerHTML = `
+                <div class="item-icon-details ${agendamento.status}">
+                    <i class="fas ${agendamento.icon}"></i>
+                </div>
+                <div class="info">
+                    <h4>${agendamento.tipo} - ${agendamento.paciente}</h4>
+                    <p>Horário: ${agendamento.hora}</p>
+                </div>
+            `;
+            listBox.appendChild(itemDiv);
+        });
+        detailsPanelContent.appendChild(listBox);
+    }
+
+    function setupDetailedGridListener(grid, year, month) {
+        grid.addEventListener('click', (event) => {
+            const dayCell = event.target.closest('.day-cell:not(.other-month)');
+            if (dayCell) {
+                const day = dayCell.dataset.day;
+                detailsPanelDate.textContent = `Agendamentos - ${day} de ${monthNames[month]}`;
+                detailsPanel.classList.add('active');
+                const chaveDaData = `${year}-${month + 1}-${day}`;
+                const agendamentosDoDia = mockAgendamentos[chaveDaData];
+                exibirAgendamentos(agendamentosDoDia);
+            }
+        });
+    }
+
     // --- LÓGICA DOS CLIQUES ---
     prevYearButton.addEventListener('click', () => { currentYear--; renderAnnualView(currentYear); });
     nextYearButton.addEventListener('click', () => { currentYear++; renderAnnualView(currentYear); });
@@ -202,28 +167,15 @@ function setupDetailedGridListener(grid, year, month) {
     });
     closeModalButton.addEventListener('click', () => { monthDetailsModal.classList.remove('active'); });
     if (closePanelButton) {
-        closePanelButton.addEventListener('click', () => {
-            detailsPanel.classList.remove('active');
-        });
+        closePanelButton.addEventListener('click', () => { detailsPanel.classList.remove('active'); });
+    }
+    if (newAppointmentButton) {
+        newAppointmentButton.addEventListener('click', () => { newAppointmentModal.classList.add('active'); });
+    }
+    if (closeNewAppointmentModalButton) {
+        closeNewAppointmentModalButton.addEventListener('click', () => { newAppointmentModal.classList.remove('active'); });
     }
 
     // --- INICIALIZAÇÃO ---
     renderAnnualView(currentYear);
-
-    // --- LÓGICA DOS CLIQUES ---
-    // (listeners existentes para prevYear, nextYear, etc.)
-
-    // NOVO: Ouve o clique no botão "+ Novo Agendamento" para abrir o modal
-    if (newAppointmentButton) {
-        newAppointmentButton.addEventListener('click', () => {
-            newAppointmentModal.classList.add('active');
-        });
-    }
-
-    // NOVO: Ouve o clique no "X" para fechar o modal de novo agendamento
-    if (closeNewAppointmentModalButton) {
-        closeNewAppointmentModalButton.addEventListener('click', () => {
-            newAppointmentModal.classList.remove('active');
-        });
-    }
 });

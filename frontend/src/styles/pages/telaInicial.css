@@ -1,4 +1,4 @@
-
+/* --- 1. CONFIGURAÇÃO GERAL E TEMAS --- */
 :root {
     --bg-color: #F5F7FA;
     --sidebar-bg: #FFFFFF;
@@ -19,11 +19,6 @@ body.dark-theme {
     --secondary-text-color: #A0AEC0;
     --card-bg: #2D3748;
     --border-color: #4A5568;
-}
-
-/* Esconde o checkbox real */
-.theme-toggle-input {
-    display: none;
 }
 
 * {
@@ -51,10 +46,11 @@ body::before {
     background-size: cover;
     background-position: center center;
     background-repeat: no-repeat;
+    opacity: 0.1;
     z-index: -1; 
 }
 
-/* --- Layout Principal --- */
+/* --- 2. LAYOUT PRINCIPAL (SIDEBAR, MAIN) --- */
 .sidebar { 
     width: 240px; 
     background-color: var(--sidebar-bg); 
@@ -86,7 +82,7 @@ main {
     gap: 2rem; 
 }
 
-/* --- Componentes Gerais --- */
+/* --- 3. COMPONENTES REUTILIZÁVEIS (CARDS, BOTÕES, ETC.) --- */
 .card { 
     background-color: var(--card-bg); 
     border-radius: 20px; 
@@ -114,11 +110,13 @@ main {
     font-size: 0.9rem; 
 }
 
-/* --- Barra Lateral (Sidebar) --- */
+/* --- 4. ESTILOS ESPECÍFICOS DOS ELEMENTOS --- */
+
+/* Sidebar */
 .sidebar .logo { 
-    display: flex; /* Alinha os itens lado a lado */
-    align-items: center; /* Centraliza verticalmente */
-    gap: 10px; /* Cria um espaço entre a imagem e o texto */
+    display: flex;
+    align-items: center;
+    gap: 10px;
     font-size: 1.5rem; 
     font-weight: 700; 
     margin-bottom: 3rem; 
@@ -126,8 +124,8 @@ main {
 }
 
 .sidebar .logo img {
-    height: 30px; /* Define uma altura melhor para o logo */
-    width: auto; /* Mantém a proporção da imagem */
+    height: 30px;
+    width: auto;
 }
 
 .sidebar nav ul { 
@@ -158,7 +156,7 @@ main {
     color: var(--primary-color); 
 }
 
-/* --- Cabeçalho Principal (Header) --- */
+/* Header */
 .main-header { 
     display: flex; 
     justify-content: space-between; 
@@ -200,6 +198,7 @@ main {
 
 .user-profile .icons { 
     display: flex; 
+    align-items: center;
     gap: 1.5rem; 
     font-size: 1.2rem; 
     color: var(--secondary-text-color); 
@@ -218,7 +217,7 @@ main {
     object-fit: cover; 
 }
 
-/* --- Saudação e Card de Estatísticas --- */
+/* Saudação (Greeting) */
 .greeting h1 { 
     font-size: 1.8rem; 
     font-weight: 600;
@@ -230,49 +229,25 @@ main {
     font-size: 1.2rem; 
 }
 
+/* Card de Estatísticas */
 .stats-card {
-    display: flex; /* Muda para flexbox */
-    flex-direction: column; /* Empilha o conteúdo */
-    position: relative; /* Para posicionar a imagem de perfil absoluta */
+    display: flex;
+    flex-direction: column;
+    position: relative;
     background: var(--blue-gradient);
     color: #fff;
     overflow: hidden;
-    min-height: 200px; /* Ajustei a altura mínima, você pode adaptar */
+    min-height: 200px;
     border-radius: 20px;
     box-shadow: var(--shadow);
-    padding: 1.5rem; /* Adiciona padding de volta */
-    justify-content: space-between; /* Espaça o conteúdo */
+    padding: 1.5rem;
+    justify-content: space-between;
 }
-
 
 .stats-content {
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    padding: 1.5rem;
-}
-
-.profile-image-circle {
-    position: absolute; /* Posição absoluta dentro do .stats-card */
-    top: 20px; /* Distância do topo */
-    right: 20px; /* Distância da direita */
-    width: 130px; /* Tamanho da bolinha */
-    height: 130px;
-    border-radius: 50%; /* Transforma em círculo */
-    overflow: hidden; /* Corta o excesso da imagem */
-    border: 3px solid rgba(255, 255, 255, 0.5); /* Borda branca suave */
-    box-shadow: 0 0 0 5px rgba(255, 255, 255, 0.2); /* Sombra para destacar */
-}
-
-.profile-image-circle img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover; /* Garante que a imagem preencha o círculo */
-    object-position: center; /* Centraliza a imagem */
-}
-
-.greeting {
-    margin-bottom: 1rem;
+    gap: 1rem;
 }
 
 .stats-item h2 {
@@ -307,13 +282,26 @@ main {
     font-size: 0.9rem;
 }
 
-.stats-card .kanye-img {
+.profile-image-circle {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 0 0 5px rgba(255, 255, 255, 0.2);
+}
+
+.profile-image-circle img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    object-position: center;
 }
 
-/* --- Lista de Pacientes e Consulta --- */
+/* Lista de Pacientes e Consulta */
 .patient-consultation { 
     display: grid; 
     grid-template-columns: 1fr 1.5fr; 
@@ -325,132 +313,76 @@ main {
     list-style: none; 
 }
 
-.patient-item { 
-    display: flex; 
-    align-items: center; 
-    justify-content: space-between; 
-    margin-bottom: 1rem; 
+/* Card "Chegando" */
+.upcoming-list {
+    list-style: none;
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
 }
 
-.patient-info { 
-    display: flex; 
-    align-items: center; 
-    gap: 1rem; 
+.upcoming-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
 }
 
-.patient-initials { 
-    width: 40px; 
-    height: 40px; 
-    border-radius: 50%; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-    font-weight: 600; 
-    color: var(--primary-color); 
-    background-color: var(--active-bg); 
+.item-icon {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    color: #fff;
 }
 
-.patient-details h4 { 
-    font-size: 1rem; 
-    font-weight: 600; 
-}
+.item-icon.green { background-color: #38A169; }
+.item-icon.blue { background-color: #3182CE; }
+.item-icon.orange { background-color: #DD6B20; }
 
-.patient-details p { 
-    font-size: 0.85rem; 
-    color: var(--secondary-text-color); 
-}
-
-.patient-time { 
-    padding: 0.4rem 0.8rem; 
-    border-radius: 8px; 
-    font-weight: 500; 
-    border: none; 
-    cursor: pointer; 
-}
-
-.time-pink { background-color: #FFF0F0; color: #F56565; }
-.time-blue { background-color: #EBF8FF; color: #4299E1; }
-.time-green { background-color: #F0FFF4; color: #48BB78; }
-
-.consultation-details .patient-header { 
-    display: flex; 
-    align-items: center; 
-    gap: 1rem; 
-    margin-bottom: 1.5rem; 
-}
-
-.consultation-details .patient-header h3 { 
-    font-size: 1.2rem; 
+.item-info h4 {
     font-weight: 600;
-}
-
-.consultation-details .patient-header p { 
-    font-size: 0.9rem; 
-    color: var(--secondary-text-color); 
-}
-
-.symptoms { 
-    display: flex; 
-    justify-content: space-around; 
-    margin-bottom: 1.5rem; 
-    text-align: center; 
-}
-
-.symptom i { 
-    font-size: 1.8rem; 
-    color: var(--primary-color); 
-    margin-bottom: 0.5rem; 
-}
-
-.symptom p { 
-    font-weight: 500; 
-}
-
-.consultation-item { 
-    margin-bottom: 1.2rem; 
-    border-bottom: 1px solid var(--border-color); 
-    padding-bottom: 1.2rem; 
-}
-
-.consultation-item:last-child { 
-    border-bottom: none; 
-    margin-bottom: 0; 
-    padding-bottom: 0; 
-}
-
-.consultation-item strong { 
-    display: block; 
-    margin-bottom: 0.5rem; 
-    font-weight: 600; 
-}
-
-.consultation-item p { 
-    color: var(--secondary-text-color); 
-    line-height: 1.6; 
-}
-
-.consultation-item a { 
-    color: var(--primary-color); 
-    text-decoration: none; 
-    font-weight: 500; 
-}
-
-/* --- Calendário e Barra Lateral Direita --- */
-.calendar-select {
-    background-color: transparent;
-    border: none;
-    font-family: 'Poppins', sans-serif;
-    font-weight: 600;
-    font-size: 1.2rem;
+    font-size: 0.95rem;
     color: var(--main-text-color);
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
+    margin-bottom: 3px;
 }
-        
-.calendar-nav i { 
-    color: var(--secondary-text-color); 
-    cursor: pointer; 
+
+.item-info p {
+    font-size: 0.8rem;
+    color: var(--secondary-text-color);
+}
+
+/* Mini Calendário (Dashboard) */
+.calendar-footer {
+    border-top: 1px solid var(--border-color);
+    padding-top: 1rem;
+    margin-top: 1rem;
+    text-align: center;
+}
+
+.btn-view-full {
+    text-decoration: none;
+    color: var(--primary-color);
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+.btn-view-full:hover {
+    opacity: 0.8;
+}
+
+.btn-view-full i {
+    margin-left: 0.5rem;
+    transition: margin-left 0.2s ease;
+}
+
+.btn-view-full:hover i {
+    margin-left: 0.8rem;
 }
         
 .calendar-grid { 
@@ -492,34 +424,7 @@ main {
     color: #CBD5E0; 
 }
         
-.upcoming-appointment .appointment-item { 
-    display: flex; 
-    align-items: center; 
-    gap: 1rem; 
-}
-        
-.upcoming-appointment .icon-wrapper { 
-    width: 40px; 
-    height: 40px; 
-    background-color: var(--active-bg); 
-    border-radius: 10px; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-    font-size: 1.2rem; 
-    color: var(--primary-color); 
-}
-        
-.upcoming-appointment h4 { 
-    font-weight: 600; 
-    font-size: 1rem; 
-}
-
-.upcoming-appointment p { 
-    font-size: 0.9rem; 
-    color: var(--secondary-text-color); 
-}
-        
+/* Chat */
 .chat .chat-header h2 { 
     font-size: 1.2rem; 
 }
@@ -543,18 +448,6 @@ main {
     gap: 1rem; 
     max-height: 200px; 
     overflow-y: auto; 
-}
-        
-.chat-bubble { 
-    display: flex; 
-    gap: 0.7rem; 
-    max-width: 80%; 
-}
-        
-.chat-bubble img { 
-    width: 35px; 
-    height: 35px; 
-    border-radius: 50%; 
 }
         
 .chat-bubble p { 
@@ -605,7 +498,9 @@ main {
     cursor: pointer;
 }
 
-/* --- Elementos Funcionais (Dropdowns, Modals, etc.) --- */
+/* --- 5. ELEMENTOS FUNCIONAIS (DROPDOWNS, MODALS, TEMA) --- */
+
+/* Dropdowns */
 .dropdown-menu {
     display: none;
     position: absolute;
@@ -638,6 +533,7 @@ main {
     color: #E53E3E;
 }
 
+/* Modals */
 .modal {
     display: none;
     position: fixed;
@@ -675,57 +571,49 @@ main {
     font-weight: bold;
     cursor: pointer;
 }
-        
-.theme-switch-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
+
+/* Seletor de Tema (CSS-only) */
+.theme-toggle-input {
+    display: none;
 }
 
-.theme-switch {
-    display: inline-block;
-    height: 24px;
-    position: relative;
-    width: 50px;
-}
-
-.theme-switch input {
-    display:none;
-}
-
-.slider {
-    background-color: #ccc;
-    bottom: 0;
+.theme-switch-icon {
+    font-size: 1.2rem;
+    color: var(--secondary-text-color);
     cursor: pointer;
-    left: 0;
+    position: relative;
+    width: 20px;
+    height: 20px;
+    display: inline-block;
+}
+
+.theme-switch-icon .fa-sun,
+.theme-switch-icon .fa-moon {
     position: absolute;
-    right: 0;
-    top: 0;
-    transition: .4s;
-    border-radius: 34px;
+    transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
-.slider:before {
-    background-color: #fff;
-    bottom: 4px;
-    content: "";
-    height: 16px;
-    left: 4px;
-    position: absolute;
-    transition: .4s;
-    width: 16px;
-    border-radius: 50%;
+.theme-switch-icon .fa-sun {
+    opacity: 0;
+    transform: translateY(5px);
 }
 
-input:checked + .slider {
-    background-color: var(--primary-color);
+.theme-switch-icon .fa-moon {
+    opacity: 1;
+    transform: translateY(0);
 }
 
-input:checked + .slider:before {
-    transform: translateX(26px);
+#theme-toggle:checked ~ * .theme-switch-icon .fa-sun {
+    opacity: 1;
+    transform: translateY(0);
 }
 
-/* --- Classes de Estado (Vazio, Escondido, etc.) --- */
+#theme-toggle:checked ~ * .theme-switch-icon .fa-moon {
+    opacity: 0;
+    transform: translateY(-5px);
+}
+
+/* --- 6. CLASSES DE ESTADO (VAZIO, ESCONDIDO) --- */
 .is-hidden {
     display: none !important;
 }
@@ -750,71 +638,4 @@ input:checked + .slider:before {
 .consultation-item-placeholder i {
     font-size: 2.5rem;
     margin-bottom: 1rem;
-}
-
-/* A MÁGICA: Quando o input estiver marcado, aplica o tema escuro em todos os seus "irmãos" */
-#theme-toggle:checked ~ aside,
-#theme-toggle:checked ~ main,
-#theme-toggle:checked ~ .modal .modal-content {
-    --bg-color: #1A202C;
-    --sidebar-bg: #2D3748;
-    --main-text-color: #F7FAFC;
-    --secondary-text-color: #A0AEC0;
-    --card-bg: #2D3748;
-    --border-color: #4A5568;
-
-    /* Adiciona uma transição suave na troca de tema */
-    transition: background-color 0.3s, color 0.3s;
-}
-
-/* Garante que a transição seja aplicada nos elementos filhos também */
-#theme-toggle:checked ~ * .card,
-#theme-toggle:checked ~ * input,
-#theme-toggle:checked ~ * a {
-    transition: background-color 0.3s, color 0.3s, border-color 0.3s;
-}
-
-/* SUBSTITUA O BLOCO ANTIGO POR ESTE */
-
-.upcoming-list {
-    list-style: none;
-    margin-top: 1rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1.2rem; /* AFASTA um pouco mais os agendamentos na vertical */
-}
-
-.upcoming-item {
-    display: flex;
-    align-items: center; /* Alinha o ícone com o bloco de texto */
-    gap: 1rem;
-}
-
-.item-icon {
-    flex-shrink: 0;
-    width: 40px; /* Ícone um pouco menor para ficar mais enxuto */
-    height: 40px;
-    border-radius: 50%; /* Deixa o ícone redondo, mais moderno */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1rem; /* Tamanho do ícone interno */
-    color: #fff;
-}
-
-/* Cores para diferenciar os tipos de evento */
-.item-icon.green { background-color: #38A169; }
-.item-icon.blue { background-color: #3182CE; }
-.item-icon.orange { background-color: #DD6B20; }
-
-.item-info h4 {
-    font-weight: 600;
-    font-size: 0.95rem; /* Ajuste fino no tamanho da fonte */
-    color: var(--main-text-color);
-    margin-bottom: 3px; /* Espaço entre o título e a data */
-}
-
-.item-info p {
-    font-size: 0.8rem; /* Data um pouco menor para dar hierarquia */
-    color: var(--secondary-text-color);
 }
