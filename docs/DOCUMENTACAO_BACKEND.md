@@ -90,38 +90,62 @@ Características especiais da Anamnese:
 
 ---
 
-# 2. ARQUITETURA E ESTRUTURA ATUAL
+# 2. **ARQUITETURA COMPLETA DO BACKEND (ATUAL E FUTURO)**
 
 ## 📁 ORGANIZAÇÃO DE DIRETÓRIOS
 
 ```
 backend/
-├── src/                          # Código fonte principal
-│   ├── config/                   # Configurações do sistema
-│   │   └── database.js          ✅ Configuração PostgreSQL/Sequelize
-│   ├── controllers/             ⏳ CRIAR - Lógica de negócio
-│   ├── middleware/              # Interceptadores de requisições
-│   │   ├── auth.js             ✅ Autenticação e autorização JWT
-│   │   └── errorHandler.js     ✅ Tratamento centralizado de erros
-│   ├── models/                  # Modelos de dados (Sequelize)
-│   │   ├── User.js             ✅ Modelo de usuários
-│   │   ├── Patient.js          ✅ Modelo de pacientes
-│   │   └── index.js            ⏳ CRIAR - Associações entre modelos
-│   ├── routes/                  # Definição de endpoints
-│   │   ├── auth.js             ✅ Rotas de autenticação
-│   │   ├── admin.js            ⏳ CRIAR - Rotas administrativas
-│   │   ├── professional.js     ⏳ CRIAR - Rotas do profissional
-│   │   └── patient.js          ⏳ CRIAR - Rotas de pacientes
-│   ├── services/               ⏳ CRIAR - Lógica de negócio complexa
-│   ├── utils/                  ⏳ CRIAR - Utilitários e helpers
-│   └── validations/            ⏳ CRIAR - Schemas de validação Joi
-├── tests/                      ⏳ CRIAR - Testes automatizados
-├── docs/                       ⏳ CRIAR - Documentação da API
-├── server.js                   ✅ Arquivo principal do servidor
-├── package.json                ✅ Dependências e scripts
-├── .env.example               ✅ Template de variáveis de ambiente
-└── README.md                  ✅ Documentação básica
+├── src/
+│   ├── config/
+│   │   └── config.js                   ✅ Configuração PostgreSQL/Sequelize
+│   ├── controllers/
+│   │   ├── adminController.js          ✅ Lógica de negócio do admin
+│   │   ├── anamnesisController.js      ✅ Lógica de negócio da anamnese
+│   │   ├── authController.js           ✅ Lógica de negócio de autenticação
+│   │   ├── professionalController.js   ✅ Lógica de negócio do profissional
+│   │   ├── sessionController.js        ⏳ CRIAR - Lógica do Módulo de Sessões
+│   │   └── transferController.js       ⏳ CRIAR - Lógica do Módulo de Transferências
+│   ├── database/
+│   │   ├── config.js                   ✅ Configuração do banco de dados (Sequelize)
+│   │   └── init.sql                    ✅ Script inicial do banco
+│   ├── middleware/
+│   │   ├── adminValidations.js         ✅ Validações de dados do admin
+│   │   ├── anamnesisValidations.js     ✅ Validações de dados da anamnese
+│   │   ├── auth.js                     ✅ Middlewares de autenticação (JWT)
+│   │   ├── errorHandler.js             ✅ Tratamento centralizado de erros
+│   │   └── professionalValidations.js  ✅ Validações de dados do profissional
+│   ├── models/
+│   │   ├── Anamnesis.js                ✅ Modelo de dados da anamnese
+│   │   ├── index.js                    ✅ Associações entre os modelos (Sequelize)
+│   │   ├── Patient.js                  ✅ Modelo de dados de pacientes
+│   │   ├── Session.js                  ⏳ CRIAR - Modelo do Módulo de Sessões
+│   │   ├── Transfer.js                 ⏳ CRIAR - Modelo do Módulo de Transferências
+│   │   └── User.js                     ✅ Modelo de dados de usuários
+│   ├── routes/
+│   │   ├── admin.js                    ✅ Rotas administrativas
+│   │   ├── anamnesis.js                ✅ Rotas do sistema de anamnese
+│   │   ├── auth.js                     ✅ Rotas de autenticação
+│   │   ├── professional.js             ✅ Rotas do profissional
+│   │   ├── sessions.js                 ⏳ CRIAR - Rotas do Módulo de Sessões
+│   │   └── transfers.js                ⏳ CRIAR - Rotas do Módulo de Transferências
+│   ├── services/
+│   │   └── reportService.js            ⏳ CRIAR - Lógica de negócio complexa para relatórios
+│   └── utils/
+│       └── chartHelpers.js             ⏳ CRIAR - Utilitários para gerar gráficos
+├── tests/
+│   ├── unit/                           ⏳ CRIAR - Testes unitários
+│   ├── integration/                    ⏳ CRIAR - Testes de integração
+│   ├── e2e/                            ⏳ CRIAR - Testes End-to-End
+│   └── fixtures/                       ⏳ CRIAR - Dados de teste (mocks)
+├── .env.example                        ✅ Template de variáveis de ambiente
+├── .gitignore                          ✅ Arquivo para ignorar arquivos no Git
+├── DOCUMENTACAO_BACKEND.md             ✅ Documentação completa do projeto
+├── package.json                        ✅ Dependências e scripts do projeto
+└── server.js                           ✅ Arquivo principal do servidor Express
 ```
+
+---
 
 ## 🔧 CONFIGURAÇÕES PRINCIPAIS
 
