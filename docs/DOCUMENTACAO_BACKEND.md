@@ -1602,11 +1602,3 @@ Troubleshooting guide para problemas comuns
 🔍 Use como referência durante o desenvolvimento
 ✅ Siga os padrões estabelecidos
 📝 Mantenha atualizado conforme implementa
-
-Esta documentação garante que:
-
-✅ Qualquer desenvolvedor pode pegar alguma task do backend, apenas necessitando entender o projeto.
-✅ A qualidade será mantida.
-✅ Os padrões serão seguidos.
-✅ O cronograma será cumprido.
-✅ A equipe trabalhará de forma organizada.
