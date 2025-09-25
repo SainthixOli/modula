@@ -56,29 +56,37 @@ O sistema segue o padrão **MVC (Model-View-Controller)** adaptado para APIs:
 
 ## 📊 STATUS ATUAL DO PROJETO
 
-### ✅ **IMPLEMENTADO (30% -> 50%)**
-- Configuração base do servidor Express
-- Sistema completo de autenticação JWT
-- Modelos User e Patient
-- Middlewares de segurança e tratamento de erros
-- Estrutura de banco PostgreSQL com Sequelize
+✅ IMPLEMENTADO (50% → 70%)
 - Sistema de Autenticação (100%)
-- Modelos User e Patient (100%)
-- Módulo Administração (100%) ← NOVO
-- Associações entre modelos (100%) ← NOVO
+- Modelos User e Patient (100%)  
+- Módulo Administração (100%)
+- Módulo Profissional (100%) ← NOVO
+- Associações entre modelos (100%)
 
+⏳ PENDENTE (50% → 30%)
+- Sistema de Anamnese
+- Sistema de Consultas/Sessões  
+- Sistema de Transferências (estrutura básica pronta)
+- Testes automatizados
 
 ### 🔄 **EM DESENVOLVIMENTO (0%)**
-- Atualmente nenhum módulo está em desenvolvimento ativo
+- SISTEMA DE ANAMNESE
+Com admin e profissional 100% funcionais, a próxima prioridade é:
+ETAPA 3: SISTEMA DE ANAMNESE DIGITAL
 
-### ⏳ **PENDENTE (70% -> 50%)**
-- Módulo do Profissional (dashboard, gestão pacientes)
-- Sistema de Anamnese Digital
-- Sistema de Consultas e Sessões
-- Sistema de Transferências
-- Relatórios e Estatísticas
-- Testes automatizados
-- Documentação da API
+Criar src/models/Anamnesis.js (estrutura completa)
+Implementar src/routes/anamnesis.js (formulário dinâmico)
+Desenvolver src/controllers/anamnesisController.js (auto-save)
+Sistema de seções com validações específicas
+Integração com modulo profissional
+
+Características especiais da Anamnese:
+
+✅ Formulário multi-step com progresso visual
+✅ Auto-save a cada 30 segundos
+✅ Validações específicas por seção
+✅ Sistema de completude (%)
+✅ Dados estruturados em JSON
 
 ---
 
@@ -377,6 +385,22 @@ backend/
 #### **Middleware Global:**
 - `errorHandler(error, req, res, next)` - Captura todos os erros da aplicação
 - `notFound(req, res, next)` - Captura rotas inexistentes (404)
+
+---
+
+## 👨‍⚕️ MÓDULO PROFISSIONAL (100% COMPLETO)
+
+### Arquivos Implementados:
+- `src/routes/professional.js` - 25 endpoints funcionais
+- `src/controllers/professionalController.js` - 25 funções de controle
+- `src/middleware/professionalValidations.js` - 12 middlewares de validação
+
+### Funcionalidades Principais:
+- Dashboard personalizado com estatísticas em tempo real
+- CRUD completo de pacientes com isolamento de dados
+- Sistema de busca e filtros avançados
+- Validações robustas incluindo CPF e dados clínicos
+- Preparação para anamnese e sistema de sessões
 
 ---
 
