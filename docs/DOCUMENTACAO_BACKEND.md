@@ -665,6 +665,49 @@ backend/
 
 ---
 
+### **SISTEMA DE CONFLITOS E DISPONIBILIDADE (100% COMPLETO)**
+
+#### **Arquivo Implementado:**
+- `src/utils/conflictHelpers.js` - 11 funções para gestão de conflitos
+
+#### **Funcionalidades por Grupo:**
+
+**Detecção de Conflitos (4 funções)**
+- hasTimeOverlap - Algoritmo de sobreposição temporal pura
+- detectConflict - Detecção completa com buffer time configurável
+- getOverlapType - Classifica tipo (contained/contains/overlaps_start/overlaps_end)
+- validateMinimumGap - Valida gaps mínimos antes/depois
+
+**Cálculo de Disponibilidade (4 funções)**
+- generateDaySlots - Gera slots respeitando horários e almoço
+- getAvailableSlots - Filtra slots sem conflitos
+- findNextAvailableSlot - Busca em N dias com top 5 alternativas
+- suggestAlternatives - Ordenação por proximidade ao solicitado
+
+**Análise de Agenda (3 funções)**
+- calculateScheduleDensity - Classifica em 4 níveis (empty/light/moderate/busy/full)
+- findFreePeriods - Identifica períodos livres (before_first/between/after_last)
+- analyzeSchedulePattern - Top 3 horários e dias preferidos
+
+#### **Configurações Disponíveis:**
+- ✅ Horário de trabalho (início: 8h, fim: 18h)
+- ✅ Horário de almoço (12h-13h)
+- ✅ Intervalo de slots (30 minutos padrão)
+- ✅ Gap mínimo entre sessões (0 padrão)
+- ✅ Buffer time para atrasos (15 minutos)
+- ✅ Dias úteis (segunda a sexta)
+
+#### **Algoritmos Especiais:**
+- ✅ Detecção de 4 tipos de sobreposição
+- ✅ Buffer time bidirecional (antes e depois)
+- ✅ Geração de slots respeitando almoço
+- ✅ Busca de próximo disponível em N dias
+- ✅ Sugestões ordenadas por proximidade
+- ✅ Cálculo de densidade em 4 níveis
+- ✅ Identificação de padrões temporais
+
+---
+
 # 4. ROADMAP DE DESENVOLVIMENTO
 
 ## 🗓️ CRONOGRAMA GERAL
