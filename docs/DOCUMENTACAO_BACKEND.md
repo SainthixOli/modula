@@ -496,6 +496,61 @@ backend/
 - ✅ Validações de engajamento (1-10) e progresso
 - ✅ Mensagens de erro em português
 
+
+---
+
+### **ROTAS DE SESSÕES (100% COMPLETO)**
+
+#### **Arquivo Implementado:**
+- `src/routes/sessions.js` - 25 endpoints do sistema de agendamento
+
+#### **Grupos de Endpoints:**
+
+**Agendamento (5 endpoints)**
+- POST / - Criar sessão com validação de conflitos
+- GET / - Listar sessões com filtros avançados e paginação
+- GET /:id - Detalhes de sessão específica
+- PUT /:id - Atualizar sessão agendada (reagendamento)
+- DELETE /:id - Cancelar sessão com motivo obrigatório
+
+**Evolução Clínica (4 endpoints)**
+- POST /:id/evolution - Registrar evolução após sessão
+- PUT /:id/evolution - Atualizar evolução existente
+- POST /:id/confirm - Confirmar presença do paciente
+- POST /:id/no-show - Marcar paciente como faltante
+
+**Agenda (4 endpoints)**
+- GET /agenda/today - Sessões do dia atual
+- GET /agenda/week - Visão semanal da agenda
+- GET /agenda/month - Calendário mensal completo
+- GET /availability - Verificar horários disponíveis
+
+**Histórico do Paciente (3 endpoints)**
+- GET /patient/:id/history - Histórico completo de sessões
+- GET /patient/:id/timeline - Timeline cronológica de evolução
+- GET /patient/:id/stats - Estatísticas específicas do paciente
+
+**Reagendamento (2 endpoints)**
+- POST /:id/reschedule - Reagendar para nova data/hora
+- GET /:id/suggest-times - Sugerir horários alternativos
+
+**Estatísticas e Relatórios (3 endpoints)**
+- GET /stats/overview - Dashboard de estatísticas
+- GET /stats/productivity - Relatório de produtividade
+- GET /stats/engagement - Análise de engajamento
+
+**Busca e Filtros (4 endpoints)**
+- GET /search - Busca textual avançada
+- GET /upcoming - Próximas sessões agendadas
+- GET /pending - Sessões pendentes de evolução
+
+#### **Recursos de Segurança:**
+- ✅ Autenticação JWT em todas as rotas
+- ✅ Middleware requireProfessional obrigatório
+- ✅ Validação de ownership automática
+- ✅ Proteção contra conflitos de horário
+- ✅ Validação de UUID em parâmetros
+
 ---
 
 # 4. ROADMAP DE DESENVOLVIMENTO
