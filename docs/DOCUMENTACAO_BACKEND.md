@@ -607,6 +607,61 @@ backend/
 - ✅ Agrupamentos dinâmicos (por dia, semana, mês)
 - ✅ Estatísticas agregadas com múltiplas métricas
 - ✅ Validação rigorosa de ownership em todas as operações
+---
+
+### **HELPERS DE VISUALIZAÇÃO DE AGENDA (100% COMPLETO)**
+
+#### **Arquivo Implementado:**
+- `src/utils/agendaHelpers.js` - 20 funções utilitárias para agenda
+
+#### **Funcionalidades por Grupo:**
+
+**Formatação de Data/Hora (7 funções)**
+- formatDatePT - "15 de outubro de 2025"
+- formatDateShort - "15/10/2025"
+- formatTime - "14:30"
+- formatDuration - "1h 30min"
+- getDayOfWeekPT - "segunda", "terça", etc
+- isWeekday - Verificar dia útil
+- getMonthName - Nome do mês por número
+
+**Agrupamento de Sessões (4 funções)**
+- groupSessionsByDate - Agrupa com totais e contadores
+- groupSessionsByDayOfWeek - Padrão semanal (7 dias)
+- groupSessionsByType - Distribuição por tipo de sessão
+- groupSessionsByStatus - Distribuição por status
+
+**Cálculos e Métricas (4 funções)**
+- calculateOccupancyRate - Taxa ocupação (horas trabalhadas/disponíveis)
+- calculateGaps - Identifica intervalos livres entre sessões
+- calculateSessionsByHour - Distribuição por hora do dia
+- identifyPeakHours - Horários com mais sessões
+
+**Geração de Estruturas (2 funções)**
+- generateMonthCalendar - Calendário completo com flags (today, weekday)
+- generateWeekStructure - 7 dias com sessões ordenadas
+
+**Formatação para Frontend (3 funções)**
+- formatSessionForAgenda - Formata com labels e cores
+- formatSessionsForTimeline - Timeline cronológica formatada
+- generateChartData - Dados para gráficos (date/type/status/day_of_week)
+
+#### **Constantes e Configurações:**
+- ✅ Dias da semana em português
+- ✅ Meses em português
+- ✅ Labels de tipos de sessão
+- ✅ Labels de status
+- ✅ Paleta de cores por status
+- ✅ Suporte a internacionalização (pt-BR)
+
+#### **Recursos Especiais:**
+- ✅ Cálculo de taxa de ocupação com horas disponíveis
+- ✅ Identificação de gaps (intervalos) entre sessões
+- ✅ Detecção de horários de pico
+- ✅ Geração de calendário com flags úteis (is_today, is_weekday)
+- ✅ Formatação consistente para todos os formatos de data
+- ✅ Suporte a agrupamentos múltiplos para análises
+- ✅ Geração de dados prontos para charts
 
 ---
 
