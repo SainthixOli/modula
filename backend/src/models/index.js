@@ -11,11 +11,129 @@
  * 
  */
 
+const { Sequelize } = require('sequelize');
 const { sequelize } = require('../config/database');
 
 // Importar todos os modelos
 const User = require('./User');
 const Patient = require('./Patient');
+const Anamnesis = require('./Anamnesis');
+const Session = require('./Session');
+
+
+// Inicializar modelos
+const models = {
+  User: User(sequelize, Sequelize.DataTypes),
+  Patient: Patient(sequelize, Sequelize.DataTypes),
+  Anamnesis: Anamnesis(sequelize, Sequelize.DataTypes),
+  Session: Session(sequelize, Sequelize.DataTypes)
+};
+
+// ============================================
+// ASSOCIAÇÕES ENTRE MODELOS
+// ============================================
+
+// --------------------------------------------
+// USER ASSOCIATIONS
+// --------------------------------------------
+// Um usuário (profissional) tem muitos pacientes
+models.User.hasMany(models.Patient, {
+  foreignKey: 'user_id',
+  as: 'patients',
+  onDelete: 'RESTRICT',
+  onUpdate: 'CASCADE'
+});
+
+// Um usuário tem muitas anamneses
+models.User.hasMany(models.Anamnesis, {
+  foreignKey: 'user_id',
+  as: 'anamneses',
+  onDelete: 'RESTRICT',
+  onUpdate: 'CASCADE'
+});
+
+
+// Um usuário (profissional) tem muitas sessões
+models.User.hasMany(models.Session, {
+  foreignKey: 'user_id',
+  as: 'sessions',
+  onDelete: 'RESTRICT',
+  onUpdate: 'CASCADE'
+});
+
+// --------------------------------------------
+// PATIENT ASSOCIATIONS
+// --------------------------------------------
+// Um paciente pertence a um usuário (profissional)
+models.Patient.belongsTo(models.User, {
+  foreignKey: 'user_id',
+  as: 'professional',
+  onDelete: 'RESTRICT',
+  onUpdate: 'CASCADE'
+});
+
+// Um paciente tem uma anamnese
+models.Patient.hasOne(models.Anamnesis, {
+  foreignKey: 'patient_id',
+  as: 'anamnesis',
+  onDelete: 'CASCADE',
+  onUpdate: 'CASCADE'
+});
+
+// Um paciente tem muitas sessões
+models.Patient.hasMany(models.Session, {
+  foreignKey: 'patient_id',
+  as: 'sessions',
+  onDelete: 'CASCADE',
+  onUpdate: 'CASCADE'
+});
+
+// --------------------------------------------
+// ANAMNESIS ASSOCIATIONS
+// --------------------------------------------
+// Uma anamnese pertence a um paciente
+models.Anamnesis.belongsTo(models.Patient, {
+  foreignKey: 'patient_id',
+  as: 'patient',
+  onDelete: 'CASCADE',
+  onUpdate: 'CASCADE'
+});
+
+// Uma anamnese pertence a um usuário (profissional)
+models.Anamnesis.belongsTo(models.User, {
+  foreignKey: 'user_id',
+  as: 'professional',
+  onDelete: 'RESTRICT',
+  onUpdate: 'CASCADE'
+});
+
+// --------------------------------------------
+// SESSION ASSOCIATIONS (NOVO)
+// --------------------------------------------
+// Uma sessão pertence a um paciente
+models.Session.belongsTo(models.Patient, {
+  foreignKey: 'patient_id',
+  as: 'patient',
+  onDelete: 'CASCADE',
+  onUpdate: 'CASCADE'
+});
+
+// Uma sessão pertence a um usuário (profissional)
+models.Session.belongsTo(models.User, {
+  foreignKey: 'user_id',
+  as: 'professional',
+  onDelete: 'RESTRICT',
+  onUpdate: 'CASCADE'
+});
+
+// ============================================
+// EXPORTAR MODELOS E CONEXÃO
+// ============================================
+module.exports = {
+  sequelize,
+  Sequelize,
+  ...models
+};
 
 /**
  * DEFINIR ASSOCIAÇÕES

@@ -445,6 +445,27 @@ backend/
 - Relatórios de produtividade
 - 15+ métodos especializados
 
+#### **Associações Configuradas**
+- `src/models/index.js` - Relacionamentos entre Session ↔ Patient ↔ User
+
+#### **Funcionalidades:**
+- 9 tipos de sessão especializados
+- Sistema de status com workflow completo  
+- Controle de duração e horários reais
+- Avaliação de progresso e engajamento
+- Sistema básico de cobrança
+- Detecção de conflitos de horário
+- Numeração sequencial automática
+- Hooks de sincronização com pacientes
+- Relatórios de produtividade
+- 15+ métodos especializados
+
+#### **Relacionamentos Implementados:**
+- **Session belongsTo Patient** (CASCADE on delete)
+- **Session belongsTo User** (RESTRICT on delete)
+- **Patient hasMany Sessions** (histórico completo)
+- **User hasMany Sessions** (consultas do profissional)
+
 ---
 
 # 4. ROADMAP DE DESENVOLVIMENTO
