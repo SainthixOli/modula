@@ -468,6 +468,36 @@ backend/
 
 ---
 
+### **VALIDAÇÕES DE SESSÃO (100% COMPLETO)**
+
+#### **Arquivo Implementado:**
+- `src/middleware/sessionValidations.js` - Validações completas do sistema de sessões
+
+#### **Schemas Joi Implementados:**
+- **createSessionSchema** - 9 campos validados para criação
+- **updateScheduledSessionSchema** - Atualização flexível com validação condicional
+- **recordSessionEvolutionSchema** - 15 campos para registro de evolução clínica
+- **listSessionsSchema** - Filtros avançados com paginação
+
+#### **Middlewares de Validação:**
+- `validateCreateSession` - Validação de criação com defaults
+- `validateUpdateScheduledSession` - Validação parcial (mínimo 1 campo)
+- `validateRecordEvolution` - Validação clínica rigorosa
+- `validateListSessions` - Validação de query params
+- `validateSessionId` - Validação de UUID em rotas
+- `validateNoScheduleConflict` - Detecção inteligente de conflitos
+
+#### **Recursos Especiais:**
+- ✅ Validação de horários com regex HH:MM
+- ✅ Detecção automática de conflitos de agendamento
+- ✅ Validação condicional (reason obrigatório em cancelamento)
+- ✅ Ranges de data com validação cruzada
+- ✅ Suporte a 9 tipos diferentes de sessão
+- ✅ Validações de engajamento (1-10) e progresso
+- ✅ Mensagens de erro em português
+
+---
+
 # 4. ROADMAP DE DESENVOLVIMENTO
 
 ## 🗓️ CRONOGRAMA GERAL
