@@ -707,6 +707,62 @@ backend/
 - ✅ Identificação de padrões temporais
 
 ---
+### **HELPERS DE EVOLUÇÃO CLÍNICA (100% COMPLETO)**
+
+#### **Arquivo Implementado:**
+- `src/utils/evolutionHelpers.js` - 11 funções para evolução clínica
+
+#### **Funcionalidades por Grupo:**
+
+**Templates de Evolução (2 funções)**
+- EVOLUTION_TEMPLATES: 6 templates estruturados por tipo de sessão
+- getEvolutionTemplate: Retorna seções e tópicos sugeridos
+
+**Banco de Intervenções (2 funções)**
+- INTERVENTIONS_LIBRARY: 50+ intervenções em 6 abordagens
+- suggestInterventions: Sugestões contextuais evitando repetição
+
+**Formatação (3 funções)**
+- formatEvolution: Estrutura dados em 4 seções (info/clinical/assessment/planning)
+- generateExecutiveSummary: Resumo executivo de uma linha
+- validateEvolutionCompleteness: Cálculo de completude (%)
+
+**Análise de Progresso (3 funções)**
+- analyzeProgressTrend: 4 tendências (positive/negative/stable/fluctuating)
+- identifyMilestones: 5 tipos de marcos (first_session/first_improvement/high_engagement/session_milestone/discharge)
+- calculateEngagementByPeriod: Média por fase (initial/middle/recent/overall)
+
+**Relatórios (3 funções)**
+- generateEvolutionReport: Relatório completo com todas as análises
+- getMostUsedInterventions: Top 10 intervenções mais utilizadas
+- getMainThemes: Top 10 temas mais abordados
+
+#### **Templates Disponíveis:**
+- ✅ first_consultation - 5 seções estruturadas
+- ✅ therapy_session - 6 seções completas
+- ✅ evaluation - 6 seções de avaliação
+- ✅ follow_up - 5 seções de acompanhamento
+- ✅ emergency - 6 seções de crise
+- ✅ discharge - 6 seções de alta
+
+#### **Abordagens Terapêuticas:**
+- ✅ Cognitivo-Comportamental (10 intervenções)
+- ✅ Psicodinâmica (8 intervenções)
+- ✅ Humanista (8 intervenções)
+- ✅ Sistêmica (7 intervenções)
+- ✅ Mindfulness (7 intervenções)
+- ✅ Comuns (8 intervenções)
+
+#### **Análises Disponíveis:**
+- ✅ Tendência de progresso com média móvel
+- ✅ Taxa de melhora (improvement_rate)
+- ✅ Distribuição de avaliações (improved/stable/worsened)
+- ✅ Identificação de marcos terapêuticos
+- ✅ Engajamento por período
+- ✅ Intervenções mais utilizadas
+- ✅ Temas mais frequentes
+
+---
 
 # 4. ROADMAP DE DESENVOLVIMENTO
 
