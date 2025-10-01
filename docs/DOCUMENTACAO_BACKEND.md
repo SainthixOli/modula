@@ -851,6 +851,62 @@ backend/
 
 ---
 
+### **HELPERS DE GRÁFICOS E CHARTS (100% COMPLETO)**
+
+#### **Arquivo Implementado:**
+- `src/utils/chartHelpers.js` - 19 funções para visualizações
+
+#### **Funcionalidades por Grupo:**
+
+**Paletas de Cores (3 funções)**
+- COLOR_PALETTES: 6 paletas (primary/status/progress/gradient/warm/cool)
+- getColor: Rotação automática por índice
+- generateColorPalette: Gradiente RGB customizado
+
+**Gráficos de Linha (3 funções)**
+- prepareLineChartData: Configurável (fill/tension/radius)
+- prepareMultiLineChartData: N séries simultâneas
+- prepareEngagementOverTimeChart: Evolução de engajamento
+
+**Gráficos de Barra (3 funções)**
+- prepareBarChartData: Vertical/horizontal configurável
+- prepareSessionsByTypeChart: 9 tipos de sessão
+- prepareProfessionalsComparisonChart: 4 métricas comparáveis
+
+**Gráficos de Pizza (3 funções)**
+- preparePieChartData: Formatação básica
+- prepareStatusDistributionChart: Cores por status
+- prepareProgressDistributionChart: Cores por progresso
+
+**Gráficos de Área (2 funções)**
+- prepareStackedAreaChart: Área empilhada
+- prepareGrowthTrendChart: Dual-line (pacientes + sessões)
+
+**Dashboard Combinado (1 função)**
+- prepareDashboardCharts: 6 gráficos prontos
+
+**Helpers de Tradução (4 funções)**
+- formatLabel: Datas em pt-BR
+- translateSessionType: 9 tipos traduzidos
+- translateStatus: 7 status traduzidos
+- translateProgress: 4 estados traduzidos
+
+#### **Paletas Disponíveis:**
+- ✅ Primary (8 cores principais)
+- ✅ Status (7 cores por status)
+- ✅ Progress (4 cores por progresso)
+- ✅ Gradient (5 tons azul)
+- ✅ Warm (5 tons quentes)
+- ✅ Cool (5 tons frios)
+
+#### **Compatibilidade:**
+- ✅ Chart.js (formato nativo)
+- ✅ Recharts (compatível)
+- ✅ ApexCharts (adaptável)
+- ✅ D3.js (estrutura base)
+
+---
+
 # 4. ROADMAP DE DESENVOLVIMENTO
 
 ## 🗓️ CRONOGRAMA GERAL
