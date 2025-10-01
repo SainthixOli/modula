@@ -763,6 +763,52 @@ backend/
 - ✅ Temas mais frequentes
 
 ---
+### **HELPERS DE TIMELINE E HISTÓRICO (100% COMPLETO)**
+
+#### **Arquivo Implementado:**
+- `src/utils/timelineHelpers.js` - 13 funções para timeline e histórico
+
+#### **Funcionalidades por Grupo:**
+
+**Geração de Timeline (3 funções)**
+- generateTimeline: Agrupamento configurável (year/month/week/day)
+- generateDetailedTimeline: Timeline com sessões + marcos
+- getWeekNumber: Cálculo ISO de semana do ano
+
+**Análise de Frequência (3 funções)**
+- calculateSessionFrequency: Média com 4 labels (semanal/quinzenal/mensal/esporádica)
+- analyzeSessionRegularity: Score 1-5 (very_regular → very_irregular)
+- identifySessionGaps: Gaps com 3 severidades (moderate/high/critical)
+
+**Comparação de Períodos (2 funções)**
+- comparePeriods: Comparação com diferenças numéricas
+- generateComparisonSummary: Resumo textual automático
+
+**Aderência (1 função)**
+- calculateAdherenceRate: Taxa com 5 níveis + no_show_rate
+
+**Visualização (4 funções)**
+- prepareDataForVisualization: Formato flexível (chart/table/calendar)
+- prepareChartData: 3 tipos de dados (engagement/progress/sessions_by_type)
+- prepareTableData: Formato tabular brasileiro
+- prepareCalendarData: Estrutura de calendário
+
+#### **Métricas Calculadas:**
+- ✅ Intervalo médio entre sessões (em dias)
+- ✅ Coeficiente de variação (regularidade)
+- ✅ Desvio padrão dos intervalos
+- ✅ Taxa de aderência (%)
+- ✅ Taxa de no-show (%)
+- ✅ Gaps prolongados (dias/semanas)
+- ✅ Engajamento médio por período
+- ✅ Taxa de melhora comparativa
+
+#### **Níveis de Classificação:**
+- **Frequência:** Semanal/Quinzenal/Mensal/Esporádica
+- **Regularidade:** Very Regular (5) → Very Irregular (1)
+- **Aderência:** Excellent/Good/Moderate/Low/Very Low
+- **Gaps:** Moderate (30-60 dias) / High (60-90) / Critical (90+)
+---
 
 # 4. ROADMAP DE DESENVOLVIMENTO
 
