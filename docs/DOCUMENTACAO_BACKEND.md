@@ -808,6 +808,47 @@ backend/
 - **Regularidade:** Very Regular (5) → Very Irregular (1)
 - **Aderência:** Excellent/Good/Moderate/Low/Very Low
 - **Gaps:** Moderate (30-60 dias) / High (60-90) / Critical (90+)
+
+---
+
+### **SERVICE DE ESTATÍSTICAS AVANÇADAS (100% COMPLETO)**
+
+#### **Arquivo Implementado:**
+- `src/services/statsService.js` - 6 funções de estatísticas agregadas
+
+#### **Funcionalidades por Grupo:**
+
+**Visão Geral (2 funções)**
+- getClinicOverview: Dashboard admin com 6 seções principais
+- getMonthlyStats: Análise mensal com breakdown por profissional
+
+**Produtividade (2 funções)**
+- getProfessionalProductivity: 10+ métricas individuais
+- compareProfessionalsProductivity: Ranking e médias gerais
+
+**Crescimento (1 função)**
+- getGrowthTrend: Tendências de N meses com taxas de crescimento
+
+**Qualidade (1 função)**
+- getQualityIndicators: 4 indicadores principais
+
+#### **Métricas Implementadas:**
+- ✅ Profissionais (total/ativos/inativos)
+- ✅ Pacientes (total/ativos/inativos/alta)
+- ✅ Sessões (total/completadas/agendadas/canceladas/no-show)
+- ✅ Taxa de conclusão de sessões
+- ✅ Anamneses pendentes
+- ✅ Novos pacientes por período
+- ✅ Horas trabalhadas (real vs agendada)
+- ✅ Taxa de comparecimento
+- ✅ Pacientes únicos atendidos
+- ✅ Engajamento médio
+- ✅ Distribuição por tipo de sessão
+- ✅ Taxa de melhora
+- ✅ Taxa de adesão ao tratamento
+- ✅ Taxa de completude de anamnese
+- ✅ Taxa de crescimento mensal
+
 ---
 
 # 4. ROADMAP DE DESENVOLVIMENTO
