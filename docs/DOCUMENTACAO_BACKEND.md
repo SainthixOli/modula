@@ -972,6 +972,24 @@ Todos os relatórios seguem o padrão:
   // ... dados específicos do relatório
 }
 
+
+---
+
+### **MODELO TRANSFER (100% COMPLETO)**
+
+#### **Arquivo Implementado:**
+- `src/models/Transfer.js` - Modelo completo de transferências
+
+#### **Status Workflow:**
+- pending → approved → completed (fluxo normal)
+- pending → rejected (rejeitado)
+- pending → cancelled (cancelado pelo solicitante)
+
+#### **Métodos Implementados:**
+- 9 métodos de instância
+- 4 métodos estáticos
+- 5 índices otimizados
+
 ---
 
 # 4. ROADMAP DE DESENVOLVIMENTO
