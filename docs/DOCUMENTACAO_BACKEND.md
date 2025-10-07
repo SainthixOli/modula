@@ -991,6 +991,58 @@ Todos os relatórios seguem o padrão:
 - 5 índices otimizados
 
 ---
+### **SISTEMA DE EXPORT EM PDF (100% COMPLETO)**
+
+#### **Arquivo Implementado:**
+- `src/services/pdfService.js` - Conversão de relatórios em PDF
+
+#### **Funcionalidades Implementadas:**
+
+**Templates HTML (3 funções):**
+- generateBaseTemplate: Template base com CSS profissional
+  * Grid system responsivo
+  * Tabelas formatadas
+  * Badges e cards de estatística
+  * Page breaks inteligentes
+  * Watermark opcional
+  
+- generateEvolutionReportHTML: Relatório de evolução
+  * Dados do paciente estruturados
+  * Resumo do tratamento com cards
+  * Histórico de sessões em tabela
+  * Limite de 20 sessões por página
+  
+- generateAnamnesisHTML: Anamnese formatada
+  * Cabeçalho profissional
+  * Seções estruturadas
+  * Queixa principal destacada
+
+**Conversão PDF (3 funções):**
+- generatePDF: Conversão genérica HTML → PDF
+- generateEvolutionPDF: PDF de evolução completo
+- generateAnamnesisPDF: PDF de anamnese
+
+**Utilitários (1 função):**
+- savePDFToFile: Salvar buffer em arquivo
+
+#### **Configurações PDF:**
+- Formato: A4 (padrão)
+- Margens: 20mm top/bottom, 15mm left/right
+- Headers e footers: Habilitados
+- Numeração de páginas: Automática
+- Background: Impresso
+- Orientação: Portrait (configurável)
+
+#### **Recursos CSS:**
+- ✅ Grid system para dados estruturados
+- ✅ Tabelas com hover e bordas
+- ✅ Cards de estatísticas visuais
+- ✅ Badges coloridos por status
+- ✅ Text blocks com destaque
+- ✅ Page breaks (@media print)
+- ✅ Watermark com opacity
+- ✅ Footer profissional
+---
 
 # 4. ROADMAP DE DESENVOLVIMENTO
 
