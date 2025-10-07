@@ -19,7 +19,7 @@ const User = require('./User');
 const Patient = require('./Patient');
 const Anamnesis = require('./Anamnesis');
 const Session = require('./Session');
-
+const Transfer = require('./Transfer');
 
 // Inicializar modelos
 const models = {
@@ -126,13 +126,82 @@ models.Session.belongsTo(models.User, {
   onUpdate: 'CASCADE'
 });
 
+
+// ============================================
+// ASSOCIAÇÕES DO TRANSFER 
+// ============================================
+
+// Transfer -> Patient (paciente sendo transferido)
+Transfer.belongsTo(Patient, {
+  foreignKey: 'patient_id',
+  as: 'Patient',
+  onDelete: 'RESTRICT',
+  onUpdate: 'CASCADE',
+});
+
+// Transfer -> User (profissional de origem)
+Transfer.belongsTo(User, {
+  foreignKey: 'from_user_id',
+  as: 'FromUser',
+  onDelete: 'RESTRICT',
+  onUpdate: 'CASCADE',
+});
+
+// Transfer -> User (profissional de destino)
+Transfer.belongsTo(User, {
+  foreignKey: 'to_user_id',
+  as: 'ToUser',
+  onDelete: 'RESTRICT',
+  onUpdate: 'CASCADE',
+});
+
+// Transfer -> User (admin que processou)
+Transfer.belongsTo(User, {
+  foreignKey: 'processed_by',
+  as: 'ProcessedBy',
+  onDelete: 'SET NULL',
+  onUpdate: 'CASCADE',
+});
+
+// Transfer -> User (usuário que cancelou)
+Transfer.belongsTo(User, {
+  foreignKey: 'cancelled_by',
+  as: 'CancelledBy',
+  onDelete: 'SET NULL',
+  onUpdate: 'CASCADE',
+});
+
+// Associações reversas
+Patient.hasMany(Transfer, {
+  foreignKey: 'patient_id',
+  as: 'Transfers',
+});
+
+User.hasMany(Transfer, {
+  foreignKey: 'from_user_id',
+  as: 'TransfersSent',
+});
+
+User.hasMany(Transfer, {
+  foreignKey: 'to_user_id',
+  as: 'TransfersReceived',
+});
+
+User.hasMany(Transfer, {
+  foreignKey: 'processed_by',
+  as: 'TransfersProcessed',
+});
+
 // ============================================
 // EXPORTAR MODELOS E CONEXÃO
 // ============================================
 module.exports = {
   sequelize,
-  Sequelize,
-  ...models
+  User,
+  Patient,
+  Anamnesis,
+  Session,
+  Transfer,
 };
 
 /**

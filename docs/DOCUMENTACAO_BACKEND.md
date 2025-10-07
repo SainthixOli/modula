@@ -1106,6 +1106,84 @@ Todos os relatórios seguem o padrão:
 - ✅ Integração com chartHelpers
 - ✅ Integração com statsService
 - ✅ Tratamento de erros centralizado
+
+---
+### **MODELO TRANSFER (100% COMPLETO)**
+
+#### **Arquivo Implementado:**
+- `src/models/Transfer.js` - Modelo completo de transferências
+
+#### **Campos do Modelo:**
+
+**Identificação:**
+- `id` - UUID único
+- `patient_id` - FK para paciente (RESTRICT)
+- `from_user_id` - FK profissional origem (RESTRICT)
+- `to_user_id` - FK profissional destino (RESTRICT)
+
+**Status Workflow:**
+- `status` - ENUM: pending | approved | rejected | completed | cancelled
+- `requested_at` - Data da solicitação
+- `processed_at` - Data do processamento
+- `completed_at` - Data da conclusão
+- `cancelled_at` - Data do cancelamento
+
+**Processamento:**
+- `processed_by` - FK admin que processou (SET NULL)
+- `cancelled_by` - FK usuário que cancelou (SET NULL)
+
+**Motivos e Observações:**
+- `reason` - Motivo da transferência (TEXT, 10-1000 chars)
+- `rejection_reason` - Motivo da rejeição (TEXT)
+- `cancellation_reason` - Motivo do cancelamento (TEXT)
+- `admin_notes` - Observações do admin (TEXT)
+- `notes` - Observações gerais (TEXT)
+
+**Snapshots (Auditoria):**
+- `patient_snapshot` - JSONB snapshot do paciente
+- `from_professional_snapshot` - JSONB dados do profissional origem
+- `to_professional_snapshot` - JSONB dados do profissional destino
+
+**Metadados:**
+- `metadata` - JSONB para dados extras
+
+#### **Métodos de Instância (9):**
+- `isPending()` - Verificar se está pendente
+- `isApproved()` - Verificar se foi aprovada
+- `isRejected()` - Verificar se foi rejeitada
+- `isCompleted()` - Verificar se foi completada
+- `isCancelled()` - Verificar se foi cancelada
+- `approve(adminId, notes)` - Aprovar transferência
+- `reject(adminId, reason)` - Rejeitar transferência
+- `complete()` - Completar transferência (efetivar mudança)
+- `cancel(userId, reason)` - Cancelar transferência
+- `getFormattedInfo()` - Obter informações formatadas
+
+#### **Métodos Estáticos (4):**
+- `findPending(options)` - Buscar transferências pendentes
+- `findByProfessional(userId, direction, options)` - Por profissional
+- `findByPatient(patientId)` - Histórico do paciente
+- `getStats(filters)` - Estatísticas de transferências
+
+#### **Hooks Implementados:**
+- `beforeCreate` - Validações e snapshots
+- `afterUpdate` - Log de auditoria e histórico
+
+#### **Validações:**
+- ✅ Não permite transferir para si mesmo
+- ✅ Bloqueia múltiplas transferências pendentes do mesmo paciente
+- ✅ Motivo obrigatório (min 10 caracteres)
+- ✅ Motivo de rejeição obrigatório ao rejeitar
+- ✅ Apenas solicitante pode cancelar
+- ✅ Apenas admin pode aprovar/rejeitar
+
+#### **Índices Otimizados (5):**
+- `patient_id` - Busca por paciente
+- `from_user_id` - Busca por profissional origem
+- `to_user_id` - Busca por profissional destino
+- `status` - Filtro por status
+- `requested_at` - Ordenação temporal
+- `(status, requested_at)` - Busca combinada otimizada
 ---
 
 # 4. ROADMAP DE DESENVOLVIMENTO

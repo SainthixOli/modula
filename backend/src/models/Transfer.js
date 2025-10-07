@@ -2,449 +2,626 @@
  * MÓDULA - MODELO TRANSFER
  * 
  * Modelo para gerenciar transferências de pacientes entre profissionais.
- * Sistema completo de workflow com aprovação administrativa.
- * 
- * Funcionalidades implementadas:
- * - Solicitação de transferência por profissional
- * - Workflow de aprovação/rejeição por admin
- * - Histórico completo de transferências
- * - Rastreamento de motivos
- * - Notificações automáticas
- * - Auditoria de mudanças
- * 
- * Recursos especiais:
- * - Status com workflow completo
- * - Timestamps de todas as etapas
- * - Metadados flexíveis (JSONB)
- * - Métodos de aprovação/rejeição
- * - Queries otimizadas
+ * Workflow completo: pending → approved/rejected → completed
+ * Mantém histórico completo e auditoria de todas as operações.
  */
 
-module.exports = (sequelize, DataTypes) => {
-  const Transfer = sequelize.define('Transfer', {
-    // Identificação
-    id: {
-      type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4,
-      primaryKey: true
-    },
+const { DataTypes, Op } = require('sequelize');
+const sequelize = require('../config/database');
 
-    // Relacionamentos
-    patient_id: {
-      type: DataTypes.UUID,
-      allowNull: false,
-      references: {
-        model: 'patients',
-        key: 'id'
-      },
-      comment: 'Paciente a ser transferido'
-    },
-
-    from_user_id: {
-      type: DataTypes.UUID,
-      allowNull: false,
-      references: {
-        model: 'users',
-        key: 'id'
-      },
-      comment: 'Profissional atual do paciente'
-    },
-
-    to_user_id: {
-      type: DataTypes.UUID,
-      allowNull: false,
-      references: {
-        model: 'users',
-        key: 'id'
-      },
-      comment: 'Profissional destino da transferência'
-    },
-
-    processed_by: {
-      type: DataTypes.UUID,
-      allowNull: true,
-      references: {
-        model: 'users',
-        key: 'id'
-      },
-      comment: 'Admin que processou a transferência'
-    },
-
-    // Status e Workflow
-    status: {
-      type: DataTypes.ENUM(
-        'pending',      // Aguardando aprovação
-        'approved',     // Aprovada pelo admin
-        'rejected',     // Rejeitada pelo admin
-        'completed',    // Transferência executada
-        'cancelled'     // Cancelada pelo solicitante
-      ),
-      allowNull: false,
-      defaultValue: 'pending',
-      comment: 'Status atual da transferência'
-    },
-
-    // Timestamps do Workflow
-    requested_at: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: DataTypes.NOW,
-      comment: 'Data/hora da solicitação'
-    },
-
-    processed_at: {
-      type: DataTypes.DATE,
-      allowNull: true,
-      comment: 'Data/hora do processamento (aprovação/rejeição)'
-    },
-
-    completed_at: {
-      type: DataTypes.DATE,
-      allowNull: true,
-      comment: 'Data/hora da conclusão da transferência'
-    },
-
-    // Motivos e Observações
-    reason: {
-      type: DataTypes.TEXT,
-      allowNull: false,
-      validate: {
-        len: {
-          args: [10, 1000],
-          msg: 'Motivo deve ter entre 10 e 1000 caracteres'
-        }
-      },
-      comment: 'Motivo da transferência (informado pelo profissional)'
-    },
-
-    rejection_reason: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-      validate: {
-        len: {
-          args: [10, 1000],
-          msg: 'Motivo da rejeição deve ter entre 10 e 1000 caracteres'
-        }
-      },
-      comment: 'Motivo da rejeição (se rejeitada)'
-    },
-
-    admin_notes: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-      comment: 'Observações do administrador'
-    },
-
-    // Dados Adicionais
-    metadata: {
-      type: DataTypes.JSONB,
-      defaultValue: {},
-      comment: 'Metadados adicionais flexíveis'
-    },
-
-    // Timestamps automáticos
-    created_at: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: DataTypes.NOW
-    },
-
-    updated_at: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: DataTypes.NOW
-    }
-  }, {
-    tableName: 'transfers',
-    underscored: true,
-    timestamps: true,
-    createdAt: 'created_at',
-    updatedAt: 'updated_at',
-    
-    indexes: [
-      {
-        name: 'idx_transfers_status',
-        fields: ['status']
-      },
-      {
-        name: 'idx_transfers_patient',
-        fields: ['patient_id']
-      },
-      {
-        name: 'idx_transfers_from_user',
-        fields: ['from_user_id']
-      },
-      {
-        name: 'idx_transfers_to_user',
-        fields: ['to_user_id']
-      },
-      {
-        name: 'idx_transfers_requested_at',
-        fields: ['requested_at']
-      }
-    ]
-  });
+const Transfer = sequelize.define('Transfer', {
+  // ============================================
+  // IDENTIFICAÇÃO
+  // ============================================
+  
+  id: {
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    primaryKey: true,
+    comment: 'Identificador único da transferência',
+  },
 
   // ============================================
-  // MÉTODOS DE INSTÂNCIA
+  // RELACIONAMENTOS
   // ============================================
 
-  /**
-   * Verificar se transferência está pendente
-   */
-  Transfer.prototype.isPending = function() {
-    return this.status === 'pending';
-  };
+  patient_id: {
+    type: DataTypes.UUID,
+    allowNull: false,
+    references: {
+      model: 'patients',
+      key: 'id',
+    },
+    onUpdate: 'CASCADE',
+    onDelete: 'RESTRICT', // Não permite deletar paciente com transferências
+    comment: 'ID do paciente sendo transferido',
+  },
 
-  /**
-   * Verificar se transferência foi aprovada
-   */
-  Transfer.prototype.isApproved = function() {
-    return this.status === 'approved';
-  };
+  from_user_id: {
+    type: DataTypes.UUID,
+    allowNull: false,
+    references: {
+      model: 'users',
+      key: 'id',
+    },
+    onUpdate: 'CASCADE',
+    onDelete: 'RESTRICT',
+    comment: 'ID do profissional atual (origem)',
+  },
 
-  /**
-   * Verificar se transferência foi rejeitada
-   */
-  Transfer.prototype.isRejected = function() {
-    return this.status === 'rejected';
-  };
-
-  /**
-   * Verificar se transferência foi completada
-   */
-  Transfer.prototype.isCompleted = function() {
-    return this.status === 'completed';
-  };
-
-  /**
-   * Aprovar transferência
-   */
-  Transfer.prototype.approve = async function(adminId, notes = null) {
-    if (!this.isPending()) {
-      throw new Error('Apenas transferências pendentes podem ser aprovadas');
-    }
-
-    this.status = 'approved';
-    this.processed_by = adminId;
-    this.processed_at = new Date();
-    if (notes) this.admin_notes = notes;
-
-    await this.save();
-    return this;
-  };
-
-  /**
-   * Rejeitar transferência
-   */
-  Transfer.prototype.reject = async function(adminId, rejectionReason, notes = null) {
-    if (!this.isPending()) {
-      throw new Error('Apenas transferências pendentes podem ser rejeitadas');
-    }
-
-    if (!rejectionReason || rejectionReason.length < 10) {
-      throw new Error('Motivo da rejeição é obrigatório (mínimo 10 caracteres)');
-    }
-
-    this.status = 'rejected';
-    this.processed_by = adminId;
-    this.processed_at = new Date();
-    this.rejection_reason = rejectionReason;
-    if (notes) this.admin_notes = notes;
-
-    await this.save();
-    return this;
-  };
-
-  /**
-   * Completar transferência (executar a mudança de profissional)
-   */
-  Transfer.prototype.complete = async function() {
-    if (!this.isApproved()) {
-      throw new Error('Apenas transferências aprovadas podem ser completadas');
-    }
-
-    const { Patient } = require('./index');
-    
-    // Atualizar profissional do paciente
-    await Patient.update(
-      { user_id: this.to_user_id },
-      { where: { id: this.patient_id } }
-    );
-
-    // Marcar transferência como completada
-    this.status = 'completed';
-    this.completed_at = new Date();
-
-    await this.save();
-    return this;
-  };
-
-  /**
-   * Cancelar transferência (pelo solicitante, se ainda pendente)
-   */
-  Transfer.prototype.cancel = async function() {
-    if (!this.isPending()) {
-      throw new Error('Apenas transferências pendentes podem ser canceladas');
-    }
-
-    this.status = 'cancelled';
-    await this.save();
-    return this;
-  };
-
-  /**
-   * Obter informações resumidas
-   */
-  Transfer.prototype.getSummary = function() {
-    return {
-      id: this.id,
-      status: this.status,
-      reason: this.reason,
-      requested_at: this.requested_at,
-      processed_at: this.processed_at,
-      completed_at: this.completed_at,
-      days_pending: this.isPending() 
-        ? Math.ceil((new Date() - this.requested_at) / (1000 * 60 * 60 * 24))
-        : null
-    };
-  };
+  to_user_id: {
+    type: DataTypes.UUID,
+    allowNull: false,
+    references: {
+      model: 'users',
+      key: 'id',
+    },
+    onUpdate: 'CASCADE',
+    onDelete: 'RESTRICT',
+    comment: 'ID do profissional destino',
+  },
 
   // ============================================
-  // MÉTODOS ESTÁTICOS
+  // STATUS E WORKFLOW
   // ============================================
 
-  /**
-   * Buscar transferências pendentes
-   */
-  Transfer.findPending = async function() {
-    return await this.findAll({
-      where: { status: 'pending' },
-      order: [['requested_at', 'ASC']],
-      include: [
-        {
-          model: sequelize.models.Patient,
-          as: 'patient',
-          attributes: ['id', 'full_name', 'cpf']
-        },
-        {
-          model: sequelize.models.User,
-          as: 'fromProfessional',
-          attributes: ['id', 'full_name', 'professional_register']
-        },
-        {
-          model: sequelize.models.User,
-          as: 'toProfessional',
-          attributes: ['id', 'full_name', 'professional_register']
-        }
-      ]
-    });
-  };
+  status: {
+    type: DataTypes.ENUM(
+      'pending',      // Aguardando aprovação
+      'approved',     // Aprovada pelo admin
+      'rejected',     // Rejeitada pelo admin
+      'completed',    // Transferência efetivada
+      'cancelled'     // Cancelada pelo solicitante
+    ),
+    allowNull: false,
+    defaultValue: 'pending',
+    comment: 'Status atual da transferência',
+  },
 
-  /**
-   * Buscar histórico de transferências de um paciente
-   */
-  Transfer.findByPatient = async function(patientId) {
-    return await this.findAll({
-      where: { patient_id: patientId },
-      order: [['requested_at', 'DESC']],
-      include: [
-        {
-          model: sequelize.models.User,
-          as: 'fromProfessional',
-          attributes: ['id', 'full_name']
-        },
-        {
-          model: sequelize.models.User,
-          as: 'toProfessional',
-          attributes: ['id', 'full_name']
-        },
-        {
-          model: sequelize.models.User,
-          as: 'processedBy',
-          attributes: ['id', 'full_name']
-        }
-      ]
-    });
-  };
+  // ============================================
+  // DATAS E TIMESTAMPS
+  // ============================================
 
-  /**
-   * Verificar se paciente tem transferência pendente
-   */
-  Transfer.hasPendingTransfer = async function(patientId) {
-    const count = await this.count({
-      where: {
-        patient_id: patientId,
-        status: 'pending'
-      }
-    });
-    return count > 0;
-  };
+  requested_at: {
+    type: DataTypes.DATE,
+    allowNull: false,
+    defaultValue: DataTypes.NOW,
+    comment: 'Data/hora da solicitação',
+  },
 
-  /**
-   * Estatísticas de transferências
-   */
-  Transfer.getStats = async function(startDate = null, endDate = null) {
-    const where = {};
-    
-    if (startDate || endDate) {
-      where.requested_at = {};
-      if (startDate) where.requested_at[sequelize.Sequelize.Op.gte] = startDate;
-      if (endDate) where.requested_at[sequelize.Sequelize.Op.lte] = endDate;
-    }
+  processed_at: {
+    type: DataTypes.DATE,
+    allowNull: true,
+    comment: 'Data/hora do processamento (aprovação/rejeição)',
+  },
 
-    const transfers = await this.findAll({ where });
+  completed_at: {
+    type: DataTypes.DATE,
+    allowNull: true,
+    comment: 'Data/hora da conclusão da transferência',
+  },
 
-    const stats = {
-      total: transfers.length,
-      pending: transfers.filter(t => t.status === 'pending').length,
-      approved: transfers.filter(t => t.status === 'approved').length,
-      rejected: transfers.filter(t => t.status === 'rejected').length,
-      completed: transfers.filter(t => t.status === 'completed').length,
-      cancelled: transfers.filter(t => t.status === 'cancelled').length
-    };
+  cancelled_at: {
+    type: DataTypes.DATE,
+    allowNull: true,
+    comment: 'Data/hora do cancelamento',
+  },
 
-    stats.approval_rate = stats.total > 0
-      ? ((stats.approved / (stats.approved + stats.rejected)) * 100).toFixed(2)
-      : 0;
+  // ============================================
+  // PROCESSAMENTO E AUDITORIA
+  // ============================================
 
-    stats.completion_rate = stats.approved > 0
-      ? ((stats.completed / stats.approved) * 100).toFixed(2)
-      : 0;
+  processed_by: {
+    type: DataTypes.UUID,
+    allowNull: true,
+    references: {
+      model: 'users',
+      key: 'id',
+    },
+    comment: 'ID do admin que processou a transferência',
+  },
 
-    return stats;
-  };
+  cancelled_by: {
+    type: DataTypes.UUID,
+    allowNull: true,
+    references: {
+      model: 'users',
+      key: 'id',
+    },
+    comment: 'ID do usuário que cancelou',
+  },
 
-  return Transfer;
+  // ============================================
+  // MOTIVOS E OBSERVAÇÕES
+  // ============================================
+
+  reason: {
+    type: DataTypes.TEXT,
+    allowNull: false,
+    comment: 'Motivo da transferência (obrigatório)',
+    validate: {
+      len: {
+        args: [10, 1000],
+        msg: 'Motivo deve ter entre 10 e 1000 caracteres',
+      },
+    },
+  },
+
+  rejection_reason: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+    comment: 'Motivo da rejeição (se rejeitada)',
+  },
+
+  cancellation_reason: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+    comment: 'Motivo do cancelamento (se cancelada)',
+  },
+
+  admin_notes: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+    comment: 'Observações do administrador',
+  },
+
+  notes: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+    comment: 'Observações gerais adicionais',
+  },
+
+  // ============================================
+  // DADOS DO SNAPSHOT (HISTÓRICO)
+  // ============================================
+
+  patient_snapshot: {
+    type: DataTypes.JSONB,
+    allowNull: true,
+    comment: 'Snapshot dos dados do paciente no momento da transferência',
+  },
+
+  from_professional_snapshot: {
+    type: DataTypes.JSONB,
+    allowNull: true,
+    comment: 'Dados do profissional de origem',
+  },
+
+  to_professional_snapshot: {
+    type: DataTypes.JSONB,
+    allowNull: true,
+    comment: 'Dados do profissional de destino',
+  },
+
+  // ============================================
+  // METADADOS
+  // ============================================
+
+  metadata: {
+    type: DataTypes.JSONB,
+    allowNull: true,
+    defaultValue: {},
+    comment: 'Metadados adicionais (sessions_count, last_appointment, etc.)',
+  },
+
+}, {
+  tableName: 'transfers',
+  timestamps: true,
+  underscored: true,
+  indexes: [
+    // Índices para busca otimizada
+    { fields: ['patient_id'] },
+    { fields: ['from_user_id'] },
+    { fields: ['to_user_id'] },
+    { fields: ['status'] },
+    { fields: ['requested_at'] },
+    // Índice composto para buscar transferências pendentes
+    { fields: ['status', 'requested_at'] },
+  ],
+});
+
+// ============================================
+// MÉTODOS DE INSTÂNCIA
+// ============================================
+
+/**
+ * Verificar se transferência está pendente
+ */
+Transfer.prototype.isPending = function() {
+  return this.status === 'pending';
 };
 
 /**
- * DOCUMENTAÇÃO DE USO:
- * 
- * 1. CRIAR TRANSFERÊNCIA:
- *    const transfer = await Transfer.create({
- *      patient_id: patientId,
- *      from_user_id: currentProfId,
- *      to_user_id: newProfId,
- *      reason: 'Motivo da transferência'
- *    });
- * 
- * 2. APROVAR:
- *    await transfer.approve(adminId, 'Aprovado conforme solicitado');
- *    await transfer.complete(); // Executa a transferência
- * 
- * 3. REJEITAR:
- *    await transfer.reject(adminId, 'Motivo da rejeição');
- * 
- * 4. BUSCAR PENDENTES:
- *    const pending = await Transfer.findPending();
- * 
- * 5. HISTÓRICO DO PACIENTE:
- *    const history = await Transfer.findByPatient(patientId);
- * 
- * 6. VERIFICAR SE TEM PENDENTE:
- *    const hasPending = await Transfer.hasPendingTransfer(patientId);
- * 
- * 7. ESTATÍSTICAS:
- *    const stats = await Transfer.getStats(startDate, endDate);
+ * Verificar se transferência foi aprovada
  */
+Transfer.prototype.isApproved = function() {
+  return this.status === 'approved';
+};
+
+/**
+ * Verificar se transferência foi rejeitada
+ */
+Transfer.prototype.isRejected = function() {
+  return this.status === 'rejected';
+};
+
+/**
+ * Verificar se transferência foi completada
+ */
+Transfer.prototype.isCompleted = function() {
+  return this.status === 'completed';
+};
+
+/**
+ * Verificar se transferência foi cancelada
+ */
+Transfer.prototype.isCancelled = function() {
+  return this.status === 'cancelled';
+};
+
+/**
+ * Aprovar transferência (apenas admin)
+ * @param {String} adminId - ID do administrador
+ * @param {String} notes - Observações do admin
+ */
+Transfer.prototype.approve = async function(adminId, notes = null) {
+  if (!this.isPending()) {
+    throw new Error('Apenas transferências pendentes podem ser aprovadas');
+  }
+
+  this.status = 'approved';
+  this.processed_by = adminId;
+  this.processed_at = new Date();
+  if (notes) {
+    this.admin_notes = notes;
+  }
+
+  await this.save();
+  return this;
+};
+
+/**
+ * Rejeitar transferência (apenas admin)
+ * @param {String} adminId - ID do administrador
+ * @param {String} reason - Motivo da rejeição (obrigatório)
+ */
+Transfer.prototype.reject = async function(adminId, reason) {
+  if (!this.isPending()) {
+    throw new Error('Apenas transferências pendentes podem ser rejeitadas');
+  }
+
+  if (!reason || reason.trim().length < 10) {
+    throw new Error('Motivo da rejeição é obrigatório (mínimo 10 caracteres)');
+  }
+
+  this.status = 'rejected';
+  this.processed_by = adminId;
+  this.processed_at = new Date();
+  this.rejection_reason = reason;
+
+  await this.save();
+  return this;
+};
+
+/**
+ * Completar transferência (efetuar mudança do paciente)
+ * Deve ser chamado após aprovação
+ */
+Transfer.prototype.complete = async function() {
+  if (!this.isApproved()) {
+    throw new Error('Apenas transferências aprovadas podem ser completadas');
+  }
+
+  // Buscar paciente e efetivar transferência
+  const Patient = require('./Patient');
+  const patient = await Patient.findByPk(this.patient_id);
+
+  if (!patient) {
+    throw new Error('Paciente não encontrado');
+  }
+
+  // Salvar snapshot antes da transferência
+  this.patient_snapshot = patient.toJSON();
+
+  // Atualizar profissional do paciente
+  await patient.update({
+    user_id: this.to_user_id,
+    metadata: {
+      ...patient.metadata,
+      transferred_from: this.from_user_id,
+      transferred_at: new Date(),
+      transfer_id: this.id,
+    },
+  });
+
+  // Marcar transferência como completa
+  this.status = 'completed';
+  this.completed_at = new Date();
+  await this.save();
+
+  return this;
+};
+
+/**
+ * Cancelar transferência (apenas solicitante)
+ * @param {String} userId - ID do usuário cancelando
+ * @param {String} reason - Motivo do cancelamento
+ */
+Transfer.prototype.cancel = async function(userId, reason) {
+  if (!this.isPending()) {
+    throw new Error('Apenas transferências pendentes podem ser canceladas');
+  }
+
+  if (this.from_user_id !== userId) {
+    throw new Error('Apenas o solicitante pode cancelar a transferência');
+  }
+
+  this.status = 'cancelled';
+  this.cancelled_by = userId;
+  this.cancelled_at = new Date();
+  if (reason) {
+    this.cancellation_reason = reason;
+  }
+
+  await this.save();
+  return this;
+};
+
+/**
+ * Obter informações formatadas da transferência
+ */
+Transfer.prototype.getFormattedInfo = async function() {
+  const Patient = require('./Patient');
+  const User = require('./User');
+
+  // Carregar relacionamentos se necessário
+  if (!this.Patient) await this.reload({ include: ['Patient', 'FromUser', 'ToUser'] });
+
+  return {
+    id: this.id,
+    status: this.status,
+    patient: {
+      id: this.patient_id,
+      name: this.Patient?.full_name,
+    },
+    from: {
+      id: this.from_user_id,
+      name: this.FromUser?.full_name,
+    },
+    to: {
+      id: this.to_user_id,
+      name: this.ToUser?.full_name,
+    },
+    reason: this.reason,
+    requested_at: this.requested_at,
+    processed_at: this.processed_at,
+    completed_at: this.completed_at,
+    rejection_reason: this.rejection_reason,
+    admin_notes: this.admin_notes,
+  };
+};
+
+// ============================================
+// MÉTODOS ESTÁTICOS
+// ============================================
+
+/**
+ * Buscar transferências pendentes (para admin)
+ * @param {Object} options - Opções de paginação
+ */
+Transfer.findPending = async function(options = {}) {
+  const { page = 1, limit = 20, sortBy = 'requested_at', order = 'ASC' } = options;
+  const offset = (page - 1) * limit;
+
+  const { count, rows } = await this.findAndCountAll({
+    where: { status: 'pending' },
+    include: [
+      { association: 'Patient', attributes: ['id', 'full_name', 'cpf'] },
+      { association: 'FromUser', attributes: ['id', 'full_name', 'email'] },
+      { association: 'ToUser', attributes: ['id', 'full_name', 'email'] },
+    ],
+    order: [[sortBy, order]],
+    limit,
+    offset,
+  });
+
+  return {
+    transfers: rows,
+    pagination: {
+      total: count,
+      page,
+      limit,
+      totalPages: Math.ceil(count / limit),
+    },
+  };
+};
+
+/**
+ * Buscar transferências por profissional (enviadas ou recebidas)
+ * @param {String} userId - ID do profissional
+ * @param {String} direction - 'sent' | 'received' | 'all'
+ */
+Transfer.findByProfessional = async function(userId, direction = 'all', options = {}) {
+  const { page = 1, limit = 20, status = null } = options;
+  const offset = (page - 1) * limit;
+
+  const where = {};
+  
+  // Filtrar por direção
+  if (direction === 'sent') {
+    where.from_user_id = userId;
+  } else if (direction === 'received') {
+    where.to_user_id = userId;
+  } else {
+    where[Op.or] = [
+      { from_user_id: userId },
+      { to_user_id: userId },
+    ];
+  }
+
+  // Filtrar por status se fornecido
+  if (status) {
+    where.status = status;
+  }
+
+  const { count, rows } = await this.findAndCountAll({
+    where,
+    include: [
+      { association: 'Patient', attributes: ['id', 'full_name', 'cpf'] },
+      { association: 'FromUser', attributes: ['id', 'full_name'] },
+      { association: 'ToUser', attributes: ['id', 'full_name'] },
+    ],
+    order: [['requested_at', 'DESC']],
+    limit,
+    offset,
+  });
+
+  return {
+    transfers: rows,
+    pagination: {
+      total: count,
+      page,
+      limit,
+      totalPages: Math.ceil(count / limit),
+    },
+  };
+};
+
+/**
+ * Buscar histórico de transferências de um paciente
+ * @param {String} patientId - ID do paciente
+ */
+Transfer.findByPatient = async function(patientId) {
+  return await this.findAll({
+    where: { patient_id: patientId },
+    include: [
+      { association: 'FromUser', attributes: ['id', 'full_name'] },
+      { association: 'ToUser', attributes: ['id', 'full_name'] },
+      { 
+        association: 'ProcessedBy', 
+        attributes: ['id', 'full_name'],
+        required: false,
+      },
+    ],
+    order: [['requested_at', 'DESC']],
+  });
+};
+
+/**
+ * Estatísticas de transferências
+ * @param {Object} filters - Filtros opcionais
+ */
+Transfer.getStats = async function(filters = {}) {
+  const { startDate, endDate, userId } = filters;
+
+  const where = {};
+  
+  if (startDate || endDate) {
+    where.requested_at = {};
+    if (startDate) where.requested_at[Op.gte] = new Date(startDate);
+    if (endDate) where.requested_at[Op.lte] = new Date(endDate);
+  }
+
+  if (userId) {
+    where[Op.or] = [
+      { from_user_id: userId },
+      { to_user_id: userId },
+    ];
+  }
+
+  const [total, pending, approved, rejected, completed, cancelled] = await Promise.all([
+    this.count({ where }),
+    this.count({ where: { ...where, status: 'pending' } }),
+    this.count({ where: { ...where, status: 'approved' } }),
+    this.count({ where: { ...where, status: 'rejected' } }),
+    this.count({ where: { ...where, status: 'completed' } }),
+    this.count({ where: { ...where, status: 'cancelled' } }),
+  ]);
+
+  // Calcular taxa de aprovação
+  const processed = approved + rejected;
+  const approval_rate = processed > 0 ? (approved / processed * 100).toFixed(2) : 0;
+
+  return {
+    total,
+    by_status: {
+      pending,
+      approved,
+      rejected,
+      completed,
+      cancelled,
+    },
+    metrics: {
+      approval_rate: parseFloat(approval_rate),
+      processed,
+      pending_percentage: total > 0 ? (pending / total * 100).toFixed(2) : 0,
+    },
+  };
+};
+
+// ============================================
+// HOOKS
+// ============================================
+
+/**
+ * Antes de criar: Validar se transferência é válida
+ */
+Transfer.beforeCreate(async (transfer) => {
+  // Não pode transferir para si mesmo
+  if (transfer.from_user_id === transfer.to_user_id) {
+    throw new Error('Não é possível transferir um paciente para o mesmo profissional');
+  }
+
+  // Verificar se já existe transferência pendente para este paciente
+  const existingPending = await Transfer.findOne({
+    where: {
+      patient_id: transfer.patient_id,
+      status: 'pending',
+    },
+  });
+
+  if (existingPending) {
+    throw new Error('Já existe uma transferência pendente para este paciente');
+  }
+
+  // Salvar snapshots dos profissionais
+  const User = require('./User');
+  const [fromUser, toUser] = await Promise.all([
+    User.findByPk(transfer.from_user_id, { attributes: ['id', 'full_name', 'email'] }),
+    User.findByPk(transfer.to_user_id, { attributes: ['id', 'full_name', 'email'] }),
+  ]);
+
+  transfer.from_professional_snapshot = fromUser?.toJSON();
+  transfer.to_professional_snapshot = toUser?.toJSON();
+});
+
+/**
+ * Após atualizar: Log de auditoria
+ */
+Transfer.afterUpdate(async (transfer) => {
+  console.log(`[TRANSFER] Transfer ${transfer.id} updated to status: ${transfer.status}`);
+  
+  // Adicionar timestamp ao metadata
+  if (!transfer.metadata) transfer.metadata = {};
+  transfer.metadata.last_updated_at = new Date();
+  
+  if (transfer.changed('status')) {
+    transfer.metadata.status_history = transfer.metadata.status_history || [];
+    transfer.metadata.status_history.push({
+      status: transfer.status,
+      changed_at: new Date(),
+    });
+  }
+});
+
+// ============================================
+// ASSOCIAÇÕES (definidas em models/index.js)
+// ============================================
+
+// Transfer.belongsTo(Patient)
+// Transfer.belongsTo(User, { as: 'FromUser', foreignKey: 'from_user_id' })
+// Transfer.belongsTo(User, { as: 'ToUser', foreignKey: 'to_user_id' })
+// Transfer.belongsTo(User, { as: 'ProcessedBy', foreignKey: 'processed_by' })
+// Transfer.belongsTo(User, { as: 'CancelledBy', foreignKey: 'cancelled_by' })
+
+module.exports = Transfer;
