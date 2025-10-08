@@ -1,4 +1,6 @@
 /* frontend/src/styles/pages/login.css */
+
+
 .center-container {
     display: flex;
     align-items: center;
@@ -26,6 +28,7 @@
 
 .logo-container .logo-img {
     width: 80px;
+    justify-self: center;
 }
 
 .logo-container .logo-text {
@@ -33,7 +36,9 @@
     font-size: 1.5em;
     color: #06495A;
     font-weight: bold;
+   justify-self: center;
 }
+
 
 .login-divider {
     font-size: 0.8rem;
@@ -68,20 +73,15 @@
     text-decoration: underline;
 }
 
-.decorative-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 160px);
-    grid-template-rows: repeat(6, 160px); 
-    gap: 20px;
-    justify-content: center;
-    align-items: center;
+
+
+/* Garantir que imagens decorativas na tela de login fiquem estáticas */
+.decorative-grid img {
+    animation: none !important;
+    transform: none !important;
+    transition: none !important;
+    will-change: auto !important;
 }
 
-.decorative-grid img {
-    width: 160px;
-    height: 160px;
-    object-fit: cover;
-    border-radius: 10px;
-    transition: transform 0.5s cubic-bezier(0.20, 0.40, 0.40, 0.90);
-}
+
 

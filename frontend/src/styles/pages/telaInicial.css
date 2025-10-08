@@ -27,28 +27,7 @@ body.dark-theme {
     box-sizing: border-box;
 }
 
-body {
-    font-family: 'Poppins', sans-serif;
-    background-color: var(--bg-color);
-    color: var(--main-text-color);
-    display: flex;
-    transition: background-color 0.3s, color 0.3s;
-}
 
-body::before {
-    content: "";
-    position: fixed;
-    top: 0; 
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-image: url('../../assets/fundo.png'); 
-    background-size: cover;
-    background-position: center center;
-    background-repeat: no-repeat;
-    opacity: 0.1;
-    z-index: -1; 
-}
 
 /* --- 2. LAYOUT PRINCIPAL (SIDEBAR, MAIN) --- */
 .sidebar { 
@@ -60,6 +39,24 @@ body::before {
     top: 0; 
     display: flex; 
     flex-direction: column; 
+}
+
+/* Toggle button (hidden on wide screens) */
+.sidebar-toggle {
+    display: none;
+    background: transparent;
+    border: none;
+    font-size: 1.6rem;
+    padding: 8px 12px;
+    cursor: pointer;
+    color: var(--secondary-text-color);
+}
+
+/* Collapsed sidebar state */
+.sidebar.collapsed {
+    width: 0;
+    padding: 0;
+    overflow: hidden;
 }
 
 main { 
