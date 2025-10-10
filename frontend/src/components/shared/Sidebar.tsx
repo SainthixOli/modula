@@ -1,7 +1,8 @@
-import { NavLink } from "react-router-dom";
-import { Home, Calendar, Users, FileText, Settings, ClipboardList, LogOut } from "lucide-react";
+import { NavLink, useNavigate } from "react-router-dom"; 
+import { Home, Calendar, Users, FileText, Settings, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import logomodula from '@/components/assets/logo.png'; 
+import { logout } from "@/services/auth.service"; 
 
 interface SidebarProps {
   userType: "admin" | "professional";
@@ -26,25 +27,22 @@ export const Sidebar = ({ userType, userName }: SidebarProps) => {
 
   const links = userType === "admin" ? adminLinks : professionalLinks;
 
+  const navigate = useNavigate();
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("refreshToken");
-    localStorage.removeItem("userType");
-    window.location.href = "/";
+    logout(); 
+    navigate("/"); 
   };
 
   return (
     <aside className="w-20 h-screen bg-background border-r border-border flex flex-col items-center py-6">
       {/* Logo */}
-      {/* Logo */}
-<div className="flex items-center justify-center mb-8">
-  <img 
-    src={logomodula} 
-    alt="Logo MÓDULA" 
-    className="w-10 h-10 object-contain"
-  />
-</div>
-
+      <div className="flex items-center justify-center mb-8">
+        <img 
+          src={logomodula} 
+          alt="Logo MÓDULA" 
+          className="w-10 h-10 object-contain"
+        />
+      </div>
 
       {/* Navigation Links */}
       <nav className="flex-1 flex flex-col gap-4 w-full items-center">
@@ -66,7 +64,7 @@ export const Sidebar = ({ userType, userName }: SidebarProps) => {
         ))}
       </nav>
 
-      {/* Logout Button */}
+      {/* Logout Button (agora 100% funcional) */}
       <Button
         variant="ghost"
         size="icon"

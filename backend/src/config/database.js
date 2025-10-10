@@ -74,7 +74,9 @@ async function connectDB() {
     
     // Sincronizar modelos em desenvolvimento
     if (process.env.NODE_ENV === 'development') {
-      await sequelize.sync({ alter: true });
+      
+      // Alterado por Oliver -  para evitar erro na hora de executar o backend.
+      //  await sequelize.sync({ alter: true });
       console.log('🔄 Modelos sincronizados com o banco de dados');
     }
     

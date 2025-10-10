@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { login } from "@/services/auth.service"; 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,21 +20,23 @@ const Login = () => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulação de login - 
     try {
-      // TODO: Implementar chamada real à API
-      // const response = await fetch('http://localhost:3000/api/auth/login', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ email, password })
-      // });
+      // 1. Faz o login e pega os dados do usuário
+      const userData = await login(email, password);
+      toast.success(`Bem-vindo(a) de volta, ${userData.full_name}!`);
       
-      setTimeout(() => {
-        toast.success("Login realizado com sucesso!");
-        navigate("professional/dashboard");
-      }, 1000);
-    } catch (error) {
-      toast.error("Erro ao fazer login. Verifique suas credenciais.");
+      if (userData.user_type === 'admin') {
+        navigate('admin/dashboard');
+      } else if (userData.user_type === 'professional') {
+        navigate('professional/dashboard');
+      } else {
+        console.error('Tipo de usuário desconhecido:', userData.user_type);
+        navigate('/'); // Redireciona para uma página padrão
+      }
+
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || "Erro ao fazer login. Verifique suas credenciais.";
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -50,7 +53,7 @@ const Login = () => {
                src={logomodula} 
                 alt="Logo MÓDULA" 
                className="w-12 h-12"
-/>
+            />
             <h1 className="text-3xl font-bold text-secondary">MODULA</h1>
           </div>
 
@@ -125,19 +128,15 @@ const Login = () => {
         </div>
       </div>
 
-
-
-{/* Lado direito - Mosaico */}
-<div className="hidden lg:flex flex-1 items-center justify-center bg-background">
-  <img 
-    src={mosaicologin} 
-    alt="Padrão decorativo lateral" 
-    className="max-w-full max-h-full object-contain"
-  />
-</div>
-
+      {/* Lado direito - Mosaico */}
+      <div className="hidden lg:flex flex-1 items-center justify-center bg-background">
+        <img 
+          src={mosaicologin} 
+          alt="Padrão decorativo lateral" 
+          className="max-w-full max-h-full object-contain"
+        />
       </div>
-
+    </div>
   );
 };
 

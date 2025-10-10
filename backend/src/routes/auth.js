@@ -11,6 +11,8 @@
  * 
  */
 
+
+
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
@@ -100,7 +102,13 @@ router.post('/login', asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
   // 2. Buscar usuário pelo email
-  const user = await User.findByEmail(email.toLowerCase());
+  
+  // Alterado por Oliver -  para trazer a senha também
+  const user = await User.findOne({
+    where: { email: email.toLowerCase() },
+    attributes: { include: ['password'] }
+  });
+  
   if (!user) {
     throw createAuthenticationError('Credenciais inválidas');
   }

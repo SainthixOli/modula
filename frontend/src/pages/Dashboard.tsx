@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { logout } from '@/services/auth.service'; // Importa nossa função de logout
+import { useNavigate } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
