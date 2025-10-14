@@ -21,17 +21,17 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      // 1. Faz o login e pega os dados do usuário
       const userData = await login(email, password);
       toast.success(`Bem-vindo(a) de volta, ${userData.full_name}!`);
       
+      // <<< CORREÇÃO AQUI: USANDO CAMINHOS ABSOLUTOS >>>
       if (userData.user_type === 'admin') {
-        navigate('admin/dashboard');
+        navigate('/admin/professionals'); // ou '/admin/dashboard'
       } else if (userData.user_type === 'professional') {
-        navigate('professional/dashboard');
+        navigate('/professional/dashboard');
       } else {
         console.error('Tipo de usuário desconhecido:', userData.user_type);
-        navigate('/'); // Redireciona para uma página padrão
+        navigate('/');
       }
 
     } catch (error: any) {
@@ -44,10 +44,9 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex">
-      {/* Left Side - Login Form */}
+      {/* O resto do seu JSX continua exatamente igual */}
       <div className="flex-1 flex items-center justify-center p-8 bg-background">
         <div className="w-full max-w-md space-y-8 animate-fade-in">
-          {/* Logo */}
           <div className="flex items-center gap-3">
             <img 
                src={logomodula} 
@@ -56,10 +55,8 @@ const Login = () => {
             />
             <h1 className="text-3xl font-bold text-secondary">MODULA</h1>
           </div>
-
           <div className="border-t border-border pt-6">
             <p className="text-sm text-muted-foreground mb-6">Faça seu login</p>
-
             <form onSubmit={handleLogin} className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-sm font-medium">
@@ -75,7 +72,6 @@ const Login = () => {
                   className="h-12 bg-muted/30"
                 />
               </div>
-
               <div className="space-y-2">
                 <Label htmlFor="password" className="text-sm font-medium">
                   SENHA
@@ -103,7 +99,6 @@ const Login = () => {
                   </button>
                 </div>
               </div>
-
               <Button
                 type="submit"
                 className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-medium"
@@ -111,12 +106,10 @@ const Login = () => {
               >
                 {isLoading ? "Entrando..." : "Logar →"}
               </Button>
-
               <p className="text-xs text-muted-foreground text-center">
                 Entre em contato com o administrador para receber seus dados
                 para login inicial
               </p>
-
               <button
                 type="button"
                 className="text-sm text-primary hover:underline block mx-auto"
@@ -127,8 +120,6 @@ const Login = () => {
           </div>
         </div>
       </div>
-
-      {/* Lado direito - Mosaico */}
       <div className="hidden lg:flex flex-1 items-center justify-center bg-background">
         <img 
           src={mosaicologin} 

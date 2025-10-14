@@ -203,7 +203,6 @@ const getOverviewStats = async (req, res) => {
  * Lista profissionais com filtros e paginação
  */
 const listProfessionals = async (req, res) => {
-  // Extrair e validar parâmetros de query
   const page = Math.max(1, parseInt(req.query.page) || 1);
   const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20));
   const search = req.query.search?.trim() || '';
@@ -211,12 +210,10 @@ const listProfessionals = async (req, res) => {
   const sortBy = req.query.sortBy || 'full_name';
   const order = req.query.order?.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
   
-  // Construir condições de busca
   const whereConditions = {
     user_type: 'professional'
   };
   
-  // Filtro por busca (nome, email ou registro)
   if (search) {
     whereConditions[Op.or] = [
       { full_name: { [Op.iLike]: `%${search}%` } },
@@ -225,22 +222,16 @@ const listProfessionals = async (req, res) => {
     ];
   }
   
-  // Filtro por status
   if (status && ['active', 'inactive', 'suspended'].includes(status)) {
     whereConditions.status = status;
   }
   
-  // Validar campo de ordenação
   const allowedSortFields = ['full_name', 'email', 'status', 'created_at', 'last_login'];
   const validSortBy = allowedSortFields.includes(sortBy) ? sortBy : 'full_name';
   
   try {
-    // Buscar profissionais com contagem total
     const { rows: professionals, count: total } = await User.findAndCountAll({
       where: whereConditions,
-      attributes: {
-        exclude: ['password', 'reset_password_token']
-      },
       include: [{
         model: Patient,
         as: 'patients',
@@ -248,10 +239,10 @@ const listProfessionals = async (req, res) => {
         required: false
       }],
       attributes: {
+        exclude: ['password', 'reset_password_token'],
         include: [
           [User.sequelize.fn('COUNT', User.sequelize.col('patients.id')), 'patient_count']
-        ],
-        exclude: ['password', 'reset_password_token']
+        ]
       },
       group: ['User.id'],
       subQuery: false,
@@ -261,7 +252,6 @@ const listProfessionals = async (req, res) => {
       distinct: true
     });
     
-    // Calcular metadados de paginação
     const totalPages = Math.ceil(total / limit);
     
     res.json({
@@ -291,6 +281,7 @@ const listProfessionals = async (req, res) => {
     throw new AppError('Erro interno ao buscar profissionais', 500);
   }
 };
+    
 
 /**
  * POST /api/admin/professionals

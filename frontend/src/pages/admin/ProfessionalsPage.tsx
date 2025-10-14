@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Sidebar } from "@/components/shared/Sidebar";
 import { Header } from "@/components/shared/Header";
 import { Button } from "@/components/ui/button";
@@ -13,68 +13,84 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { 
+  getProfessionalsList, 
+  getAdminDashboardStats,
+  Professional,
+  DashboardStats 
+} from "@/services/admin.service";
 
 export default function ProfessionalsPage() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Mock data
-  const professionals = [
-    {
-      id: "1",
-      name: "Dr. Oliver Silva",
-      email: "oliver.silva@email.com",
-      phone: "(11) 98765-4321",
-      specialty: "Psicologia",
-      register: "CRP 12345",
-      patients: 45,
-      status: "active",
-    },
-    {
-      id: "2",
-      name: "Dra. Maria Santos",
-      email: "maria.santos@email.com",
-      phone: "(11) 98765-4322",
-      specialty: "Psiquiatria",
-      register: "CRM 54321",
-      patients: 38,
-      status: "active",
-    },
-    {
-      id: "3",
-      name: "Dr. João Ribeiro",
-      email: "joao.ribeiro@email.com",
-      phone: "(11) 98765-4323",
-      specialty: "Psicologia",
-      register: "CRP 67890",
-      patients: 52,
-      status: "active",
-    },
-    {
-      id: "4",
-      name: "Dra. Ana Costa",
-      email: "ana.costa@email.com",
-      phone: "(11) 98765-4324",
-      specialty: "Terapia Familiar",
-      register: "CRP 11111",
-      patients: 28,
-      status: "inactive",
-    },
-  ];
+  const [professionals, setProfessionals] = useState<Professional[]>([]);
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [professionalsData, statsData] = await Promise.all([
+          getProfessionalsList(),
+          getAdminDashboardStats(),
+        ]);
+        
+        setProfessionals(professionalsData);
+        setStats(statsData);
+      } catch (err) {
+        console.error("Erro ao carregar dados da página:", err);
+        setError("Falha ao carregar os dados. Tente novamente mais tarde.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadData();
+  }, []);
 
   const filteredProfessionals = professionals.filter((prof) =>
-    prof.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    prof.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    prof.specialty.toLowerCase().includes(searchQuery.toLowerCase())
+    (prof.full_name?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+    (prof.email?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+    (prof.specialty?.toLowerCase() || '').includes(searchQuery.toLowerCase())
   );
+  
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen bg-background">
+        <Sidebar userType="admin" />
+        <div className="flex-1 flex flex-col">
+          <Header userName="Administrador" />
+          <main className="flex-1 p-6 flex items-center justify-center">
+            <p>Carregando profissionais...</p>
+          </main>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex min-h-screen bg-background">
+        <Sidebar userType="admin" />
+        <div className="flex-1 flex flex-col">
+          <Header userName="Administrador" />
+          <main className="flex-1 p-6 flex items-center justify-center">
+            <p className="text-destructive">{error}</p>
+          </main>
+        </div>
+      </div>
+    );
+  }
+
+// DENTRO DO SEU ARQUIVO: src/pages/admin/ProfessionalsPage.tsx
 
   return (
     <div className="flex min-h-screen bg-background">
       <Sidebar userType="admin" />
-
       <div className="flex-1 flex flex-col">
         <Header userName="Administrador" onSearch={setSearchQuery} />
-
         <main className="flex-1 p-6 overflow-auto">
           <div className="flex items-center justify-between mb-6">
             <div>
@@ -92,19 +108,18 @@ export default function ProfessionalsPage() {
             </div>
           </div>
 
-          {/* Stats */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <Card>
               <CardContent className="p-4">
                 <p className="text-sm text-muted-foreground">Total</p>
-                <p className="text-2xl font-bold">{professionals.length}</p>
+                <p className="text-2xl font-bold">{stats?.professionals.total ?? 0}</p>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="p-4">
                 <p className="text-sm text-muted-foreground">Ativos</p>
                 <p className="text-2xl font-bold text-green-600">
-                  {professionals.filter(p => p.status === "active").length}
+                  {stats?.professionals.active ?? 0}
                 </p>
               </CardContent>
             </Card>
@@ -112,7 +127,7 @@ export default function ProfessionalsPage() {
               <CardContent className="p-4">
                 <p className="text-sm text-muted-foreground">Inativos</p>
                 <p className="text-2xl font-bold text-amber-600">
-                  {professionals.filter(p => p.status === "inactive").length}
+                  {stats?.professionals.inactive ?? 0}
                 </p>
               </CardContent>
             </Card>
@@ -120,81 +135,86 @@ export default function ProfessionalsPage() {
               <CardContent className="p-4">
                 <p className="text-sm text-muted-foreground">Total Pacientes</p>
                 <p className="text-2xl font-bold text-blue-600">
-                  {professionals.reduce((acc, p) => acc + p.patients, 0)}
+                  {stats?.patients.total ?? 0}
                 </p>
               </CardContent>
             </Card>
           </div>
 
-          {/* Professionals List */}
           <Card>
             <CardHeader>
               <CardTitle>Lista de Profissionais</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {filteredProfessionals.map((prof) => (
-                  <div
-                    key={prof.id}
-                    className="flex items-center gap-4 p-4 rounded-lg border hover:bg-muted/50 cursor-pointer transition-colors"
-                    onClick={() => navigate(`/admin/professionals/${prof.id}`)}
-                  >
-                    <Avatar className="h-16 w-16">
-                      <AvatarFallback className="bg-primary text-primary-foreground text-lg">
-                        {prof.name.split(" ").map(n => n[0]).join("").slice(0, 2)}
-                      </AvatarFallback>
-                    </Avatar>
-                    
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h4 className="font-semibold text-lg">{prof.name}</h4>
-                        <Badge variant={prof.status === "active" ? "default" : "secondary"}>
-                          {prof.status === "active" ? "Ativo" : "Inativo"}
-                        </Badge>
+                {filteredProfessionals.length > 0 ? (
+                  filteredProfessionals.map((prof) => (
+                    <div
+                      key={prof.id}
+                      className="flex items-center gap-4 p-4 rounded-lg border hover:bg-muted/50 cursor-pointer transition-colors"
+                      onClick={() => navigate(`/admin/professionals/${prof.id}`)}
+                    >
+                      <Avatar className="h-16 w-16">
+                        <AvatarFallback className="bg-primary text-primary-foreground text-lg">
+                          {prof.full_name?.split(" ").map(n => n[0]).join("").slice(0, 2)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h4 className="font-semibold text-lg">{prof.full_name}</h4>
+                          <Badge variant={prof.status === "active" ? "default" : "secondary"}>
+                            {prof.status === "active" ? "Ativo" : "Inativo"}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <Mail className="h-3 w-3" />
+                            {prof.email}
+                          </span>
+                          {prof.phone && (
+                            <span className="flex items-center gap-1">
+                              <Phone className="h-3 w-3" />
+                              {prof.phone}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+                          {prof.specialty && <span>{prof.specialty}</span>}
+                          {/* <<< CORREÇÃO AQUI >>> */}
+                          {prof.specialty && prof.professional_register && <span>•</span>}
+                          {/* <<< CORREÇÃO AQUI >>> */}
+                          {prof.professional_register && <span>{prof.professional_register}</span>}
+                          {/* <<< CORREÇÃO AQUI >>> */}
+                          {(prof.specialty || prof.professional_register) && <span>•</span>}
+                          <span className="font-medium text-foreground">{prof.patient_count} pacientes</span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <Mail className="h-3 w-3" />
-                          {prof.email}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Phone className="h-3 w-3" />
-                          {prof.phone}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
-                        <span>{prof.specialty}</span>
-                        <span>•</span>
-                        <span>{prof.register}</span>
-                        <span>•</span>
-                        <span className="font-medium text-foreground">{prof.patients} pacientes</span>
-                      </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()}>
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => navigate(`/admin/professionals/${prof.id}`)}>
+                            Ver Detalhes
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>Editar</DropdownMenuItem>
+                          <DropdownMenuItem>Resetar Senha</DropdownMenuItem>
+                          <DropdownMenuItem className="text-destructive">
+                            {prof.status === "active" ? "Desativar" : "Ativar"}
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
-
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>anamnesi-templates
-                        <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()}>
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => navigate(`/admin/professionals/${prof.id}`)}>
-                          Ver Detalhes
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>Editar</DropdownMenuItem>
-                        <DropdownMenuItem>Resetar Senha</DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">
-                          {prof.status === "active" ? "Desativar" : "Ativar"}
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                ))}
+                  ))
+                ) : (
+                  <p className="text-center text-muted-foreground py-4">Nenhum profissional encontrado.</p>
+                )}
               </div>
             </CardContent>
           </Card>
         </main>
       </div>
     </div>
-  );
-}
+  )};

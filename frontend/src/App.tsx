@@ -21,6 +21,7 @@ import AnamnesiTemplatesPage from "./pages/professional/AnamnesiTemplatesPage";
 import FillAnamnesiPage from "./pages/professional/FillAnamnesiPage";
 import EditPatientPage from "./pages/professional/EditPatientPage";
 import SettingsPage from "./pages/professional/SettingsPage";
+import AddProfessionalPage from "./pages/admin/AddProfessionalPage"; 
 
 const queryClient = new QueryClient();
 
@@ -49,6 +50,10 @@ const App = () => (
           {/* Admin Routes */}
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/professionals" element={<ProfessionalsPage />} />
+
+          {/* ADICIONA A NOVA ROTA AQUI */}
+          <Route path="/admin/professionals/new" element={<AddProfessionalPage />} />
+          
           <Route path="/admin/professionals/:id" element={<ProfessionalDetailPage />} />
           <Route path="/admin/professionals/:id/edit" element={<EditProfessionalPage />} />
           <Route path="/admin/reports" element={<AdminDashboard />} />
