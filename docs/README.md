@@ -1,6 +1,6 @@
 <div align="center">
   <b><h1>Módula</h1><b>
-  <img src="modula/frontend/src/components/assets/logo.png" alt="Logo do Projeto" width="400">
+  <img src="frontend/src/components/assets/logo.png" alt="Logo do Projeto" width="400">
 </div>
 
 <div align="center">
