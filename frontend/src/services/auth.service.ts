@@ -56,3 +56,22 @@ export const logout = () => {
   console.log('Logout realizado, token removido e evento "authChange" disparado!');
 };
 
+/**
+ * Solicita recuperação de senha. Envia um email com instruções caso o
+ * e-mail esteja cadastrado no sistema. Retorna a resposta da API.
+ */
+export const forgotPassword = async (email: string) => {
+  console.log('Executando serviço de forgotPassword para:', email);
+  const response = await api.post('/auth/forgot-password', { email });
+  return response;
+};
+
+/**
+ * Redefine a senha usando o token enviado por email.
+ */
+export const resetPassword = async (token: string, password: string) => {
+  console.log('Executando resetPassword com token:', token);
+  const response = await api.post('/auth/reset-password', { token, password });
+  return response;
+};
+

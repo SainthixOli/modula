@@ -4,6 +4,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from "./pages/Login";
+import ResetSenhaPage from "./pages/resetSenha";
+import CriarSenha from "./pages/criarSenha";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 import ProfessionalDashboard from "./pages/professional/ProfessionalDashboard";
@@ -58,6 +60,9 @@ const App = () => (
           <Route path="/admin/professionals/:id/edit" element={<EditProfessionalPage />} />
           <Route path="/admin/reports" element={<AdminDashboard />} />
           <Route path="/admin/settings" element={<AdminSettingsPage />} />
+          {/* Rota para recuperação de senha */}
+          <Route path="/redefinir-senha" element={<ResetSenhaPage />} />
+          <Route path="/redefinir-senha/:token" element={<CriarSenha />} />
           
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

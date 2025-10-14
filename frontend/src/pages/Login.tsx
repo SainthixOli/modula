@@ -113,6 +113,7 @@ const Login = () => {
               <button
                 type="button"
                 className="text-sm text-primary hover:underline block mx-auto"
+                onClick={() => navigate('/redefinir-senha')}
               >
                 Esqueceu sua senha? <span className="font-medium">Recuperar Senha</span>
               </button>
