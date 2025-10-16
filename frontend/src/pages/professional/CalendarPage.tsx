@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
 import { Badge } from "@/components/ui/badge";
-import { ChevronLeft, ChevronRight, Plus, Edit, Trash2, Clock } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Edit, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
@@ -79,7 +79,7 @@ export default function CalendarPage() {
     { id: "5", name: "Denzel White" },
   ];
 
-  const hours = Array.from({ length: 12 }, (_, i) => i + 8); // 8h - 19h
+  const hours = Array.from({ length: 12 }, (_, i) => i + 8);
 
   const handleCreateAppointment = () => {
     if (!formData.date || !formData.time || !formData.patientId || !formData.type) {
@@ -330,7 +330,6 @@ export default function CalendarPage() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            {/* Mini Calendar */}
             <Card>
               <CardContent className="p-4">
                 <Calendar
@@ -358,7 +357,6 @@ export default function CalendarPage() {
               </CardContent>
             </Card>
 
-            {/* Schedule */}
             <Card className="lg:col-span-3">
               <CardContent className="p-6">
                 <div className="space-y-1">

@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Sidebar } from "@/components/shared/Sidebar";
 import { Header } from "@/components/shared/Header";
@@ -6,97 +7,105 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  ArrowLeft, 
-  Edit, 
-  Calendar, 
-  FileText, 
-  Activity,
-  Phone,
-  Mail,
-  MapPin,
-  User
-} from "lucide-react";
+import { ArrowLeft, Edit, Calendar, FileText, Activity, Phone, Mail, MapPin, User } from "lucide-react";
+import { getPatientDetails, PatientDetails } from "@/services/professional.service";
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 export default function PatientDetailPage() {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  // Mock data - substituir por chamada à API
-  const patient = {
-    id,
-    name: "Denzel White",
-    age: 28,
-    gender: "Masculino",
-    cpf: "123.456.789-00",
-    phone: "(11) 98765-4321",
-    email: "denzel.white@email.com",
-    address: "Rua Example, 123 - São Paulo, SP",
-    maritalStatus: "Solteiro",
-    occupation: "Engenheiro de Software",
-    status: "active",
-    firstAppointment: "15/01/2024",
-    lastAppointment: "21/06/2025",
-    totalSessions: 24,
+  const [patient, setPatient] = useState<PatientDetails | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!id) {
+      setError("ID do paciente não fornecido.");
+      setIsLoading(false);
+      return;
+    }
+
+    const loadPatient = async () => {
+      try {
+        const data = await getPatientDetails(id);
+        setPatient(data);
+      } catch (err) {
+        setError("Não foi possível carregar os dados do paciente.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadPatient();
+  }, [id]);
+  
+  const medicalHistory = [
+    { date: "21/06/2025", type: "Consulta", doctor: "Dr. Oliver", notes: "Acompanhamento de rotina" },
+  ];
+
+  const handleScheduleClick = () => {
+    if (!patient) return;
+    navigate(`/professional/calendar?patientId=${patient.id}`);
   };
 
-  const medicalHistory = [
-    { date: "21/06/2025", type: "Consulta", doctor: "Dr. Everly", notes: "Febre alta e tosse" },
-    { date: "14/06/2025", type: "Consulta", doctor: "Dr. Oliver", notes: "Acompanhamento de rotina" },
-    { date: "07/06/2025", type: "Anamnese", doctor: "Dr. Oliver", notes: "Anamnese completa" },
-  ];
+  if (isLoading || !patient) {
+    return (
+      <div className="flex min-h-screen bg-background"><Sidebar userType="professional" /><div className="flex-1 flex flex-col"><Header userName="Dr. Oliver" /><main className="flex-1 p-6 flex items-center justify-center"><p>{isLoading ? 'Carregando paciente...' : (error || 'Paciente não encontrado.')}</p></main></div></div>
+    );
+  }
+
+  const formatAddress = (address: any) => {
+    if (!address || Object.keys(address).length === 0) return 'Não informado';
+    if (typeof address === 'string') return address;
+    if (typeof address === 'object') {
+      return `${address.street || ''}, ${address.number || ''} - ${address.city || ''}`.replace(/, $/, '').replace(/^- /, '');
+    }
+    return 'Endereço inválido';
+  };
+  
+  const getInitials = (name: string) => name ? name.split(" ").map(n => n[0]).join("").toUpperCase() : '';
 
   return (
     <div className="flex min-h-screen bg-background">
       <Sidebar userType="professional" />
-
       <div className="flex-1 flex flex-col">
         <Header userName="Dr. Oliver" />
-
         <main className="flex-1 p-6 overflow-auto">
           <div className="mb-6">
-            <Button
-              variant="ghost"
-              onClick={() => navigate("/professional/patients")}
-              className="mb-4"
-            >
+            <Button variant="ghost" onClick={() => navigate("/professional/patients")} className="mb-4">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Voltar
             </Button>
-
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-4">
                 <Avatar className="h-20 w-20">
                   <AvatarFallback className="bg-blue-100 text-blue-600 text-2xl">
-                    DW
+                    {getInitials(patient.full_name)}
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <h1 className="text-3xl font-bold">{patient.name}</h1>
+                  <h1 className="text-3xl font-bold">{patient.full_name}</h1>
                   <p className="text-muted-foreground">
-                    {patient.gender} • {patient.age} anos • CPF: {patient.cpf}
+                    {patient.gender} • {patient.age} anos • CPF: {patient.cpf || 'N/A'}
                   </p>
                   <div className="flex gap-2 mt-2">
                     <Badge variant={patient.status === "active" ? "default" : "secondary"}>
                       {patient.status === "active" ? "Ativo" : "Inativo"}
                     </Badge>
-                    <Badge variant="outline">{patient.totalSessions} sessões</Badge>
+                    <Badge variant="outline">{patient.sessions?.length || 0} sessões</Badge>
                   </div>
                 </div>
               </div>
               <div className="flex gap-2">
-                <Button variant="outline">
+                <Button variant="outline" onClick={handleScheduleClick}>
                   <Calendar className="h-4 w-4 mr-2" />
                   Agendar
                 </Button>
-                <Button>
-                  <Edit className="h-4 w-4 mr-2" />
-                  Editar
-                </Button>
+                <Button onClick={() => navigate(`/professional/patients/${patient.id}/edit`)}><Edit className="h-4 w-4 mr-2" />Editar</Button>
               </div>
             </div>
           </div>
-
           <Tabs defaultValue="info" className="w-full">
             <TabsList>
               <TabsTrigger value="info">Informações</TabsTrigger>
@@ -104,83 +113,30 @@ export default function PatientDetailPage() {
               <TabsTrigger value="anamnesis">Anamnese</TabsTrigger>
               <TabsTrigger value="sessions">Sessões</TabsTrigger>
             </TabsList>
-
-            <TabsContent value="info" className="space-y-6">
+            <TabsContent value="info" className="space-y-6 pt-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Contact Information */}
                 <Card>
-                  <CardHeader>
-                    <CardTitle>Informações de Contato</CardTitle>
-                  </CardHeader>
+                  <CardHeader><CardTitle>Informações de Contato</CardTitle></CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="flex items-center gap-3">
-                      <Phone className="h-4 w-4 text-muted-foreground" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">Telefone</p>
-                        <p className="font-medium">{patient.phone}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <Mail className="h-4 w-4 text-muted-foreground" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">Email</p>
-                        <p className="font-medium">{patient.email}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <MapPin className="h-4 w-4 text-muted-foreground" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">Endereço</p>
-                        <p className="font-medium">{patient.address}</p>
-                      </div>
-                    </div>
+                    <div className="flex items-center gap-3"><Phone className="h-4 w-4 text-muted-foreground" /><div><p className="text-sm text-muted-foreground">Telefone</p><p className="font-medium">{patient.phone || 'N/A'}</p></div></div>
+                    <div className="flex items-center gap-3"><Mail className="h-4 w-4 text-muted-foreground" /><div><p className="text-sm text-muted-foreground">Email</p><p className="font-medium">{patient.email || 'N/A'}</p></div></div>
+                    <div className="flex items-center gap-3"><MapPin className="h-4 w-4 text-muted-foreground" /><div><p className="text-sm text-muted-foreground">Endereço</p><p className="font-medium">{formatAddress(patient.address)}</p></div></div>
                   </CardContent>
                 </Card>
-
-                {/* Personal Information */}
                 <Card>
-                  <CardHeader>
-                    <CardTitle>Informações Pessoais</CardTitle>
-                  </CardHeader>
+                  <CardHeader><CardTitle>Informações Pessoais</CardTitle></CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="flex items-center gap-3">
-                      <User className="h-4 w-4 text-muted-foreground" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">Estado Civil</p>
-                        <p className="font-medium">{patient.maritalStatus}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <Activity className="h-4 w-4 text-muted-foreground" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">Profissão</p>
-                        <p className="font-medium">{patient.occupation}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <Calendar className="h-4 w-4 text-muted-foreground" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">Primeira Consulta</p>
-                        <p className="font-medium">{patient.firstAppointment}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <Calendar className="h-4 w-4 text-muted-foreground" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">Última Consulta</p>
-                        <p className="font-medium">{patient.lastAppointment}</p>
-                      </div>
-                    </div>
+                    <div className="flex items-center gap-3"><User className="h-4 w-4 text-muted-foreground" /><div><p className="text-sm text-muted-foreground">Estado Civil</p><p className="font-medium">{patient.marital_status || 'N/A'}</p></div></div>
+                    <div className="flex items-center gap-3"><Activity className="h-4 w-4 text-muted-foreground" /><div><p className="text-sm text-muted-foreground">Profissão</p><p className="font-medium">{patient.occupation || 'N/A'}</p></div></div>
+                    <div className="flex items-center gap-3"><Calendar className="h-4 w-4 text-muted-foreground" /><div><p className="text-sm text-muted-foreground">Primeira Consulta</p><p className="font-medium">{patient.first_appointment ? format(new Date(patient.first_appointment), "dd/MM/yyyy", { locale: ptBR }) : 'N/A'}</p></div></div>
+                    <div className="flex items-center gap-3"><Calendar className="h-4 w-4 text-muted-foreground" /><div><p className="text-sm text-muted-foreground">Última Consulta</p><p className="font-medium">{patient.last_appointment ? format(new Date(patient.last_appointment), "dd/MM/yyyy", { locale: ptBR }) : 'N/A'}</p></div></div>
                   </CardContent>
                 </Card>
               </div>
             </TabsContent>
-
             <TabsContent value="history">
               <Card>
-                <CardHeader>
-                  <CardTitle>Histórico de Atendimentos</CardTitle>
-                </CardHeader>
+                <CardHeader><CardTitle>Histórico de Atendimentos</CardTitle></CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     {medicalHistory.map((record, index) => (
@@ -195,9 +151,7 @@ export default function PatientDetailPage() {
                             <h4 className="font-semibold">{record.type}</h4>
                             <span className="text-sm text-muted-foreground">{record.date}</span>
                           </div>
-                          <p className="text-sm text-muted-foreground mb-1">
-                            Profissional: {record.doctor}
-                          </p>
+                          <p className="text-sm text-muted-foreground mb-1">Profissional: {record.doctor}</p>
                           <p className="text-sm">{record.notes}</p>
                         </div>
                       </div>
@@ -206,20 +160,15 @@ export default function PatientDetailPage() {
                 </CardContent>
               </Card>
             </TabsContent>
-
             <TabsContent value="anamnesis">
               <Card>
-                <CardHeader>
-                  <CardTitle>Anamnese</CardTitle>
-                </CardHeader>
+                <CardHeader><CardTitle>Anamnese</CardTitle></CardHeader>
                 <CardContent>
                   <div className="text-center py-12">
                     <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                     <h3 className="text-lg font-semibold mb-2">Anamnese não preenchida</h3>
-                    <p className="text-muted-foreground mb-4">
-                      Ainda não há anamnese cadastrada para este paciente
-                    </p>
-                    <Button onClick={() => navigate(`/professional/patients/:patientId/anamnesi/fill`)}>
+                    <p className="text-muted-foreground mb-4">Ainda não há anamnese cadastrada para este paciente</p>
+                    <Button onClick={() => navigate(`/professional/patients/${patient.id}/anamnesi/fill`)}>
                       <FileText className="h-4 w-4 mr-2" />
                       Preencher Anamnese
                     </Button>
@@ -227,20 +176,15 @@ export default function PatientDetailPage() {
                 </CardContent>
               </Card>
             </TabsContent>
-
             <TabsContent value="sessions">
               <Card>
-                <CardHeader>
-                  <CardTitle>Sessões e Consultas</CardTitle>
-                </CardHeader>
+                <CardHeader><CardTitle>Sessões e Consultas</CardTitle></CardHeader>
                 <CardContent>
                   <div className="text-center py-12">
                     <Activity className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                     <h3 className="text-lg font-semibold mb-2">Lista de sessões</h3>
-                    <p className="text-muted-foreground mb-4">
-                      Total de {patient.totalSessions} sessões registradas
-                    </p>
-                    <Button>
+                    <p className="text-muted-foreground mb-4">Total de {patient.sessions?.length || 0} sessões registradas</p>
+                    <Button onClick={handleScheduleClick}>
                       <Calendar className="h-4 w-4 mr-2" />
                       Nova Sessão
                     </Button>

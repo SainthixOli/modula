@@ -1,5 +1,17 @@
 import api from './api';
 
+
+
+export const setupAuthHeader = () => {
+  const token = localStorage.getItem('authToken');
+  if (token) {
+    console.log('Token encontrado. Configurando header de autorização...');
+    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+  } else {
+    delete api.defaults.headers.common['Authorization'];
+  }
+};
+
 interface LoginResponse {
   success: boolean;
   message: string;
@@ -32,11 +44,8 @@ export const login = async (email, password) => {
 
   if (data?.tokens?.access_token) {
     const { access_token } = data.tokens;
-
     localStorage.setItem('authToken', access_token);
-
     window.dispatchEvent(new Event("authChange"));
-    
     console.log('Login realizado, token salvo e evento "authChange" disparado!');
     return data.user;
   }
@@ -49,16 +58,13 @@ export const login = async (email, password) => {
  */
 export const logout = () => {
   console.log('Executando serviço de logout...');
-
   localStorage.removeItem('authToken');
-
   window.dispatchEvent(new Event("authChange"));
   console.log('Logout realizado, token removido e evento "authChange" disparado!');
 };
 
 /**
- * Solicita recuperação de senha. Envia um email com instruções caso o
- * e-mail esteja cadastrado no sistema. Retorna a resposta da API.
+ * Solicita recuperação de senha.
  */
 export const forgotPassword = async (email: string) => {
   console.log('Executando serviço de forgotPassword para:', email);
@@ -75,3 +81,18 @@ export const resetPassword = async (token: string, password: string) => {
   return response;
 };
 
+/**
+ * Altera a senha do usuário no primeiro acesso.
+ */
+export const changeFirstPassword = async (password: string, confirmPassword: string) => {
+  console.log("Enviando nova senha para a API...");
+  const response = await api.post('/auth/first-access', { password, confirmPassword });
+
+  if (response.data.data?.tokens?.access_token) {
+    const { access_token } = response.data.data.tokens;
+    localStorage.setItem('authToken', access_token);
+    window.dispatchEvent(new Event("authChange"));
+  }
+  
+  return response.data;
+};

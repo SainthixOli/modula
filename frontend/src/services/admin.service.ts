@@ -66,3 +66,29 @@ export const createProfessional = async (professionalData: {
   const response = await api.post('/admin/professionals', professionalData);
   return response.data;
 };
+
+/**
+ * Busca os detalhes completos de um profissional específico.
+ * @param id - O ID do profissional.
+ */
+export const getProfessionalDetails = async (id: string) => {
+  console.log(`Buscando detalhes do profissional com ID: ${id}`);
+  const response = await api.get(`/admin/professionals/${id}`);
+  return response.data.data;
+};
+
+/**
+ * Reseta a senha de um profissional específico.
+ * @param professionalId - O ID do profissional.
+ */
+export const resetPassword = async (professionalId: string) => {
+  console.log(`Enviando requisição para resetar senha do ID: ${professionalId}`);
+  
+  // Enviamos 'sendEmail: false' para garantir que a API sempre nos devolva
+  // a senha temporária para mostrarmos ao admin.
+  const response = await api.post(`/admin/professionals/${professionalId}/reset-password`, {
+    sendEmail: false 
+  });
+  
+  return response.data;
+};

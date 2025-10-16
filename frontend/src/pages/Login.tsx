@@ -21,19 +21,25 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      const userData = await login(email, password);
+       const userData = await login(email, password);
+      
+      // <<< A VERIFICAÇÃO MÁGICA ACONTECE AQUI >>>
+      if (userData.is_first_access) {
+        toast.info("Primeiro acesso! Por favor, altere sua senha.");
+        navigate('/first-access');
+        return; // Para a execução para não redirecionar duas vezes
+      }
+
       toast.success(`Bem-vindo(a) de volta, ${userData.full_name}!`);
       
-      // <<< CORREÇÃO AQUI: USANDO CAMINHOS ABSOLUTOS >>>
+      // Se não for primeiro acesso, continua com a lógica normal
       if (userData.user_type === 'admin') {
-        navigate('/admin/professionals'); // ou '/admin/dashboard'
+        navigate('/admin/dashboard');
       } else if (userData.user_type === 'professional') {
         navigate('/professional/dashboard');
       } else {
-        console.error('Tipo de usuário desconhecido:', userData.user_type);
         navigate('/');
       }
-
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || "Erro ao fazer login. Verifique suas credenciais.";
       toast.error(errorMessage);

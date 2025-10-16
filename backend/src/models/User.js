@@ -28,6 +28,16 @@ const User = sequelize.define('User', {
     }
   },
 
+  phone: {
+    type: DataTypes.STRING(20),
+    allowNull: true,
+  },
+
+  specialty: {
+    type: DataTypes.STRING(100),
+    allowNull: true,
+  },
+
   email: {
     type: DataTypes.STRING(100),
     allowNull: false,

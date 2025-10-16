@@ -156,7 +156,7 @@ const createPatientSchema = Joi.object({
   email: emailSchema.optional().allow(''),
   
   // Endereço
-  address: addressSchema.optional(),
+  address: Joi.string().allow('').optional(),
   
   // Contato de emergência
   emergency_contact: emergencyContactSchema.optional(),

@@ -13,7 +13,7 @@
  */
 
 const { Op } = require('sequelize');
-const { User, Patient } = require('../models');
+const { User, Patient, Session } = require('../models');
 const { AppError, createNotFoundError, createValidationError } = require('../middleware/errorHandler');
 const crypto = require('crypto');
 
@@ -238,12 +238,17 @@ const listProfessionals = async (req, res) => {
         attributes: [],
         required: false
       }],
-      attributes: {
-        exclude: ['password', 'reset_password_token'],
-        include: [
-          [User.sequelize.fn('COUNT', User.sequelize.col('patients.id')), 'patient_count']
-        ]
-      },
+      // <<< MUDANÇA AQUI: Trocamos 'exclude' por uma lista explícita >>>
+      attributes: [
+        'id',
+        'full_name',
+        'email',
+        'phone',
+        'specialty',
+        'professional_register',
+        'status',
+        [User.sequelize.fn('COUNT', User.sequelize.col('patients.id')), 'patient_count']
+      ],
       group: ['User.id'],
       subQuery: false,
       limit,
@@ -288,15 +293,14 @@ const listProfessionals = async (req, res) => {
  * Criar novo profissional com senha temporária
  */
 const createProfessional = async (req, res) => {
-  const { full_name, email, professional_register } = req.body;
+  console.log("BACKEND: Pacote recebido na API:", req.body);
+  const { full_name, email, professional_register, phone, specialty } = req.body;
   
-  // Verificar se email já existe
-  const existingEmail = await User.findByEmail(email);
+  const existingEmail = await User.findOne({ where: { email: email.toLowerCase() } });
   if (existingEmail) {
     throw new AppError('Este email já está em uso', 409, 'EMAIL_EXISTS');
   }
   
-  // Verificar se registro profissional já existe (se fornecido)
   if (professional_register) {
     const existingRegister = await User.findOne({
       where: { professional_register: professional_register.trim() }
@@ -306,35 +310,30 @@ const createProfessional = async (req, res) => {
     }
   }
   
-  // Gerar senha temporária segura (8 caracteres alfanuméricos)
   const temporaryPassword = crypto.randomBytes(4).toString('hex').toUpperCase();
   
   try {
-    // Criar profissional
     const newProfessional = await User.create({
       full_name: full_name.trim(),
       email: email.toLowerCase().trim(),
       professional_register: professional_register?.trim() || null,
+      phone: phone || null, // MUDANÇA AQUI: Salvando o telefone
+      specialty: specialty || null, // MUDANÇA AQUI: Salvando a especialidade
       password: temporaryPassword, // Será hasheada automaticamente pelo hook
       user_type: 'professional',
       is_first_access: true,
       status: 'active'
     });
     
-    // Remover dados sensíveis para resposta
     const professionalData = newProfessional.toJSON();
     delete professionalData.password;
     delete professionalData.reset_password_token;
-    
-    // TODO: Implementar envio de email com credenciais
-    // await emailService.sendWelcomeEmail(email, temporaryPassword);
     
     res.status(201).json({
       success: true,
       message: 'Profissional criado com sucesso',
       data: {
         professional: professionalData,
-        // Mostrar senha temporária apenas uma vez para o admin
         credentials: {
           email: email,
           temporary_password: temporaryPassword,
@@ -361,38 +360,67 @@ const getProfessionalById = async (req, res) => {
       id,
       user_type: 'professional'
     },
-    attributes: {
-      exclude: ['password', 'reset_password_token']
-    },
+    attributes: [
+      'id',
+      'full_name',
+      'email',
+      'phone',
+      'specialty',
+      'professional_register',
+      'status',
+      'last_login',
+      'created_at'
+    ],
     include: [{
       model: Patient,
       as: 'patients',
-      attributes: ['id', 'full_name', 'status', 'created_at', 'last_appointment'],
-      limit: 5, // Últimos 5 pacientes para preview
-      order: [['created_at', 'DESC']]
+      attributes: ['id', 'full_name', 'status'], 
     }]
   });
   
   if (!professional) {
     throw createNotFoundError('Profissional não encontrado');
   }
-  
-  // Calcular estatísticas do profissional
-  const [totalPatients, activePatients] = await Promise.all([
-    Patient.count({ where: { user_id: id } }),
-    Patient.count({ where: { user_id: id, status: 'active' } })
+
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+  const [
+    totalSessions, 
+    sessionsInMonth, 
+    totalSchedulable, 
+    totalCompleted
+  ] = await Promise.all([
+    Session.count({ where: { user_id: id } }),
+    Session.count({
+      where: {
+        user_id: id,
+        session_date: {
+          [Op.between]: [startOfMonth, endOfMonth]
+        }
+      }
+    }),
+    Session.count({ where: { user_id: id, status: ['completed', 'scheduled'] } }),
+    Session.count({ where: { user_id: id, status: 'completed' } })
   ]);
+  
+  const professionalData = professional.toJSON();
+
+  const statistics = {
+    total_patients: professionalData.patients.length,
+    active_patients: professionalData.patients.filter(p => p.status === 'active').length,
+    sessions_in_month: sessionsInMonth,
+    attendance_rate: totalSchedulable > 0 ? Math.round((totalCompleted / totalSchedulable) * 100) : 0,
+    total_sessions: totalSessions, 
+  };
   
   res.json({
     success: true,
     message: 'Profissional encontrado com sucesso',
     data: {
-      ...professional.toJSON(),
-      statistics: {
-        total_patients: totalPatients,
-        active_patients: activePatients,
-        inactive_patients: totalPatients - activePatients
-      }
+      ...professionalData,
+      statistics,
     }
   });
 };

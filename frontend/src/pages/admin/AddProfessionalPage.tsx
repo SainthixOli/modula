@@ -11,7 +11,6 @@ import { ArrowLeft, Save } from "lucide-react";
 import { z } from "zod";
 import { createProfessional } from "@/services/admin.service"; 
 
-// O schema de validação pode ser o mesmo
 const professionalSchema = z.object({
   fullName: z.string().min(2, "Nome deve ter no mínimo 2 caracteres").max(150),
   email: z.string().email("Email inválido"),
@@ -22,7 +21,6 @@ export default function AddProfessionalPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
 
- 
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -40,25 +38,36 @@ export default function AddProfessionalPage() {
     setIsSubmitting(true);
 
     try {
-
       professionalSchema.parse(formData);
       
       const apiData = {
         full_name: formData.fullName,
         email: formData.email,
         professional_register: formData.professionalRegister,
+        phone: formData.phone,
+        specialty: formData.specialty
       };
-      
+
       const response = await createProfessional(apiData);
       
-      console.log("Profissional criado:", response.data);
-      
-      toast({
-        title: "Sucesso!",
-        description: "Novo profissional cadastrado com sucesso.",
-      });
+      const tempPassword = response?.data?.credentials?.temporary_password;
 
-      navigate(`/admin/professionals`);
+      if (tempPassword) {
+        toast({
+          title: "Profissional Criado com Sucesso!",
+          description: `A senha temporária é: ${tempPassword}. Anote e envie para o novo profissional.`,
+          duration: 10000,
+        });
+      } else {
+        toast({
+          title: "Sucesso!",
+          description: "Novo profissional cadastrado com sucesso.",
+        });
+      }
+
+      setTimeout(() => {
+        navigate(`/admin/professionals`);
+      }, 5000);
 
     } catch (error: any) {
       if (error instanceof z.ZodError) {
@@ -69,8 +78,12 @@ export default function AddProfessionalPage() {
           }
         });
         setErrors(newErrors);
+        toast({
+          title: "Erro de Validação",
+          description: "Verifique os campos destacados",
+          variant: "destructive",
+        });
       } else {
-        // Captura erros da API (ex: email duplicado)
         const apiErrorMessage = error.response?.data?.message || "Ocorreu um erro ao criar o profissional.";
         toast({
           title: "Erro",
@@ -78,7 +91,6 @@ export default function AddProfessionalPage() {
           variant: "destructive",
         });
       }
-    } finally {
       setIsSubmitting(false);
     }
   };
@@ -103,13 +115,11 @@ export default function AddProfessionalPage() {
 
             <Card>
               <CardHeader>
-                {/* MUDANÇA: Novo título */}
                 <CardTitle className="text-2xl">Adicionar Novo Profissional</CardTitle>
               </CardHeader>
 
               <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-6">
-                  {/* O formulário é praticamente o mesmo, mas sem o campo 'status' */}
                   <div className="space-y-4">
                     <h3 className="text-lg font-semibold">Dados Profissionais</h3>
 
