@@ -219,7 +219,7 @@ export default function PatientDetailPage() {
                     <p className="text-muted-foreground mb-4">
                       Ainda não há anamnese cadastrada para este paciente
                     </p>
-                    <Button onClick={() => navigate(`/professional/anamnesis/${id}`)}>
+                    <Button onClick={() => navigate(`/professional/patients/:patientId/anamnesi/fill`)}>
                       <FileText className="h-4 w-4 mr-2" />
                       Preencher Anamnese
                     </Button>
