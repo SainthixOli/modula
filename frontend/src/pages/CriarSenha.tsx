@@ -80,22 +80,22 @@ const CriarSenha: React.FC = () => {
         <div className="flex items-center gap-4 mb-4">
           <img src={logomodula} alt="Módula" className="h-10" />
           <div>
-            <h2 className="text-lg font-semibold">Change Password</h2>
-            <p className="text-sm text-muted-foreground">Update password for enhanced account security.</p>
+            <h2 className="text-lg font-semibold">Redefinir Senha</h2>
+            <p className="text-sm text-muted-foreground">Realize o procedimento de redefinição de senha para retomar acesso ao sistema.</p>
           </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Nova senha */}
           <div>
-            <Label htmlFor="password">New Password *</Label>
+            <Label htmlFor="password">Nova Senha *</Label>
             <div className="relative mt-1">
               <Input
                 id="password"
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter new password"
+                placeholder="Insira nova senha"
                 required
                 className="pr-10"
               />
@@ -111,14 +111,14 @@ const CriarSenha: React.FC = () => {
 
           {/* Confirmar senha */}
           <div>
-            <Label htmlFor="confirmPassword">Confirm New Password *</Label>
+            <Label htmlFor="confirmPassword">Confirme Nova Senha *</Label>
             <div className="relative mt-1">
               <Input
                 id="confirmPassword"
                 type={showConfirm ? 'text' : 'password'}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Confirm new password"
+                placeholder="Confirme nova senha"
                 required
                 className="pr-10"
               />
@@ -151,7 +151,7 @@ const CriarSenha: React.FC = () => {
                 ) : (
                   <XCircle className="text-rose-500" />
                 )}
-                <span>At least 1 uppercase</span>
+                <span>A senha deve conter ao menos uma letra maiúscula.</span>
               </li>
               <li className="flex items-center gap-2 text-slate-700">
                 {hasNumber ? (
@@ -159,7 +159,7 @@ const CriarSenha: React.FC = () => {
                 ) : (
                   <XCircle className="text-rose-500" />
                 )}
-                <span>At least 1 number</span>
+                <span>A senha deve conter ao menos um número.</span>
               </li>
               <li className="flex items-center gap-2 text-slate-700">
                 {minLength ? (
@@ -167,7 +167,7 @@ const CriarSenha: React.FC = () => {
                 ) : (
                   <XCircle className="text-rose-500" />
                 )}
-                <span>At least 8 characters</span>
+                <span>A senha deve ter pelo menos 8 caracteres.</span>
               </li>
             </ul>
           </div>
@@ -175,10 +175,10 @@ const CriarSenha: React.FC = () => {
           {/* Actions */}
           <div className="flex items-center justify-between pt-4">
             <Button variant="ghost" onClick={() => navigate('/')}>
-              Discard
+              Descartar
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? 'Applying...' : 'Apply Changes'}
+              {loading ? 'Applying...' : 'Redefinir'}
             </Button>
           </div>
         </form>
