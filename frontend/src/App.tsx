@@ -24,6 +24,13 @@ import FillAnamnesiPage from "./pages/professional/FillAnamnesiPage";
 import EditPatientPage from "./pages/professional/EditPatientPage";
 import SettingsPage from "./pages/professional/SettingsPage";
 import AddProfessionalPage from "./pages/admin/AddProfessionalPage"; 
+import NotificationsPage from "./pages/professional/NotificationsPage";
+import SessionsPage from "./pages/professional/SessionsPage";
+import AuditLogsPage from "./pages/professional/AuditLogsPage";
+import BackupPage from "./pages/professional/BackupPage";
+import TransfersPage from "./pages/admin/TransfersPage";
+import MonitoringPage from "./pages/admin/MonitoringPage";
+import NotificationsAdminPage from "./pages/admin/NotificationsAdminPage";
 
 const queryClient = new QueryClient();
 
@@ -48,6 +55,11 @@ const App = () => (
           <Route path="/professional/reports" element={<ReportsPage />} />
           <Route path="/professional/anamnesi-templates" element={<AnamnesiTemplatesPage />} />
           <Route path="/professional/settings" element={<SettingsPage />} />
+          <Route path="/professional/notifications" element={<NotificationsPage />} />
+          <Route path="/professional/sessions" element={<SessionsPage />} />
+          <Route path="/professional/audit-logs" element={<AuditLogsPage />} />
+          <Route path="/professional/backup" element={<BackupPage />} />
+          
           
           {/* Admin Routes */}
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
@@ -60,6 +72,11 @@ const App = () => (
           <Route path="/admin/professionals/:id/edit" element={<EditProfessionalPage />} />
           <Route path="/admin/reports" element={<AdminDashboard />} />
           <Route path="/admin/settings" element={<AdminSettingsPage />} />
+          <Route path="/admin/transfers" element={<TransfersPage />} />
+          <Route path="/admin/monitoring" element={<MonitoringPage />} />
+          <Route path="/admin/notifications" element={<NotificationsAdminPage />} />
+          
+
           {/* Rota para recuperação de senha */}
           <Route path="/redefinir-senha" element={<ResetSenhaPage />} /> 
           <Route path="/redefinir-senha/:token" element={<CriarSenha />} />
