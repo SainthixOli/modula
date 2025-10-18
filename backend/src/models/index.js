@@ -1,25 +1,44 @@
 /**
  * MÓDULA - ASSOCIAÇÕES ENTRE MODELOS
  * 
- * Define todos os relacionamentos entre modelos e exporta a instância do Sequelize.
+ * Este arquivo define os relacionamentos entre todos os modelos do sistema.
+ * Deve ser importado após todos os modelos individuais serem definidos.
+ * 
+ * Relacionamentos implementados:
+ * - User (1) → (N) Patient (profissional tem muitos pacientes)
+ * - Patient (N) → (1) User (paciente pertence a um profissional)
+ * 
+ * 
  */
 
+const { Sequelize } = require('sequelize');
 const { sequelize } = require('../config/database');
+const Transfer = require('./Transfer');
 
-// Importar modelos
+// Importar todos os modelos
 const User = require('./User');
 const Patient = require('./Patient');
 const Anamnesis = require('./Anamnesis');
 const Session = require('./Session');
-const Transfer = require('./Transfer');
+
+
+// Inicializar modelos
+const models = {
+  User: User(sequelize, Sequelize.DataTypes),
+  Patient: Patient(sequelize, Sequelize.DataTypes),
+  Anamnesis: Anamnesis(sequelize, Sequelize.DataTypes),
+  Session: Session(sequelize, Sequelize.DataTypes)
+};
 
 // ============================================
 // ASSOCIAÇÕES ENTRE MODELOS
 // ============================================
 
-// ----------------- USER -----------------
+// --------------------------------------------
+// USER ASSOCIATIONS
+// --------------------------------------------
 // Um usuário (profissional) tem muitos pacientes
-User.hasMany(Patient, {
+models.User.hasMany(models.Patient, {
   foreignKey: 'user_id',
   as: 'patients',
   onDelete: 'RESTRICT',
@@ -27,24 +46,27 @@ User.hasMany(Patient, {
 });
 
 // Um usuário tem muitas anamneses
-User.hasMany(Anamnesis, {
+models.User.hasMany(models.Anamnesis, {
   foreignKey: 'user_id',
   as: 'anamneses',
   onDelete: 'RESTRICT',
   onUpdate: 'CASCADE'
 });
 
-// Um usuário tem muitas sessões
-User.hasMany(Session, {
+
+// Um usuário (profissional) tem muitas sessões
+models.User.hasMany(models.Session, {
   foreignKey: 'user_id',
   as: 'sessions',
   onDelete: 'RESTRICT',
   onUpdate: 'CASCADE'
 });
 
-// ----------------- PATIENT -----------------
+// --------------------------------------------
+// PATIENT ASSOCIATIONS
+// --------------------------------------------
 // Um paciente pertence a um usuário (profissional)
-Patient.belongsTo(User, {
+models.Patient.belongsTo(models.User, {
   foreignKey: 'user_id',
   as: 'professional',
   onDelete: 'RESTRICT',
@@ -52,7 +74,7 @@ Patient.belongsTo(User, {
 });
 
 // Um paciente tem uma anamnese
-Patient.hasOne(Anamnesis, {
+models.Patient.hasOne(models.Anamnesis, {
   foreignKey: 'patient_id',
   as: 'anamnesis',
   onDelete: 'CASCADE',
@@ -60,49 +82,56 @@ Patient.hasOne(Anamnesis, {
 });
 
 // Um paciente tem muitas sessões
-Patient.hasMany(Session, {
+models.Patient.hasMany(models.Session, {
   foreignKey: 'patient_id',
   as: 'sessions',
   onDelete: 'CASCADE',
   onUpdate: 'CASCADE'
 });
 
-// ----------------- ANAMNESIS -----------------
+// --------------------------------------------
+// ANAMNESIS ASSOCIATIONS
+// --------------------------------------------
 // Uma anamnese pertence a um paciente
-Anamnesis.belongsTo(Patient, {
+models.Anamnesis.belongsTo(models.Patient, {
   foreignKey: 'patient_id',
   as: 'patient',
   onDelete: 'CASCADE',
   onUpdate: 'CASCADE'
 });
 
-// Uma anamnese pertence a um usuário
-Anamnesis.belongsTo(User, {
+// Uma anamnese pertence a um usuário (profissional)
+models.Anamnesis.belongsTo(models.User, {
   foreignKey: 'user_id',
   as: 'professional',
   onDelete: 'RESTRICT',
   onUpdate: 'CASCADE'
 });
 
-// ----------------- SESSION -----------------
+// --------------------------------------------
+// SESSION ASSOCIATIONS (NOVO)
+// --------------------------------------------
 // Uma sessão pertence a um paciente
-Session.belongsTo(Patient, {
+models.Session.belongsTo(models.Patient, {
   foreignKey: 'patient_id',
   as: 'patient',
   onDelete: 'CASCADE',
   onUpdate: 'CASCADE'
 });
 
-// Uma sessão pertence a um usuário
-Session.belongsTo(User, {
+// Uma sessão pertence a um usuário (profissional)
+models.Session.belongsTo(models.User, {
   foreignKey: 'user_id',
   as: 'professional',
   onDelete: 'RESTRICT',
   onUpdate: 'CASCADE'
 });
 
-// ----------------- TRANSFER -----------------
-// Transfer -> Patient
+// ============================================
+// ASSOCIAÇÕES DO TRANSFER (adicionar após outras associações)
+// ============================================
+
+// Transfer -> Patient (paciente sendo transferido)
 Transfer.belongsTo(Patient, {
   foreignKey: 'patient_id',
   as: 'Patient',
@@ -110,7 +139,7 @@ Transfer.belongsTo(Patient, {
   onUpdate: 'CASCADE',
 });
 
-// Transfer -> User (origem)
+// Transfer -> User (profissional de origem)
 Transfer.belongsTo(User, {
   foreignKey: 'from_user_id',
   as: 'FromUser',
@@ -118,7 +147,7 @@ Transfer.belongsTo(User, {
   onUpdate: 'CASCADE',
 });
 
-// Transfer -> User (destino)
+// Transfer -> User (profissional de destino)
 Transfer.belongsTo(User, {
   foreignKey: 'to_user_id',
   as: 'ToUser',
@@ -126,7 +155,7 @@ Transfer.belongsTo(User, {
   onUpdate: 'CASCADE',
 });
 
-// Transfer -> User (admin processou)
+// Transfer -> User (admin que processou)
 Transfer.belongsTo(User, {
   foreignKey: 'processed_by',
   as: 'ProcessedBy',
@@ -134,7 +163,7 @@ Transfer.belongsTo(User, {
   onUpdate: 'CASCADE',
 });
 
-// Transfer -> User (cancelado por)
+// Transfer -> User (usuário que cancelou)
 Transfer.belongsTo(User, {
   foreignKey: 'cancelled_by',
   as: 'CancelledBy',
@@ -142,17 +171,72 @@ Transfer.belongsTo(User, {
   onUpdate: 'CASCADE',
 });
 
-// Relações reversas
-Patient.hasMany(Transfer, { foreignKey: 'patient_id', as: 'Transfers' });
-User.hasMany(Transfer, { foreignKey: 'from_user_id', as: 'TransfersSent' });
-User.hasMany(Transfer, { foreignKey: 'to_user_id', as: 'TransfersReceived' });
-User.hasMany(Transfer, { foreignKey: 'processed_by', as: 'TransfersProcessed' });
-User.hasMany(Transfer, { foreignKey: 'cancelled_by', as: 'TransfersCancelled' });
+// Associações reversas
+Patient.hasMany(Transfer, {
+  foreignKey: 'patient_id',
+  as: 'Transfers',
+});
+
+User.hasMany(Transfer, {
+  foreignKey: 'from_user_id',
+  as: 'TransfersSent',
+});
+
+User.hasMany(Transfer, {
+  foreignKey: 'to_user_id',
+  as: 'TransfersReceived',
+});
+
+User.hasMany(Transfer, {
+  foreignKey: 'processed_by',
+  as: 'TransfersProcessed',
+});
 
 // ============================================
-// FUNÇÕES UTILITÁRIAS
+// EXPORTAR MODELOS E CONEXÃO
 // ============================================
+module.exports = {
+  sequelize,
+  User,
+  Patient,
+  Anamnesis,
+  Session,
+  Transfer, // ← ADICIONAR ESTA LINHA
+};
 
+/**
+ * DEFINIR ASSOCIAÇÕES
+ * 
+ * IMPORTANTE: As associações devem ser definidas APÓS todos os modelos
+ * serem carregados para evitar dependências circulares
+ */
+
+// RELACIONAMENTO: USER → PATIENT
+// Um profissional (User) pode ter muitos pacientes
+User.hasMany(Patient, {
+  foreignKey: 'user_id',
+  as: 'patients',
+  onDelete: 'RESTRICT', // Não permite deletar user se tem pacientes
+  onUpdate: 'CASCADE'   // Atualiza FK se user_id mudar
+});
+
+// RELACIONAMENTO: PATIENT → USER  
+// Um paciente pertence a um profissional (User)
+Patient.belongsTo(User, {
+  foreignKey: 'user_id',
+  as: 'professional',
+  onDelete: 'RESTRICT', // Não permite deletar user se tem pacientes
+  onUpdate: 'CASCADE'
+});
+
+/**
+ * FUNÇÕES UTILITÁRIAS PARA SYNC
+ */
+
+/**
+ * Sincronizar todos os modelos com o banco de dados
+ * Usado apenas em desenvolvimento
+ */
 const syncDatabase = async (options = {}) => {
   try {
     await sequelize.sync(options);
@@ -163,6 +247,10 @@ const syncDatabase = async (options = {}) => {
   }
 };
 
+/**
+ * Forçar recriação de todas as tabelas
+ * CUIDADO: Apaga todos os dados existentes
+ */
 const resetDatabase = async () => {
   try {
     await sequelize.sync({ force: true });
@@ -174,6 +262,9 @@ const resetDatabase = async () => {
   }
 };
 
+/**
+ * Verificar se todas as tabelas existem
+ */
 const checkTables = async () => {
   try {
     await User.findOne({ limit: 1 });
@@ -181,23 +272,56 @@ const checkTables = async () => {
     console.log('✅ Todas as tabelas estão acessíveis');
     return true;
   } catch (error) {
-    console.log('⚠️ Algumas tabelas podem não existir ainda');
+    console.log('⚠️  Algumas tabelas podem não existir ainda');
     return false;
   }
 };
 
-// ============================================
-// EXPORTAR
-// ============================================
-
+// Exportar modelos e funções utilitárias
 module.exports = {
-  sequelize,
+  // Modelos
   User,
   Patient,
-  Anamnesis,
-  Session,
-  Transfer,
+  
+  // Instância do Sequelize
+  sequelize,
+  
+  // Funções utilitárias
   syncDatabase,
   resetDatabase,
   checkTables
 };
+
+/**
+ * COMO USAR AS ASSOCIAÇÕES:
+ * 
+ * // Buscar profissional com seus pacientes
+ * const professional = await User.findByPk(userId, {
+ *   include: [{
+ *     model: Patient,
+ *     as: 'patients',
+ *     where: { status: 'active' }
+ *   }]
+ * });
+ * 
+ * // Buscar paciente com dados do profissional
+ * const patient = await Patient.findByPk(patientId, {
+ *   include: [{
+ *     model: User,
+ *     as: 'professional',
+ *     attributes: ['id', 'full_name', 'professional_register']
+ *   }]
+ * });
+ * 
+ * // Contar pacientes de um profissional
+ * const patientCount = await professional.countPatients({
+ *   where: { status: 'active' }
+ * });
+ * 
+ * // Criar paciente associado a um profissional
+ * const newPatient = await professional.createPatient({
+ *   full_name: 'João Silva',
+ *   email: 'joao@email.com'
+ *   // user_id será definido automaticamente
+ * });
+ */

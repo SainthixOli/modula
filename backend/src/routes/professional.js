@@ -160,10 +160,6 @@ router.get('/schedule',
   asyncHandler(professionalController.getSchedule)
 );
 
-// Rotas de Pacientes
-router.post('/patients', professionalController.createPatient);
-router.get('/patients/:id', professionalController.getPatientById);
-
 /**
  * ROTAS DE BUSCA E FILTROS
  * Funcionalidades avançadas de busca

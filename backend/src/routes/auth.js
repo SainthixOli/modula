@@ -11,8 +11,6 @@
  * 
  */
 
-
-
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
@@ -40,14 +38,15 @@ const router = express.Router();
  * CONFIGURAÇÃO DO NODEMAILER
  * Para envio de emails de recuperação de senha
  */
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
+const transporter = nodemailer.createTransporter({
+  host: process.env.SMTP_HOST,
+  port: process.env.SMTP_PORT,
+  secure: false,
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS
   }
 });
-
 
 /**
  * SCHEMAS DE VALIDAÇÃO
@@ -102,13 +101,7 @@ router.post('/login', asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
   // 2. Buscar usuário pelo email
-  
-  // Alterado por Oliver -  para trazer a senha também
-  const user = await User.findOne({
-    where: { email: email.toLowerCase() },
-    attributes: { include: ['password'] }
-  });
-  
+  const user = await User.findByEmail(email.toLowerCase());
   if (!user) {
     throw createAuthenticationError('Credenciais inválidas');
   }

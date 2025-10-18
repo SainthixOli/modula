@@ -23,7 +23,7 @@ require('dotenv').config();
 const sequelize = new Sequelize(
   process.env.DB_NAME || 'modula_db',
   process.env.DB_USER || 'postgres',
-  process.env.DB_PASSWORD || '130520',
+  process.env.DB_PASSWORD || 'password',
   {
     host: process.env.DB_HOST || 'localhost',
     port: process.env.DB_PORT || 5432,
@@ -74,9 +74,7 @@ async function connectDB() {
     
     // Sincronizar modelos em desenvolvimento
     if (process.env.NODE_ENV === 'development') {
-      
-      // Alterado por Oliver -  para evitar erro na hora de executar o backend.
-      //  await sequelize.sync({ alter: true });
+      await sequelize.sync({ alter: true });
       console.log('🔄 Modelos sincronizados com o banco de dados');
     }
     
