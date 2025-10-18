@@ -1,137 +1,143 @@
 /**
- * MÓDULA - ASSOCIAÇÕES ENTRE MODELOS
+ * MÓDULA - MODELS INDEX
  * 
- * Este arquivo define os relacionamentos entre todos os modelos do sistema.
- * Deve ser importado após todos os modelos individuais serem definidos.
+ * Arquivo central de associações entre modelos do Sequelize.
+ * Define todos os relacionamentos entre as entidades do sistema.
  * 
- * Relacionamentos implementados:
- * - User (1) → (N) Patient (profissional tem muitos pacientes)
- * - Patient (N) → (1) User (paciente pertence a um profissional)
- * 
- * 
+ * Modelos implementados:
+ * - User (usuários do sistema)
+ * - Patient (pacientes)
+ * - Anamnesis (anamneses)
+ * - Session (consultas/sessões)
+ * - Transfer (transferências)
+ * - Notification (notificações)
  */
 
-const { Sequelize } = require('sequelize');
-const { sequelize } = require('../config/database');
-const Transfer = require('./Transfer');
+const sequelize = require('../config/database');
 
-// Importar todos os modelos
+// ============================================
+// IMPORTAR TODOS OS MODELOS
+// ============================================
 const User = require('./User');
 const Patient = require('./Patient');
 const Anamnesis = require('./Anamnesis');
 const Session = require('./Session');
-
-
-// Inicializar modelos
-const models = {
-  User: User(sequelize, Sequelize.DataTypes),
-  Patient: Patient(sequelize, Sequelize.DataTypes),
-  Anamnesis: Anamnesis(sequelize, Sequelize.DataTypes),
-  Session: Session(sequelize, Sequelize.DataTypes)
-};
+const Transfer = require('./Transfer');
+const Notification = require('./Notification');
 
 // ============================================
-// ASSOCIAÇÕES ENTRE MODELOS
+// ASSOCIAÇÕES: USER ↔ PATIENT
 // ============================================
 
-// --------------------------------------------
-// USER ASSOCIATIONS
-// --------------------------------------------
-// Um usuário (profissional) tem muitos pacientes
-models.User.hasMany(models.Patient, {
+// Um profissional tem muitos pacientes
+User.hasMany(Patient, {
   foreignKey: 'user_id',
-  as: 'patients',
-  onDelete: 'RESTRICT',
-  onUpdate: 'CASCADE'
+  as: 'Patients',
+  onDelete: 'RESTRICT', // Não permite deletar profissional com pacientes
+  onUpdate: 'CASCADE',
 });
 
-// Um usuário tem muitas anamneses
-models.User.hasMany(models.Anamnesis, {
+// Um paciente pertence a um profissional
+Patient.belongsTo(User, {
   foreignKey: 'user_id',
-  as: 'anamneses',
+  as: 'Professional',
   onDelete: 'RESTRICT',
-  onUpdate: 'CASCADE'
+  onUpdate: 'CASCADE',
 });
 
-
-// Um usuário (profissional) tem muitas sessões
-models.User.hasMany(models.Session, {
-  foreignKey: 'user_id',
-  as: 'sessions',
-  onDelete: 'RESTRICT',
-  onUpdate: 'CASCADE'
-});
-
-// --------------------------------------------
-// PATIENT ASSOCIATIONS
-// --------------------------------------------
-// Um paciente pertence a um usuário (profissional)
-models.Patient.belongsTo(models.User, {
-  foreignKey: 'user_id',
-  as: 'professional',
-  onDelete: 'RESTRICT',
-  onUpdate: 'CASCADE'
-});
+// ============================================
+// ASSOCIAÇÕES: PATIENT ↔ ANAMNESIS
+// ============================================
 
 // Um paciente tem uma anamnese
-models.Patient.hasOne(models.Anamnesis, {
+Patient.hasOne(Anamnesis, {
   foreignKey: 'patient_id',
-  as: 'anamnesis',
-  onDelete: 'CASCADE',
-  onUpdate: 'CASCADE'
+  as: 'Anamnesis',
+  onDelete: 'CASCADE', // Deletar anamnese quando paciente é deletado
+  onUpdate: 'CASCADE',
 });
+
+// Uma anamnese pertence a um paciente
+Anamnesis.belongsTo(Patient, {
+  foreignKey: 'patient_id',
+  as: 'Patient',
+  onDelete: 'CASCADE',
+  onUpdate: 'CASCADE',
+});
+
+// ============================================
+// ASSOCIAÇÕES: USER ↔ ANAMNESIS
+// ============================================
+
+// Um profissional tem muitas anamneses
+User.hasMany(Anamnesis, {
+  foreignKey: 'user_id',
+  as: 'Anamneses',
+  onDelete: 'RESTRICT',
+  onUpdate: 'CASCADE',
+});
+
+// Uma anamnese pertence a um profissional
+Anamnesis.belongsTo(User, {
+  foreignKey: 'user_id',
+  as: 'Professional',
+  onDelete: 'RESTRICT',
+  onUpdate: 'CASCADE',
+});
+
+// ============================================
+// ASSOCIAÇÕES: PATIENT ↔ SESSION
+// ============================================
 
 // Um paciente tem muitas sessões
-models.Patient.hasMany(models.Session, {
+Patient.hasMany(Session, {
   foreignKey: 'patient_id',
-  as: 'sessions',
-  onDelete: 'CASCADE',
-  onUpdate: 'CASCADE'
+  as: 'Sessions',
+  onDelete: 'CASCADE', // Deletar sessões quando paciente é deletado
+  onUpdate: 'CASCADE',
 });
 
-// --------------------------------------------
-// ANAMNESIS ASSOCIATIONS
-// --------------------------------------------
-// Uma anamnese pertence a um paciente
-models.Anamnesis.belongsTo(models.Patient, {
-  foreignKey: 'patient_id',
-  as: 'patient',
-  onDelete: 'CASCADE',
-  onUpdate: 'CASCADE'
-});
-
-// Uma anamnese pertence a um usuário (profissional)
-models.Anamnesis.belongsTo(models.User, {
-  foreignKey: 'user_id',
-  as: 'professional',
-  onDelete: 'RESTRICT',
-  onUpdate: 'CASCADE'
-});
-
-// --------------------------------------------
-// SESSION ASSOCIATIONS (NOVO)
-// --------------------------------------------
 // Uma sessão pertence a um paciente
-models.Session.belongsTo(models.Patient, {
+Session.belongsTo(Patient, {
   foreignKey: 'patient_id',
-  as: 'patient',
+  as: 'Patient',
   onDelete: 'CASCADE',
-  onUpdate: 'CASCADE'
+  onUpdate: 'CASCADE',
 });
 
-// Uma sessão pertence a um usuário (profissional)
-models.Session.belongsTo(models.User, {
+// ============================================
+// ASSOCIAÇÕES: USER ↔ SESSION
+// ============================================
+
+// Um profissional tem muitas sessões
+User.hasMany(Session, {
   foreignKey: 'user_id',
-  as: 'professional',
+  as: 'Sessions',
+  onDelete: 'RESTRICT', // Não permite deletar profissional com sessões
+  onUpdate: 'CASCADE',
+});
+
+// Uma sessão pertence a um profissional
+Session.belongsTo(User, {
+  foreignKey: 'user_id',
+  as: 'Professional',
   onDelete: 'RESTRICT',
-  onUpdate: 'CASCADE'
+  onUpdate: 'CASCADE',
 });
 
 // ============================================
-// ASSOCIAÇÕES DO TRANSFER (adicionar após outras associações)
+// ASSOCIAÇÕES: TRANSFER ↔ PATIENT
 // ============================================
 
-// Transfer -> Patient (paciente sendo transferido)
+// Um paciente tem muitas transferências (histórico)
+Patient.hasMany(Transfer, {
+  foreignKey: 'patient_id',
+  as: 'Transfers',
+  onDelete: 'RESTRICT', // Manter histórico de transferências
+  onUpdate: 'CASCADE',
+});
+
+// Uma transferência pertence a um paciente
 Transfer.belongsTo(Patient, {
   foreignKey: 'patient_id',
   as: 'Patient',
@@ -139,7 +145,43 @@ Transfer.belongsTo(Patient, {
   onUpdate: 'CASCADE',
 });
 
-// Transfer -> User (profissional de origem)
+// ============================================
+// ASSOCIAÇÕES: TRANSFER ↔ USER (MÚLTIPLAS)
+// ============================================
+
+// Transferências enviadas por um profissional
+User.hasMany(Transfer, {
+  foreignKey: 'from_user_id',
+  as: 'TransfersSent',
+  onDelete: 'RESTRICT',
+  onUpdate: 'CASCADE',
+});
+
+// Transferências recebidas por um profissional
+User.hasMany(Transfer, {
+  foreignKey: 'to_user_id',
+  as: 'TransfersReceived',
+  onDelete: 'RESTRICT',
+  onUpdate: 'CASCADE',
+});
+
+// Transferências processadas por um admin
+User.hasMany(Transfer, {
+  foreignKey: 'processed_by',
+  as: 'TransfersProcessed',
+  onDelete: 'SET NULL', // Manter registro mesmo se admin for deletado
+  onUpdate: 'CASCADE',
+});
+
+// Transferências canceladas por um usuário
+User.hasMany(Transfer, {
+  foreignKey: 'cancelled_by',
+  as: 'TransfersCancelled',
+  onDelete: 'SET NULL',
+  onUpdate: 'CASCADE',
+});
+
+// Uma transferência tem um profissional de origem
 Transfer.belongsTo(User, {
   foreignKey: 'from_user_id',
   as: 'FromUser',
@@ -147,7 +189,7 @@ Transfer.belongsTo(User, {
   onUpdate: 'CASCADE',
 });
 
-// Transfer -> User (profissional de destino)
+// Uma transferência tem um profissional de destino
 Transfer.belongsTo(User, {
   foreignKey: 'to_user_id',
   as: 'ToUser',
@@ -155,7 +197,7 @@ Transfer.belongsTo(User, {
   onUpdate: 'CASCADE',
 });
 
-// Transfer -> User (admin que processou)
+// Uma transferência pode ter sido processada por um admin
 Transfer.belongsTo(User, {
   foreignKey: 'processed_by',
   as: 'ProcessedBy',
@@ -163,7 +205,7 @@ Transfer.belongsTo(User, {
   onUpdate: 'CASCADE',
 });
 
-// Transfer -> User (usuário que cancelou)
+// Uma transferência pode ter sido cancelada por um usuário
 Transfer.belongsTo(User, {
   foreignKey: 'cancelled_by',
   as: 'CancelledBy',
@@ -171,157 +213,93 @@ Transfer.belongsTo(User, {
   onUpdate: 'CASCADE',
 });
 
-// Associações reversas
-Patient.hasMany(Transfer, {
-  foreignKey: 'patient_id',
-  as: 'Transfers',
+// ============================================
+// ASSOCIAÇÕES: NOTIFICATION ↔ USER
+// ============================================
+
+// Um usuário tem muitas notificações
+User.hasMany(Notification, {
+  foreignKey: 'user_id',
+  as: 'Notifications',
+  onDelete: 'CASCADE', // Deletar notificações quando usuário é deletado
+  onUpdate: 'CASCADE',
 });
 
-User.hasMany(Transfer, {
-  foreignKey: 'from_user_id',
-  as: 'TransfersSent',
+// Um usuário pode ter criado muitas notificações
+User.hasMany(Notification, {
+  foreignKey: 'created_by',
+  as: 'CreatedNotifications',
+  onDelete: 'SET NULL', // Manter notificação mesmo se criador for deletado
+  onUpdate: 'CASCADE',
 });
 
-User.hasMany(Transfer, {
-  foreignKey: 'to_user_id',
-  as: 'TransfersReceived',
+// Uma notificação pertence a um usuário (destinatário)
+Notification.belongsTo(User, {
+  foreignKey: 'user_id',
+  as: 'User',
+  onDelete: 'CASCADE',
+  onUpdate: 'CASCADE',
 });
 
-User.hasMany(Transfer, {
-  foreignKey: 'processed_by',
-  as: 'TransfersProcessed',
+// Uma notificação pode ter sido criada por um usuário
+Notification.belongsTo(User, {
+  foreignKey: 'created_by',
+  as: 'Creator',
+  onDelete: 'SET NULL',
+  onUpdate: 'CASCADE',
 });
 
 // ============================================
-// EXPORTAR MODELOS E CONEXÃO
+// EXPORTAR TUDO
 // ============================================
+
 module.exports = {
   sequelize,
   User,
   Patient,
   Anamnesis,
   Session,
-  Transfer, // ← ADICIONAR ESTA LINHA
+  Transfer,
+  Notification,
 };
 
 /**
- * DEFINIR ASSOCIAÇÕES
+ * RESUMO DAS ASSOCIAÇÕES:
  * 
- * IMPORTANTE: As associações devem ser definidas APÓS todos os modelos
- * serem carregados para evitar dependências circulares
- */
-
-// RELACIONAMENTO: USER → PATIENT
-// Um profissional (User) pode ter muitos pacientes
-User.hasMany(Patient, {
-  foreignKey: 'user_id',
-  as: 'patients',
-  onDelete: 'RESTRICT', // Não permite deletar user se tem pacientes
-  onUpdate: 'CASCADE'   // Atualiza FK se user_id mudar
-});
-
-// RELACIONAMENTO: PATIENT → USER  
-// Um paciente pertence a um profissional (User)
-Patient.belongsTo(User, {
-  foreignKey: 'user_id',
-  as: 'professional',
-  onDelete: 'RESTRICT', // Não permite deletar user se tem pacientes
-  onUpdate: 'CASCADE'
-});
-
-/**
- * FUNÇÕES UTILITÁRIAS PARA SYNC
- */
-
-/**
- * Sincronizar todos os modelos com o banco de dados
- * Usado apenas em desenvolvimento
- */
-const syncDatabase = async (options = {}) => {
-  try {
-    await sequelize.sync(options);
-    console.log('✅ Modelos sincronizados com sucesso');
-  } catch (error) {
-    console.error('❌ Erro ao sincronizar modelos:', error);
-    throw error;
-  }
-};
-
-/**
- * Forçar recriação de todas as tabelas
- * CUIDADO: Apaga todos os dados existentes
- */
-const resetDatabase = async () => {
-  try {
-    await sequelize.sync({ force: true });
-    console.log('✅ Base de dados resetada com sucesso');
-    console.log('⚠️  ATENÇÃO: Todos os dados foram apagados');
-  } catch (error) {
-    console.error('❌ Erro ao resetar base de dados:', error);
-    throw error;
-  }
-};
-
-/**
- * Verificar se todas as tabelas existem
- */
-const checkTables = async () => {
-  try {
-    await User.findOne({ limit: 1 });
-    await Patient.findOne({ limit: 1 });
-    console.log('✅ Todas as tabelas estão acessíveis');
-    return true;
-  } catch (error) {
-    console.log('⚠️  Algumas tabelas podem não existir ainda');
-    return false;
-  }
-};
-
-// Exportar modelos e funções utilitárias
-module.exports = {
-  // Modelos
-  User,
-  Patient,
-  
-  // Instância do Sequelize
-  sequelize,
-  
-  // Funções utilitárias
-  syncDatabase,
-  resetDatabase,
-  checkTables
-};
-
-/**
- * COMO USAR AS ASSOCIAÇÕES:
+ * USER (Profissional/Admin):
+ * - hasMany: Patients, Anamneses, Sessions
+ * - hasMany: TransfersSent, TransfersReceived, TransfersProcessed, TransfersCancelled
+ * - hasMany: Notifications, CreatedNotifications
  * 
- * // Buscar profissional com seus pacientes
- * const professional = await User.findByPk(userId, {
- *   include: [{
- *     model: Patient,
- *     as: 'patients',
- *     where: { status: 'active' }
- *   }]
- * });
+ * PATIENT:
+ * - belongsTo: Professional (User)
+ * - hasOne: Anamnesis
+ * - hasMany: Sessions, Transfers
  * 
- * // Buscar paciente com dados do profissional
- * const patient = await Patient.findByPk(patientId, {
- *   include: [{
- *     model: User,
- *     as: 'professional',
- *     attributes: ['id', 'full_name', 'professional_register']
- *   }]
- * });
+ * ANAMNESIS:
+ * - belongsTo: Patient, Professional (User)
  * 
- * // Contar pacientes de um profissional
- * const patientCount = await professional.countPatients({
- *   where: { status: 'active' }
- * });
+ * SESSION:
+ * - belongsTo: Patient, Professional (User)
  * 
- * // Criar paciente associado a um profissional
- * const newPatient = await professional.createPatient({
- *   full_name: 'João Silva',
- *   email: 'joao@email.com'
- *   // user_id será definido automaticamente
- * });
+ * TRANSFER:
+ * - belongsTo: Patient
+ * - belongsTo: FromUser (User), ToUser (User), ProcessedBy (User), CancelledBy (User)
+ * 
+ * NOTIFICATION:
+ * - belongsTo: User (destinatário), Creator (User)
+ * 
+ * ESTRATÉGIAS DE DELEÇÃO:
+ * 
+ * CASCADE:
+ * - Patient deletado → deleta Anamnesis, Sessions
+ * - User deletado → deleta Notifications (recebidas)
+ * 
+ * RESTRICT:
+ * - Não permite deletar User com Patients, Sessions, Anamneses
+ * - Não permite deletar Patient com Transfers (histórico)
+ * 
+ * SET NULL:
+ * - Admin deletado → Transfer mantém registro mas processed_by = null
+ * - Usuário deletado → Notification criada por ele mantém registro
  */

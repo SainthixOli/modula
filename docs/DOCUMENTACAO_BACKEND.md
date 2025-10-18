@@ -1194,6 +1194,284 @@ Todos os relatórios seguem o padrão:
 - `src/routes/transfers.js` - 11 endpoints completos
 - `src/middleware/transferValidations.js` - 7 middlewares de validação
 
+
+---
+
+### **SISTEMA DE NOTIFICAÇÕES INTERNAS (100% COMPLETO)**
+
+#### **Arquivos Implementados:**
+- `src/models/Notification.js` - Modelo completo (650 linhas)
+- `src/controllers/notificationController.js` - 13 funções (420 linhas)
+- `src/routes/notifications.js` - 14 endpoints (210 linhas)
+- `src/middleware/notificationValidations.js` - 6 middlewares (380 linhas)
+
+**Total:** 1.660 linhas de código implementadas!
+
+#### **Modelo Notification:**
+
+**Campos Principais:**
+- `id` - UUID único
+- `user_id` - FK usuário destinatário (CASCADE on delete)
+- `type` - ENUM: info | success | warning | error | reminder
+- `category` - ENUM: system | transfer | session | patient | anamnesis | admin | backup | security
+- `title` - String (3-200 chars)
+- `message` - Text (5-1000 chars)
+- `priority` - ENUM: low | medium | high | critical
+- `is_read` - Boolean (default false)
+- `read_at` - Timestamp de leitura
+
+**Ações Associadas:**
+- `action_type` - ENUM com 8 tipos de ações
+- `action_url` - String (URL de destino)
+- `action_data` - JSONB (dados da ação)
+
+**Contexto:**
+- `related_entity_type` - Tipo da entidade relacionada
+- `related_entity_id` - UUID da entidade
+- `created_by` - FK usuário criador (SET NULL)
+- `expires_at` - Data de expiração automática
+
+**Métodos de Instância (5):**
+- `markAsRead()` - Marcar como lida com timestamp
+- `markAsUnread()` - Reverter para não lida
+- `isExpired()` - Verificar expiração
+- `getAgeInMinutes()` - Idade em minutos
+- `getFormattedData()` - Dados formatados para frontend
+
+**Métodos Estáticos (9):**
+- `createForUser(userId, data)` - Criar para usuário específico
+- `findUnreadByUser(userId, options)` - Buscar não lidas
+- `findByUser(userId, options)` - Buscar com filtros e paginação
+- `countUnreadByUser(userId)` - Contar não lidas (badge)
+- `markAllAsReadByUser(userId, filters)` - Marcar todas como lidas
+- `deleteOld(daysOld)` - Limpar antigas (30 dias default)
+- `getStats(userId)` - Estatísticas agregadas
+- `createBulk(userIds, data)` - Criar em lote para múltiplos usuários
+
+**Hooks Implementados:**
+- `beforeCreate` - Define expiração automática por tipo:
+  * reminder: 7 dias
+  * info: 30 dias
+  * warning, error, success: sem expiração
+- `afterCreate` - Log de criação
+
+**Índices Otimizados (8):**
+- Simples: user_id, is_read, type, category, priority, created_at
+- Composto: (user_id, is_read, created_at)
+- Parcial: (user_id, is_read) WHERE is_read = false
+- Parcial: expires_at WHERE expires_at IS NOT NULL
+
+#### **Endpoints Implementados:**
+
+**ROTAS DO USUÁRIO (10 endpoints):**
+
+1. **GET /api/notifications** - Listar minhas notificações
+   - Filtros: is_read, type, category, priority
+   - Paginação (page, limit)
+   - Ordenação: prioridade DESC, data DESC
+   - Retorna dados formatados
+
+2. **GET /api/notifications/unread** - Não lidas
+   - Limite configurável (default 20)
+   - Filtro por categoria opcional
+   - Ordenação automática por prioridade
+   - Badge/contador incluso
+
+3. **GET /api/notifications/unread/count** - Contador
+   - Resposta rápida otimizada
+   - Para badge de notificações
+   - Query otimizada com índice
+
+4. **GET /api/notifications/:id** - Detalhes
+   - Verificação de ownership
+   - Dados formatados completos
+   - Idade calculada
+
+5. **PUT /api/notifications/:id/read** - Marcar lida
+   - Atualiza is_read = true
+   - Define read_at = agora
+   - Verificação de ownership
+
+6. **PUT /api/notifications/:id/unread** - Marcar não lida
+   - Atualiza is_read = false
+   - Remove read_at
+   - Verificação de ownership
+
+7. **PUT /api/notifications/mark-all-read** - Marcar todas
+   - Filtros opcionais (category, type)
+   - Retorna contador de atualizadas
+   - Operação em lote otimizada
+
+8. **DELETE /api/notifications/:id** - Deletar
+   - Verificação de ownership
+   - Deleção permanente
+   - Confirmação de sucesso
+
+9. **DELETE /api/notifications/read** - Deletar todas lidas
+   - Remove apenas lidas do usuário
+   - Retorna contador de deletadas
+   - Limpeza rápida
+
+10. **GET /api/notifications/stats** - Estatísticas pessoais
+    - Total, unread, read
+    - Distribuição por tipo
+    - Distribuição por prioridade
+    - Distribuição por categoria
+
+**ROTAS ADMINISTRATIVAS (4 endpoints):**
+
+1. **POST /api/notifications/admin** - Criar notificação
+   - Para usuário específico
+   - Todos os campos configuráveis
+   - Validação completa Joi
+   - Registra criador (created_by)
+
+2. **POST /api/notifications/admin/bulk** - Criar em lote
+   - Para múltiplos usuários (user_ids[])
+   - Mesma notificação para todos
+   - Validação de existência dos usuários
+   - Retorna contador e lista criadas
+
+3. **DELETE /api/notifications/admin/cleanup** - Limpar antigas
+   - Remove notificações lidas antigas (default 30 dias)
+   - Remove notificações expiradas
+   - Retorna estatísticas:
+     * deleted_read: lidas antigas
+     * deleted_expired: expiradas
+     * total: soma
+   - Configurável via query param days_old
+
+4. **GET /api/notifications/admin/stats** - Estatísticas globais
+   - Estatísticas de todo o sistema
+   - Últimas 10 notificações criadas
+   - Distribuição completa
+   - Inclui dados de usuário e criador
+
+#### **Validações Joi Implementadas:**
+
+**createNotificationSchema:**
+- user_id: UUID obrigatório
+- type: enum (5 tipos)
+- category: enum (8 categorias)
+- title: 3-200 chars obrigatório
+- message: 5-1000 chars obrigatório
+- priority: enum (4 níveis)
+- action_type: enum (8 tipos)
+- action_url: URI válida (max 500)
+- action_data: objeto JSONB
+- related_entity_type: enum
+- related_entity_id: UUID
+- expires_at: ISO date futuro
+
+**createBulkNotificationSchema:**
+- user_ids: array de UUIDs (min 1)
+- Mesmos campos de criação individual
+
+**listNotificationsSchema:**
+- page: number (min 1, default 1)
+- limit: number (1-100, default 20)
+- is_read: string ("true"/"false")
+- type, category, priority: enums
+
+**markAllReadSchema:**
+- category, type: opcionais para filtro
+
+**cleanupSchema:**
+- days_old: number (1-365, default 30)
+
+#### **Recursos Técnicos:**
+
+**Sistema de Expiração Automática:**
+- Reminders expiram em 7 dias
+- Info expiram em 30 dias
+- Warning, error, success não expiram
+- Limpeza automática via endpoint admin
+- Índice parcial para performance
+
+**Formatação de Dados:**
+- getFormattedData() - Estrutura consistente para frontend
+- Idade calculada em minutos
+- Status de expiração incluído
+- Ação e contexto organizados
+
+**Controle de Acesso:**
+- Ownership verificado em todas as operações
+- Apenas usuário pode ver/modificar suas notificações
+- Admin pode criar para qualquer usuário
+- Admin pode ver estatísticas globais
+
+**Performance:**
+- 8 índices otimizados
+- Índice parcial para não lidas
+- Paginação em todas as listagens
+- Query count otimizada
+- Bulk operations eficientes
+
+#### **Casos de Uso:**
+
+**1. Badge de Notificações:**
+```javascript
+GET /api/notifications/unread/count
+// Retorna: { unread_count: 5 }
+```
+
+**2. Listar Não Lidas (Dropdown):**
+```javascript
+GET /api/notifications/unread?limit=5
+// Retorna últimas 5 não lidas ordenadas por prioridade
+```
+
+**3. Central de Notificações:**
+```javascript
+GET /api/notifications?page=1&limit=20&type=warning
+// Lista paginada com filtro
+```
+
+**4. Marcar Todas como Lidas:**
+```javascript
+PUT /api/notifications/mark-all-read
+{ "category": "transfer" } // opcional
+```
+
+**5. Notificação de Transferência (Admin):**
+```javascript
+POST /api/notifications/admin
+{
+  "user_id": "profissional-uuid",
+  "type": "warning",
+  "category": "transfer",
+  "title": "Transferência Pendente",
+  "message": "Você tem uma nova transferência aguardando aprovação",
+  "priority": "high",
+  "action_type": "approve_transfer",
+  "action_url": "/admin/transfers/pending",
+  "action_data": { "transfer_id": "uuid" },
+  "related_entity_type": "transfer",
+  "related_entity_id": "uuid"
+}
+```
+
+**6. Broadcast para Todos (Admin):**
+```javascript
+POST /api/notifications/admin/bulk
+{
+  "user_ids": ["uuid1", "uuid2", "uuid3"],
+  "type": "info",
+  "category": "system",
+  "title": "Manutenção Programada",
+  "message": "Sistema em manutenção amanhã das 2h às 4h",
+  "priority": "medium"
+}
+```
+
+**7. Limpeza Automática (Admin):**
+```javascript
+DELETE /api/notifications/admin/cleanup?days_old=30
+// Remove lidas com 30+ dias e expiradas
+```
+
+---
+
 #### **Funcionalidades por Grupo:**
 
 **OPERAÇÕES DO PROFISSIONAL (5 endpoints):**
