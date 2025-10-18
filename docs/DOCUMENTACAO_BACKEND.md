@@ -1184,6 +1184,157 @@ Todos os relatórios seguem o padrão:
 - `status` - Filtro por status
 - `requested_at` - Ordenação temporal
 - `(status, requested_at)` - Busca combinada otimizada
+
+---
+
+### **CONTROLLER E ROTAS DE TRANSFERÊNCIAS (100% COMPLETO)**
+
+#### **Arquivos Implementados:**
+- `src/controllers/transferController.js` - 11 funções de lógica de negócio
+- `src/routes/transfers.js` - 11 endpoints completos
+- `src/middleware/transferValidations.js` - 7 middlewares de validação
+
+#### **Funcionalidades por Grupo:**
+
+**OPERAÇÕES DO PROFISSIONAL (5 endpoints):**
+
+1. **POST /api/transfers** - Solicitar transferência
+   - Validações: paciente existe, pertence ao solicitante, destino válido
+   - Bloqueia: auto-transferência, transferências pendentes duplicadas
+   - Cria snapshot automático de dados
+   - Metadados: contador de sessões, última consulta
+
+2. **GET /api/transfers/my-requests** - Minhas solicitações
+   - Filtros: status, direção (sent/received/all)
+   - Paginação completa
+   - Resumo agregado (total, pendentes)
+   
+3. **GET /api/transfers/:id** - Detalhes da transferência
+   - Controle de acesso: apenas envolvidos ou admin
+   - Inclui todos os relacionamentos
+   
+4. **POST /api/transfers/:id/cancel** - Cancelar solicitação
+   - Apenas solicitante pode cancelar
+   - Apenas transferências pendentes
+   - Motivo opcional
+   
+5. **GET /api/patients/:id/transfer-history** - Histórico do paciente
+   - Timeline completa de transferências
+   - Controle de acesso por ownership
+   - Resumo de estatísticas
+
+**OPERAÇÕES ADMINISTRATIVAS (6 endpoints):**
+
+1. **GET /api/admin/transfers/pending** - Lista pendentes
+   - Ordenação configurável
+   - Paginação otimizada
+   - Inclui dados de paciente e profissionais
+   
+2. **PUT /api/admin/transfers/:id/approve** - Aprovar transferência
+   - auto_complete (default true) efetiva imediatamente
+   - Notas administrativas opcionais
+   - Atualiza status e timestamps
+   
+3. **PUT /api/admin/transfers/:id/reject** - Rejeitar transferência
+   - Motivo obrigatório (min 10 chars)
+   - Notifica profissional solicitante
+   - Mantém histórico
+   
+4. **POST /api/admin/transfers/:id/complete** - Completar manualmente
+   - Para transferências aprovadas
+   - Efetiva mudança do paciente
+   - Salva snapshot antes da transferência
+   
+5. **GET /api/admin/transfers/history** - Histórico completo
+   - Múltiplos filtros (status, datas, paciente, profissional)
+   - Paginação
+   - Ordenação por data
+   
+6. **GET /api/admin/transfers/stats** - Estatísticas
+   - Total por status
+   - Taxa de aprovação calculada
+   - Transferências recentes (top 5)
+
+#### **Middlewares de Validação (7):**
+
+**Schemas Joi Implementados:**
+- `requestTransferSchema` - Validação de solicitação
+  * patient_id: UUID obrigatório
+  * to_user_id: UUID obrigatório
+  * reason: string 10-1000 chars obrigatório
+
+- `approveTransferSchema` - Validação de aprovação
+  * notes: string opcional (max 500 chars)
+  * auto_complete: boolean (default true)
+
+- `rejectTransferSchema` - Validação de rejeição
+  * reason: string 10-1000 chars obrigatório
+
+- `cancelTransferSchema` - Validação de cancelamento
+  * reason: string opcional (min 10 se fornecido)
+
+- `listTransfersSchema` - Validação de listagem
+  * page, limit (defaults e ranges)
+  * status: enum de status válidos
+  * direction: sent/received/all
+  * sortBy, order (campos e direção)
+
+- `historyFiltersSchema` - Validação de filtros admin
+  * Filtros de data com validação cruzada
+  * Filtros por paciente e profissional (UUID)
+  * Paginação com limites
+
+- `transferIdSchema` - Validação de UUID em params
+
+**Validações de Negócio:**
+- ✅ Profissional destino deve estar ativo
+- ✅ Profissional destino deve ser tipo 'professional'
+- ✅ Não permite auto-transferência
+- ✅ Bloqueia transferências pendentes duplicadas
+- ✅ Motivo obrigatório na solicitação
+- ✅ Motivo obrigatório na rejeição
+- ✅ Apenas solicitante pode cancelar
+- ✅ Apenas admin pode aprovar/rejeitar
+- ✅ Controle de acesso por ownership
+
+#### **Recursos Técnicos:**
+- ✅ Autenticação JWT obrigatória
+- ✅ Middlewares de role (requireProfessional, requireAdmin)
+- ✅ AsyncHandler para tratamento de erros
+- ✅ Validações Joi em todas as entradas
+- ✅ Mensagens de erro em português
+- ✅ Códigos de erro específicos (PATIENT_NOT_FOUND, etc)
+- ✅ Paginação otimizada em listagens
+- ✅ Includes Sequelize para relacionamentos
+- ✅ Snapshots automáticos para auditoria
+- ✅ Metadados com informações contextuais
+
+#### **Fluxo Completo de Transferência:**
+```
+1. Profissional solicita (POST /api/transfers)
+   ↓ (status: pending)
+2. Admin visualiza pendentes (GET /api/admin/transfers/pending)
+   ↓
+3a. Admin aprova (PUT /api/admin/transfers/:id/approve)
+    ↓ (status: approved → completed)
+    Sistema transfere paciente automaticamente
+    
+3b. Admin rejeita (PUT /api/admin/transfers/:id/reject)
+    ↓ (status: rejected)
+    Profissional notificado do motivo
+
+Alternativa:
+1. Profissional cancela (POST /api/transfers/:id/cancel)
+   ↓ (status: cancelled)
+```
+
+#### **Estatísticas Calculadas:**
+- Total de transferências
+- Distribuição por status
+- Taxa de aprovação (%)
+- Percentual de pendentes
+- Transferências processadas vs pendentes
+
 ---
 
 # 4. ROADMAP DE DESENVOLVIMENTO

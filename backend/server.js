@@ -35,6 +35,7 @@ const { validateToken } = require('./src/middleware/auth');
 const authRoutes = require('./src/routes/auth');
 const adminRoutes = require('./src/routes/admin');
 const professionalRoutes = require('./src/routes/professional');
+const transferRoutes = require('./src/routes/transfers');
 // TODO: Importar rotas futuras
 // const patientRoutes = require('./src/routes/patient');
 // const anamnesisRoutes = require('./src/routes/anamnesis');
@@ -176,6 +177,10 @@ app.use('/api/auth', authRoutes);
 
 // MÓDULO DE ADMINISTRAÇÃO (requer token + admin)
 app.use('/api/admin', validateToken, adminRoutes);
+
+// Rotas de transferências
+app.use('/api/transfers', transferRoutes);
+
 
 // MÓDULO DO PROFISSIONAL (requer token + profissional) 
 app.use('/api/professional', validateToken, professionalRoutes);
