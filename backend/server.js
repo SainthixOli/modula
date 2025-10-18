@@ -23,7 +23,7 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const morgan = require('morgan');
 require('dotenv').config();
-
+require('./src/config/database');
 // Importar configurações do banco de dados
 const { connectDB } = require('./src/config/database');
 

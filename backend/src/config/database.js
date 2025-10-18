@@ -14,18 +14,17 @@
  */
 
 const { Sequelize } = require('sequelize');
-require('dotenv').config();
 
 /**
  * CONFIGURAÇÃO DA CONEXÃO COM O BANCO
  * Utiliza variáveis de ambiente para segurança
  */
 const sequelize = new Sequelize(
-  process.env.DB_NAME || 'modula_db',
-  process.env.DB_USER || 'postgres',
-  process.env.DB_PASSWORD || 'password',
+  (process.env.DB_NAME || 'modula_db').trim(),
+  (process.env.DB_USER || 'postgres').trim(),
+  (process.env.DB_PASSWORD || 'password').trim(),
   {
-    host: process.env.DB_HOST || 'localhost',
+    host: (process.env.DB_HOST || 'localhost').trim(),
     port: process.env.DB_PORT || 5432,
     dialect: 'postgres',
     
@@ -73,10 +72,11 @@ async function connectDB() {
     console.log('🔗 Conexão com PostgreSQL estabelecida com sucesso');
     
     // Sincronizar modelos em desenvolvimento
-    if (process.env.NODE_ENV === 'development') {
-      await sequelize.sync({ alter: true });
-      console.log('🔄 Modelos sincronizados com o banco de dados');
-    }
+if (process.env.NODE_ENV === 'development') {
+  // TROQUE alter: true por force: true APENAS UMA VEZ!
+  await sequelize.sync();
+  console.log('🔄 Modelos sincronizados com o banco de dados');
+}
     
     return sequelize;
   } catch (error) {

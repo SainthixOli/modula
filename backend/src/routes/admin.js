@@ -14,7 +14,7 @@
  */
 
 const express = require('express');
-const { requireAdmin } = require('../middleware/auth');
+const { requireAdmin, validateToken } = require('../middleware/auth');
 const { asyncHandler } = require('../middleware/errorHandler');
 const transferController = require('../controllers/transferController');
 
@@ -38,7 +38,7 @@ const {
 } = require('../middleware/transferValidations');
 
 // Validação para ações em lote
-const { body } = require('express-validator');
+const { body, param } = require('express-validator'); 
 
 /**
  * ROTAS DE DASHBOARD
@@ -353,11 +353,6 @@ router.put('/transfers/:id/reject',
   asyncHandler(adminController.rejectTransfer)
 );
 
-/**
- * MIDDLEWARE DE VALIDAÇÃO DE PARÂMETROS
- * Validar UUIDs nos parâmetros de rota
- */
-const { body, param } = require('express-validator');
 
 // Middleware para validar UUID nos parâmetros
 const validateUUIDParam = param('id')
