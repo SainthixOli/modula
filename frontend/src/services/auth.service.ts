@@ -1,7 +1,5 @@
 import api from './api';
 
-
-
 export const setupAuthHeader = () => {
   const token = localStorage.getItem('authToken');
   if (token) {

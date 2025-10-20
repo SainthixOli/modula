@@ -23,7 +23,7 @@ interface ProfessionalDetails {
   status: 'active' | 'inactive';
   last_login: string;
   created_at: string;
-  patients: { id: string; full_name: string; status: string }[];
+  Patients: { id: string; full_name: string; status: string }[];
   statistics: {
     total_patients: number;
     active_patients: number;
@@ -138,6 +138,8 @@ export default function ProfessionalDetailPage() {
                     <Badge variant={professional.status === "active" ? "default" : "secondary"}>
                       {professional.status === "active" ? "Ativo" : "Inativo"}
                     </Badge>
+                    
+                    {/* <<< VERIFICAÇÃO ADICIONADA AQUI >>> */}
                     {professional.last_login && (
                       <Badge variant="outline">Último acesso: {formatDistanceToNow(new Date(professional.last_login), { locale: ptBR, addSuffix: true })}</Badge>
                     )}
@@ -160,10 +162,10 @@ export default function ProfessionalDetailPage() {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">Pacientes Ativos</p><p className="text-2xl font-bold text-green-600">{professional.statistics.active_patients}</p></CardContent></Card>
-            <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">Sessões no Mês</p><p className="text-2xl font-bold text-blue-600">{professional.statistics.sessions_in_month}</p></CardContent></Card>
-            <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">Taxa de Presença</p><p className="text-2xl font-bold text-purple-600">{professional.statistics.attendance_rate}%</p></CardContent></Card>
-            <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">Total de Sessões</p><p className="text-2xl font-bold text-amber-600">{professional.statistics.total_sessions}</p></CardContent></Card>
+            <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">Pacientes Ativos</p><p className="text-2xl font-bold text-green-600">{professional.statistics?.active_patients ?? 0}</p></CardContent></Card>
+            <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">Sessões no Mês</p><p className="text-2xl font-bold text-blue-600">{professional.statistics?.sessions_in_month ?? 0}</p></CardContent></Card>
+            <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">Taxa de Presença</p><p className="text-2xl font-bold text-purple-600">{professional.statistics?.attendance_rate ?? 0}%</p></CardContent></Card>
+            <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">Total de Sessões</p><p className="text-2xl font-bold text-amber-600">{professional.statistics?.total_sessions ?? 0}</p></CardContent></Card>
           </div>
 
           <Tabs defaultValue="info" className="w-full">
@@ -186,8 +188,11 @@ export default function ProfessionalDetailPage() {
                   <CardHeader><CardTitle>Informações Profissionais</CardTitle></CardHeader>
                   <CardContent className="space-y-4">
                     <div className="flex items-center gap-3"><Activity className="h-4 w-4 text-muted-foreground" /><div><p className="text-sm text-muted-foreground">Especialidade</p><p className="font-medium">{professional.specialty}</p></div></div>
-                    <div className="flex items-center gap-3"><Calendar className="h-4 w-4 text-muted-foreground" /><div><p className="text-sm text-muted-foreground">Data de Cadastro</p><p className="font-medium">{format(new Date(professional.created_at), "dd/MM/yyyy", { locale: ptBR })}</p></div></div>
-                    <div className="flex items-center gap-3"><Users className="h-4 w-4 text-muted-foreground" /><div><p className="text-sm text-muted-foreground">Total de Pacientes</p><p className="font-medium">{professional.statistics.total_patients}</p></div></div>
+                    <div className="flex items-center gap-3"><Calendar className="h-4 w-4 text-muted-foreground" /><div><p className="text-sm text-muted-foreground">Data de Cadastro</p>
+                      {/* <<< VERIFICAÇÃO ADICIONADA AQUI >>> */}
+                      <p className="font-medium">{professional.created_at ? format(new Date(professional.created_at), "dd/MM/yyyy", { locale: ptBR }) : 'N/A'}</p>
+                    </div></div>
+                    <div className="flex items-center gap-3"><Users className="h-4 w-4 text-muted-foreground" /><div><p className="text-sm text-muted-foreground">Total de Pacientes</p><p className="font-medium">{professional.statistics?.total_patients ?? 0}</p></div></div>
                   </CardContent>
                 </Card>
               </div>
@@ -197,9 +202,9 @@ export default function ProfessionalDetailPage() {
               <Card>
                 <CardHeader><CardTitle>Pacientes do Profissional</CardTitle></CardHeader>
                 <CardContent>
-                  {professional.patients.length > 0 ? (
+                  {professional.Patients?.length > 0 ? (
                     <ul className="space-y-2">
-                      {professional.patients.map(patient => (
+                      {professional.Patients.map(patient => (
                         <li key={patient.id} className="flex justify-between items-center p-3 rounded-lg hover:bg-muted">
                           <span className="font-medium">{patient.full_name}</span>
                           <Badge variant={patient.status === 'active' ? 'default' : 'secondary'}>{patient.status === 'active' ? 'Ativo' : 'Inativo'}</Badge>
@@ -225,5 +230,4 @@ export default function ProfessionalDetailPage() {
         </main>
       </div>
     </div>
-  );
-}
+  )};

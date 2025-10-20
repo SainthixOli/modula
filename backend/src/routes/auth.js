@@ -100,9 +100,15 @@ router.post('/login', asyncHandler(async (req, res) => {
 
   const { email, password } = req.body;
 
-  // 2. Buscar usuário pelo email
-  const user = await User.findByEmail(email.toLowerCase());
+  // 2. Buscar usuário pelo email 
+  const user = await User.findOne({
+    where: { email: email.toLowerCase() },
+    attributes: { include: ['password'] } 
+  });
+
   if (!user) {
+    // Adiciona um log para depuração
+    console.error(`Login falhou: Usuário não encontrado para o email ${email}`);
     throw createAuthenticationError('Credenciais inválidas');
   }
 
@@ -110,6 +116,8 @@ router.post('/login', asyncHandler(async (req, res) => {
   if (!user.isActive()) {
     throw createAuthenticationError('Conta inativa ou suspensa. Contate o administrador.');
   }
+
+  console.log(`Tentando validar senha para ${email}. Hash do banco: ${user.password ? 'Encontrado' : 'NÃO ENCONTRADO'}`);
 
   // 4. Verificar senha
   const isPasswordValid = await user.validatePassword(password);
