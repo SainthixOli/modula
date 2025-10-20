@@ -23,7 +23,7 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const morgan = require('morgan');
 require('dotenv').config();
-
+require('./src/config/database');
 // Importar configurações do banco de dados
 const { connectDB } = require('./src/config/database');
 
@@ -35,6 +35,8 @@ const { validateToken } = require('./src/middleware/auth');
 const authRoutes = require('./src/routes/auth');
 const adminRoutes = require('./src/routes/admin');
 const professionalRoutes = require('./src/routes/professional');
+const transferRoutes = require('./src/routes/transfers');
+const notificationRoutes = require('./src/routes/notifications');
 // TODO: Importar rotas futuras
 // const patientRoutes = require('./src/routes/patient');
 // const anamnesisRoutes = require('./src/routes/anamnesis');
@@ -176,6 +178,18 @@ app.use('/api/auth', authRoutes);
 
 // MÓDULO DE ADMINISTRAÇÃO (requer token + admin)
 app.use('/api/admin', validateToken, adminRoutes);
+
+// Rotas de transferências
+app.use('/api/transfers', transferRoutes);
+
+// Rotas de notificações
+app.use('/api/notifications', notificationRoutes);
+
+// Nota: As rotas admin já estão incluídas no arquivo notifications.js
+// com o prefixo /admin, então:
+// - /api/notifications/* = rotas do usuário
+// - /api/notifications/admin/* = rotas administrativas
+
 
 // MÓDULO DO PROFISSIONAL (requer token + profissional) 
 app.use('/api/professional', validateToken, professionalRoutes);

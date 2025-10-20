@@ -14,8 +14,9 @@
  */
 
 const express = require('express');
-const { requireAdmin } = require('../middleware/auth');
+const { requireAdmin, validateToken } = require('../middleware/auth');
 const { asyncHandler } = require('../middleware/errorHandler');
+const transferController = require('../controllers/transferController');
 
 // Importar controller que será criado na próxima etapa
 const adminController = require('../controllers/adminController');
@@ -28,6 +29,16 @@ const {
 } = require('../middleware/adminValidations');
 
 const router = express.Router();
+
+const {
+  validateApproveTransfer,
+  validateRejectTransfer,
+  validateHistoryFilters,
+  validateTransferId,
+} = require('../middleware/transferValidations');
+
+// Validação para ações em lote
+const { body, param } = require('express-validator'); 
 
 /**
  * ROTAS DE DASHBOARD
@@ -105,6 +116,198 @@ router.post('/professionals/:id/reset-password',
 );
 
 /**
+ * ROTAS DE ADMIN COM TRANSFERENCIAS
+ * 
+ * 
+ */
+/**
+ * @route   GET /api/admin/dashboard
+ * @desc    Dashboard administrativo atualizado com transferências
+ * @access  Admin
+ * 
+ * ATUALIZAR a rota existente para usar getDashboardWithTransfers
+ */
+router.get(
+  '/dashboard',
+  validateToken,
+  requireAdmin,
+  asyncHandler(adminController.getDashboardWithTransfers) // Usar nova versão
+);
+
+/**
+ * @route   GET /api/admin/widgets/pending-transfers
+ * @desc    Widget de transferências pendentes
+ * @access  Admin
+ */
+router.get(
+  '/widgets/pending-transfers',
+  validateToken,
+  requireAdmin,
+  asyncHandler(adminController.getPendingTransfersWidget)
+);
+
+/**
+ * @route   GET /api/admin/transfers/pending
+ * @desc    Listar transferências pendentes
+ * @access  Admin
+ */
+router.get(
+  '/transfers/pending',
+  validateToken,
+  requireAdmin,
+  asyncHandler(transferController.getPendingTransfers)
+);
+
+/**
+ * @route   PUT /api/admin/transfers/:id/approve
+ * @desc    Aprovar transferência
+ * @access  Admin
+ */
+router.put(
+  '/transfers/:id/approve',
+  validateToken,
+  requireAdmin,
+  validateTransferId,
+  validateApproveTransfer,
+  asyncHandler(transferController.approveTransfer)
+);
+
+/**
+ * @route   PUT /api/admin/transfers/:id/reject
+ * @desc    Rejeitar transferência
+ * @access  Admin
+ */
+router.put(
+  '/transfers/:id/reject',
+  validateToken,
+  requireAdmin,
+  validateTransferId,
+  validateRejectTransfer,
+  asyncHandler(transferController.rejectTransfer)
+);
+
+/**
+ * @route   POST /api/admin/transfers/:id/complete
+ * @desc    Completar transferência manualmente
+ * @access  Admin
+ */
+router.post(
+  '/transfers/:id/complete',
+  validateToken,
+  requireAdmin,
+  validateTransferId,
+  asyncHandler(transferController.completeTransfer)
+);
+
+/**
+ * @route   GET /api/admin/transfers/history
+ * @desc    Histórico completo de transferências
+ * @access  Admin
+ */
+router.get(
+  '/transfers/history',
+  validateToken,
+  requireAdmin,
+  validateHistoryFilters,
+  asyncHandler(transferController.getTransfersHistory)
+);
+
+/**
+ * @route   GET /api/admin/transfers/stats
+ * @desc    Estatísticas de transferências
+ * @access  Admin
+ */
+router.get(
+  '/transfers/stats',
+  validateToken,
+  requireAdmin,
+  asyncHandler(transferController.getTransferStats)
+);
+
+/**
+ * @route   GET /api/admin/reports/transfers
+ * @desc    Relatório detalhado de transferências
+ * @access  Admin
+ */
+router.get(
+  '/reports/transfers',
+  validateToken,
+  requireAdmin,
+  asyncHandler(adminController.getTransfersReport)
+);
+
+/**
+ * @route   POST /api/admin/transfers/bulk-action
+ * @desc    Ações em lote (aprovar/rejeitar múltiplas)
+ * @access  Admin
+ */
+router.post(
+  '/transfers/bulk-action',
+  validateToken,
+  requireAdmin,
+  [
+    body('transfer_ids')
+      .isArray({ min: 1 })
+      .withMessage('Lista de IDs é obrigatória'),
+    body('transfer_ids.*')
+      .isUUID()
+      .withMessage('Cada ID deve ser um UUID válido'),
+    body('action')
+      .isIn(['approve', 'reject'])
+      .withMessage('Ação deve ser "approve" ou "reject"'),
+    body('reason')
+      .if(body('action').equals('reject'))
+      .isLength({ min: 10, max: 1000 })
+      .withMessage('Motivo é obrigatório para rejeição (10-1000 caracteres)'),
+    body('notes')
+      .optional()
+      .isLength({ max: 500 })
+      .withMessage('Notas devem ter no máximo 500 caracteres'),
+  ],
+  asyncHandler(adminController.bulkTransferAction)
+);
+
+/**
+ * @route   GET /api/admin/transfers/:id
+ * @desc    Detalhes de uma transferência (view admin)
+ * @access  Admin
+ */
+router.get(
+  '/transfers/:id',
+  validateToken,
+  requireAdmin,
+  validateTransferId,
+  asyncHandler(transferController.getTransferById)
+);
+
+// ============================================
+// RESUMO DAS ROTAS ADICIONADAS
+// ============================================
+
+/*
+ROTAS DE TRANSFERÊNCIAS INTEGRADAS NO ADMIN:
+
+DASHBOARD E WIDGETS:
+✓ GET  /api/admin/dashboard                    - Dashboard atualizado
+✓ GET  /api/admin/widgets/pending-transfers    - Widget de pendentes
+
+GESTÃO DE TRANSFERÊNCIAS:
+✓ GET  /api/admin/transfers/pending            - Lista pendentes
+✓ PUT  /api/admin/transfers/:id/approve        - Aprovar
+✓ PUT  /api/admin/transfers/:id/reject         - Rejeitar
+✓ POST /api/admin/transfers/:id/complete       - Completar
+✓ GET  /api/admin/transfers/:id                - Detalhes
+✓ GET  /api/admin/transfers/history            - Histórico
+✓ GET  /api/admin/transfers/stats              - Estatísticas
+
+RELATÓRIOS E AÇÕES EM LOTE:
+✓ GET  /api/admin/reports/transfers            - Relatório completo
+✓ POST /api/admin/transfers/bulk-action        - Ações em lote
+
+TOTAL: 10 rotas administrativas de transferências
+*/
+
+/**
  * ROTAS DE ESTATÍSTICAS ESPECÍFICAS
  * Dados detalhados para relatórios administrativos
  */
@@ -150,11 +353,6 @@ router.put('/transfers/:id/reject',
   asyncHandler(adminController.rejectTransfer)
 );
 
-/**
- * MIDDLEWARE DE VALIDAÇÃO DE PARÂMETROS
- * Validar UUIDs nos parâmetros de rota
- */
-const { body, param } = require('express-validator');
 
 // Middleware para validar UUID nos parâmetros
 const validateUUIDParam = param('id')

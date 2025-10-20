@@ -15,7 +15,8 @@
  */
 
 const { Op } = require('sequelize');
-const { Patient, User, Session, Anamnesis } = require('../models');const { 
+const { User, Patient } = require('../models');
+const { 
   AppError, 
   createNotFoundError, 
   createValidationError,
@@ -417,7 +418,7 @@ const createPatient = async (req, res) => {
   const userId = req.userId;
   const patientData = req.body;
   
-  // Sua lógica de verificação de CPF e Email continua a mesma
+  // Verificar se CPF já existe (se fornecido)
   if (patientData.cpf) {
     const cpfClean = patientData.cpf.replace(/\D/g, '');
     const existingCpf = await Patient.findOne({
@@ -428,6 +429,8 @@ const createPatient = async (req, res) => {
       throw new AppError('Este CPF já está cadastrado', 409, 'CPF_EXISTS');
     }
   }
+  
+  // Verificar se email já existe (se fornecido)
   if (patientData.email) {
     const existingEmail = await Patient.findOne({
       where: { email: patientData.email.toLowerCase() }
@@ -439,21 +442,16 @@ const createPatient = async (req, res) => {
   }
   
   try {
+    // Preparar dados do paciente
     const newPatientData = {
       ...patientData,
-      user_id: userId,
-      status: 'active',
-      first_appointment: null,
+      user_id: userId, // Associar ao profissional logado
+      status: 'active', // Novo paciente sempre ativo
+      first_appointment: null, // Será definido na primeira consulta
       last_appointment: null
     };
     
-    // <<< AJUSTE NECESSÁRIO AQUI >>>
-    // Se o endereço vier como um texto, a gente transforma em um objeto
-    if (newPatientData.address && typeof newPatientData.address === 'string') {
-      newPatientData.address = { full_text: newPatientData.address };
-    }
-    
-    // O resto da sua lógica de formatação continua igual
+    // Limpar e formatar dados
     if (newPatientData.cpf) {
       newPatientData.cpf = newPatientData.cpf.replace(/\D/g, '');
     }
@@ -464,8 +462,10 @@ const createPatient = async (req, res) => {
       newPatientData.phone = newPatientData.phone.replace(/\D/g, '');
     }
     
+    // Criar paciente
     const newPatient = await Patient.create(newPatientData);
     
+    // Retornar dados do paciente criado
     const patientResponse = newPatient.toJSON();
     
     res.status(201).json({
@@ -497,32 +497,38 @@ const createPatient = async (req, res) => {
  * Obter detalhes completos de um paciente
  */
 const getPatientById = async (req, res) => {
+  // Paciente já foi verificado pelo middleware checkResourceOwnership
   const patient = req.resource || req.patient;
   
-  const [sessionCount, lastSession, anamnesis] = await Promise.all([
-    Session.count({ where: { patient_id: patient.id } }),
-    Session.findOne({
-      where: { patient_id: patient.id },
-      order: [['session_date', 'DESC']]
-    }),
-    Anamnesis.findOne({
-      where: { patient_id: patient.id, status: 'completed' }
-    })
+  // Buscar informações adicionais
+  const [/* consultaCount, ultimaConsulta */] = await Promise.all([
+    // TODO: Implementar quando modelo Session existir
+    // Session.count({ where: { patient_id: patient.id } }),
+    // Session.findOne({
+    //   where: { patient_id: patient.id },
+    //   order: [['session_date', 'DESC']]
+    // })
+    Promise.resolve(0),
+    Promise.resolve(null)
   ]);
   
   const patientData = patient.toJSON();
   
+  // Enriquecer dados do paciente
   if (patientData.birth_date) {
-    patientData.age = patient.getAge();
+    const age = patient.getAge();
+    patientData.age = age;
   }
   
+  // Adicionar estatísticas
   patientData.statistics = {
-    total_sessions: sessionCount,
+    total_sessions: 0, // TODO: consultaCount
     days_as_patient: Math.floor((new Date() - new Date(patient.created_at)) / (1000 * 60 * 60 * 24)),
-    last_session: lastSession,
-    anamnesis_completed: !!anamnesis
+    last_session: null, // TODO: ultimaConsulta
+    anamnesis_completed: false // TODO: verificar anamnese
   };
   
+  // Adicionar próximas ações sugeridas
   patientData.suggested_actions = [];
   
   if (!patientData.statistics.anamnesis_completed) {

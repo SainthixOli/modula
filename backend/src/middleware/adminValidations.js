@@ -88,21 +88,13 @@ const createProfessionalSchema = Joi.object({
     'any.required': 'Email é obrigatório'
   }),
   
-  professional_register: professionalRegisterSchema.optional().allow(null, ''),
-  
-  // <<< ADIÇÃO AQUI >>>
-  phone: Joi.string().trim().max(20).optional().allow(null, '').messages({
-    'string.max': 'Telefone não pode ter mais que 20 caracteres'
-  }),
-  
-  // <<< ADIÇÃO AQUI >>>
-  specialty: Joi.string().trim().max(100).optional().allow(null, '').messages({
-    'string.max': 'Especialidade não pode ter mais que 100 caracteres'
-  })
-  
+  professional_register: professionalRegisterSchema.optional().allow(null, '')
+    .messages({
+      'string.empty': 'Registro profissional não pode estar vazio (remova o campo ou forneça um valor)'
+    })
 }).options({
-  stripUnknown: true, // Esta opção garante que só o que está definido aqui passe para o controller
-  abortEarly: false
+  stripUnknown: true, // Remove campos não especificados
+  abortEarly: false   // Retorna todos os erros, não apenas o primeiro
 });
 
 /**

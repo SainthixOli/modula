@@ -54,40 +54,6 @@ O sistema segue o padrão **MVC (Model-View-Controller)** adaptado para APIs:
 - **Middlewares:** Interceptadores para autenticação, validação e tratamento de erros
 - **Services:** Lógica de negócio complexa e reutilizável
 
-## 📊 STATUS ATUAL DO PROJETO
-
-✅ IMPLEMENTADO (50% → 70%)
-- Sistema de Autenticação (100%)
-- Modelos User e Patient (100%)  
-- Módulo Administração (100%)
-- Módulo Profissional (100%) ← NOVO
-- Associações entre modelos (100%)
-
-⏳ PENDENTE (50% → 30%)
-- Sistema de Anamnese
-- Sistema de Consultas/Sessões  
-- Sistema de Transferências (estrutura básica pronta)
-- Testes automatizados
-
-### 🔄 **EM DESENVOLVIMENTO (0%)**
-- SISTEMA DE ANAMNESE
-Com admin e profissional 100% funcionais, a próxima prioridade é:
-ETAPA 3: SISTEMA DE ANAMNESE DIGITAL
-
-Criar src/models/Anamnesis.js (estrutura completa)
-Implementar src/routes/anamnesis.js (formulário dinâmico)
-Desenvolver src/controllers/anamnesisController.js (auto-save)
-Sistema de seções com validações específicas
-Integração com modulo profissional
-
-Características especiais da Anamnese:
-
-✅ Formulário multi-step com progresso visual
-✅ Auto-save a cada 30 segundos
-✅ Validações específicas por seção
-✅ Sistema de completude (%)
-✅ Dados estruturados em JSON
-
 ---
 
 # 2. **ARQUITETURA COMPLETA DO BACKEND (ATUAL E FUTURO)**
@@ -1184,6 +1150,589 @@ Todos os relatórios seguem o padrão:
 - `status` - Filtro por status
 - `requested_at` - Ordenação temporal
 - `(status, requested_at)` - Busca combinada otimizada
+
+---
+
+### **CONTROLLER E ROTAS DE TRANSFERÊNCIAS (100% COMPLETO)**
+
+#### **Arquivos Implementados:**
+- `src/controllers/transferController.js` - 11 funções de lógica de negócio
+- `src/routes/transfers.js` - 11 endpoints completos
+- `src/middleware/transferValidations.js` - 7 middlewares de validação
+
+
+---
+
+### **SISTEMA DE NOTIFICAÇÕES INTERNAS (100% COMPLETO)**
+
+#### **Arquivos Implementados:**
+- `src/models/Notification.js` - Modelo completo (650 linhas)
+- `src/controllers/notificationController.js` - 13 funções (420 linhas)
+- `src/routes/notifications.js` - 14 endpoints (210 linhas)
+- `src/middleware/notificationValidations.js` - 6 middlewares (380 linhas)
+
+**Total:** 1.660 linhas de código implementadas!
+
+#### **Modelo Notification:**
+
+**Campos Principais:**
+- `id` - UUID único
+- `user_id` - FK usuário destinatário (CASCADE on delete)
+- `type` - ENUM: info | success | warning | error | reminder
+- `category` - ENUM: system | transfer | session | patient | anamnesis | admin | backup | security
+- `title` - String (3-200 chars)
+- `message` - Text (5-1000 chars)
+- `priority` - ENUM: low | medium | high | critical
+- `is_read` - Boolean (default false)
+- `read_at` - Timestamp de leitura
+
+**Ações Associadas:**
+- `action_type` - ENUM com 8 tipos de ações
+- `action_url` - String (URL de destino)
+- `action_data` - JSONB (dados da ação)
+
+**Contexto:**
+- `related_entity_type` - Tipo da entidade relacionada
+- `related_entity_id` - UUID da entidade
+- `created_by` - FK usuário criador (SET NULL)
+- `expires_at` - Data de expiração automática
+
+**Métodos de Instância (5):**
+- `markAsRead()` - Marcar como lida com timestamp
+- `markAsUnread()` - Reverter para não lida
+- `isExpired()` - Verificar expiração
+- `getAgeInMinutes()` - Idade em minutos
+- `getFormattedData()` - Dados formatados para frontend
+
+**Métodos Estáticos (9):**
+- `createForUser(userId, data)` - Criar para usuário específico
+- `findUnreadByUser(userId, options)` - Buscar não lidas
+- `findByUser(userId, options)` - Buscar com filtros e paginação
+- `countUnreadByUser(userId)` - Contar não lidas (badge)
+- `markAllAsReadByUser(userId, filters)` - Marcar todas como lidas
+- `deleteOld(daysOld)` - Limpar antigas (30 dias default)
+- `getStats(userId)` - Estatísticas agregadas
+- `createBulk(userIds, data)` - Criar em lote para múltiplos usuários
+
+**Hooks Implementados:**
+- `beforeCreate` - Define expiração automática por tipo:
+  * reminder: 7 dias
+  * info: 30 dias
+  * warning, error, success: sem expiração
+- `afterCreate` - Log de criação
+
+**Índices Otimizados (8):**
+- Simples: user_id, is_read, type, category, priority, created_at
+- Composto: (user_id, is_read, created_at)
+- Parcial: (user_id, is_read) WHERE is_read = false
+- Parcial: expires_at WHERE expires_at IS NOT NULL
+
+#### **Endpoints Implementados:**
+
+**ROTAS DO USUÁRIO (10 endpoints):**
+
+1. **GET /api/notifications** - Listar minhas notificações
+   - Filtros: is_read, type, category, priority
+   - Paginação (page, limit)
+   - Ordenação: prioridade DESC, data DESC
+   - Retorna dados formatados
+
+2. **GET /api/notifications/unread** - Não lidas
+   - Limite configurável (default 20)
+   - Filtro por categoria opcional
+   - Ordenação automática por prioridade
+   - Badge/contador incluso
+
+3. **GET /api/notifications/unread/count** - Contador
+   - Resposta rápida otimizada
+   - Para badge de notificações
+   - Query otimizada com índice
+
+4. **GET /api/notifications/:id** - Detalhes
+   - Verificação de ownership
+   - Dados formatados completos
+   - Idade calculada
+
+5. **PUT /api/notifications/:id/read** - Marcar lida
+   - Atualiza is_read = true
+   - Define read_at = agora
+   - Verificação de ownership
+
+6. **PUT /api/notifications/:id/unread** - Marcar não lida
+   - Atualiza is_read = false
+   - Remove read_at
+   - Verificação de ownership
+
+7. **PUT /api/notifications/mark-all-read** - Marcar todas
+   - Filtros opcionais (category, type)
+   - Retorna contador de atualizadas
+   - Operação em lote otimizada
+
+8. **DELETE /api/notifications/:id** - Deletar
+   - Verificação de ownership
+   - Deleção permanente
+   - Confirmação de sucesso
+
+9. **DELETE /api/notifications/read** - Deletar todas lidas
+   - Remove apenas lidas do usuário
+   - Retorna contador de deletadas
+   - Limpeza rápida
+
+10. **GET /api/notifications/stats** - Estatísticas pessoais
+    - Total, unread, read
+    - Distribuição por tipo
+    - Distribuição por prioridade
+    - Distribuição por categoria
+
+**ROTAS ADMINISTRATIVAS (4 endpoints):**
+
+1. **POST /api/notifications/admin** - Criar notificação
+   - Para usuário específico
+   - Todos os campos configuráveis
+   - Validação completa Joi
+   - Registra criador (created_by)
+
+2. **POST /api/notifications/admin/bulk** - Criar em lote
+   - Para múltiplos usuários (user_ids[])
+   - Mesma notificação para todos
+   - Validação de existência dos usuários
+   - Retorna contador e lista criadas
+
+3. **DELETE /api/notifications/admin/cleanup** - Limpar antigas
+   - Remove notificações lidas antigas (default 30 dias)
+   - Remove notificações expiradas
+   - Retorna estatísticas:
+     * deleted_read: lidas antigas
+     * deleted_expired: expiradas
+     * total: soma
+   - Configurável via query param days_old
+
+4. **GET /api/notifications/admin/stats** - Estatísticas globais
+   - Estatísticas de todo o sistema
+   - Últimas 10 notificações criadas
+   - Distribuição completa
+   - Inclui dados de usuário e criador
+
+#### **Validações Joi Implementadas:**
+
+**createNotificationSchema:**
+- user_id: UUID obrigatório
+- type: enum (5 tipos)
+- category: enum (8 categorias)
+- title: 3-200 chars obrigatório
+- message: 5-1000 chars obrigatório
+- priority: enum (4 níveis)
+- action_type: enum (8 tipos)
+- action_url: URI válida (max 500)
+- action_data: objeto JSONB
+- related_entity_type: enum
+- related_entity_id: UUID
+- expires_at: ISO date futuro
+
+**createBulkNotificationSchema:**
+- user_ids: array de UUIDs (min 1)
+- Mesmos campos de criação individual
+
+**listNotificationsSchema:**
+- page: number (min 1, default 1)
+- limit: number (1-100, default 20)
+- is_read: string ("true"/"false")
+- type, category, priority: enums
+
+**markAllReadSchema:**
+- category, type: opcionais para filtro
+
+**cleanupSchema:**
+- days_old: number (1-365, default 30)
+
+#### **Recursos Técnicos:**
+
+**Sistema de Expiração Automática:**
+- Reminders expiram em 7 dias
+- Info expiram em 30 dias
+- Warning, error, success não expiram
+- Limpeza automática via endpoint admin
+- Índice parcial para performance
+
+**Formatação de Dados:**
+- getFormattedData() - Estrutura consistente para frontend
+- Idade calculada em minutos
+- Status de expiração incluído
+- Ação e contexto organizados
+
+**Controle de Acesso:**
+- Ownership verificado em todas as operações
+- Apenas usuário pode ver/modificar suas notificações
+- Admin pode criar para qualquer usuário
+- Admin pode ver estatísticas globais
+
+**Performance:**
+- 8 índices otimizados
+- Índice parcial para não lidas
+- Paginação em todas as listagens
+- Query count otimizada
+- Bulk operations eficientes
+
+#### **Casos de Uso:**
+
+**1. Badge de Notificações:**
+```javascript
+GET /api/notifications/unread/count
+// Retorna: { unread_count: 5 }
+```
+
+**2. Listar Não Lidas (Dropdown):**
+```javascript
+GET /api/notifications/unread?limit=5
+// Retorna últimas 5 não lidas ordenadas por prioridade
+```
+
+**3. Central de Notificações:**
+```javascript
+GET /api/notifications?page=1&limit=20&type=warning
+// Lista paginada com filtro
+```
+
+**4. Marcar Todas como Lidas:**
+```javascript
+PUT /api/notifications/mark-all-read
+{ "category": "transfer" } // opcional
+```
+
+**5. Notificação de Transferência (Admin):**
+```javascript
+POST /api/notifications/admin
+{
+  "user_id": "profissional-uuid",
+  "type": "warning",
+  "category": "transfer",
+  "title": "Transferência Pendente",
+  "message": "Você tem uma nova transferência aguardando aprovação",
+  "priority": "high",
+  "action_type": "approve_transfer",
+  "action_url": "/admin/transfers/pending",
+  "action_data": { "transfer_id": "uuid" },
+  "related_entity_type": "transfer",
+  "related_entity_id": "uuid"
+}
+```
+
+**6. Broadcast para Todos (Admin):**
+```javascript
+POST /api/notifications/admin/bulk
+{
+  "user_ids": ["uuid1", "uuid2", "uuid3"],
+  "type": "info",
+  "category": "system",
+  "title": "Manutenção Programada",
+  "message": "Sistema em manutenção amanhã das 2h às 4h",
+  "priority": "medium"
+}
+```
+
+**7. Limpeza Automática (Admin):**
+```javascript
+DELETE /api/notifications/admin/cleanup?days_old=30
+// Remove lidas com 30+ dias e expiradas
+```
+
+---
+
+#### **Funcionalidades por Grupo:**
+
+**OPERAÇÕES DO PROFISSIONAL (5 endpoints):**
+
+1. **POST /api/transfers** - Solicitar transferência
+   - Validações: paciente existe, pertence ao solicitante, destino válido
+   - Bloqueia: auto-transferência, transferências pendentes duplicadas
+   - Cria snapshot automático de dados
+   - Metadados: contador de sessões, última consulta
+
+2. **GET /api/transfers/my-requests** - Minhas solicitações
+   - Filtros: status, direção (sent/received/all)
+   - Paginação completa
+   - Resumo agregado (total, pendentes)
+   
+3. **GET /api/transfers/:id** - Detalhes da transferência
+   - Controle de acesso: apenas envolvidos ou admin
+   - Inclui todos os relacionamentos
+   
+4. **POST /api/transfers/:id/cancel** - Cancelar solicitação
+   - Apenas solicitante pode cancelar
+   - Apenas transferências pendentes
+   - Motivo opcional
+   
+5. **GET /api/patients/:id/transfer-history** - Histórico do paciente
+   - Timeline completa de transferências
+   - Controle de acesso por ownership
+   - Resumo de estatísticas
+
+**OPERAÇÕES ADMINISTRATIVAS (6 endpoints):**
+
+1. **GET /api/admin/transfers/pending** - Lista pendentes
+   - Ordenação configurável
+   - Paginação otimizada
+   - Inclui dados de paciente e profissionais
+   
+2. **PUT /api/admin/transfers/:id/approve** - Aprovar transferência
+   - auto_complete (default true) efetiva imediatamente
+   - Notas administrativas opcionais
+   - Atualiza status e timestamps
+   
+3. **PUT /api/admin/transfers/:id/reject** - Rejeitar transferência
+   - Motivo obrigatório (min 10 chars)
+   - Notifica profissional solicitante
+   - Mantém histórico
+   
+4. **POST /api/admin/transfers/:id/complete** - Completar manualmente
+   - Para transferências aprovadas
+   - Efetiva mudança do paciente
+   - Salva snapshot antes da transferência
+   
+5. **GET /api/admin/transfers/history** - Histórico completo
+   - Múltiplos filtros (status, datas, paciente, profissional)
+   - Paginação
+   - Ordenação por data
+   
+6. **GET /api/admin/transfers/stats** - Estatísticas
+   - Total por status
+   - Taxa de aprovação calculada
+   - Transferências recentes (top 5)
+
+#### **Middlewares de Validação (7):**
+
+**Schemas Joi Implementados:**
+- `requestTransferSchema` - Validação de solicitação
+  * patient_id: UUID obrigatório
+  * to_user_id: UUID obrigatório
+  * reason: string 10-1000 chars obrigatório
+
+- `approveTransferSchema` - Validação de aprovação
+  * notes: string opcional (max 500 chars)
+  * auto_complete: boolean (default true)
+
+- `rejectTransferSchema` - Validação de rejeição
+  * reason: string 10-1000 chars obrigatório
+
+- `cancelTransferSchema` - Validação de cancelamento
+  * reason: string opcional (min 10 se fornecido)
+
+- `listTransfersSchema` - Validação de listagem
+  * page, limit (defaults e ranges)
+  * status: enum de status válidos
+  * direction: sent/received/all
+  * sortBy, order (campos e direção)
+
+- `historyFiltersSchema` - Validação de filtros admin
+  * Filtros de data com validação cruzada
+  * Filtros por paciente e profissional (UUID)
+  * Paginação com limites
+
+- `transferIdSchema` - Validação de UUID em params
+
+**Validações de Negócio:**
+- ✅ Profissional destino deve estar ativo
+- ✅ Profissional destino deve ser tipo 'professional'
+- ✅ Não permite auto-transferência
+- ✅ Bloqueia transferências pendentes duplicadas
+- ✅ Motivo obrigatório na solicitação
+- ✅ Motivo obrigatório na rejeição
+- ✅ Apenas solicitante pode cancelar
+- ✅ Apenas admin pode aprovar/rejeitar
+- ✅ Controle de acesso por ownership
+
+#### **Recursos Técnicos:**
+- ✅ Autenticação JWT obrigatória
+- ✅ Middlewares de role (requireProfessional, requireAdmin)
+- ✅ AsyncHandler para tratamento de erros
+- ✅ Validações Joi em todas as entradas
+- ✅ Mensagens de erro em português
+- ✅ Códigos de erro específicos (PATIENT_NOT_FOUND, etc)
+- ✅ Paginação otimizada em listagens
+- ✅ Includes Sequelize para relacionamentos
+- ✅ Snapshots automáticos para auditoria
+- ✅ Metadados com informações contextuais
+
+#### **Fluxo Completo de Transferência:**
+```
+1. Profissional solicita (POST /api/transfers)
+   ↓ (status: pending)
+2. Admin visualiza pendentes (GET /api/admin/transfers/pending)
+   ↓
+3a. Admin aprova (PUT /api/admin/transfers/:id/approve)
+    ↓ (status: approved → completed)
+    Sistema transfere paciente automaticamente
+    
+3b. Admin rejeita (PUT /api/admin/transfers/:id/reject)
+    ↓ (status: rejected)
+    Profissional notificado do motivo
+
+Alternativa:
+1. Profissional cancela (POST /api/transfers/:id/cancel)
+   ↓ (status: cancelled)
+```
+
+#### **Estatísticas Calculadas:**
+- Total de transferências
+- Distribuição por status
+- Taxa de aprovação (%)
+- Percentual de pendentes
+- Transferências processadas vs pendentes
+
+---
+
+### **INTEGRAÇÃO COM PAINEL ADMIN (100% COMPLETO)**
+
+#### **Arquivos Modificados:**
+- `src/controllers/adminController.js` - 5 novas funções integradas
+- `src/routes/admin.js` - 10 novos endpoints administrativos
+
+#### **Novas Funcionalidades no Dashboard:**
+
+**Dashboard Atualizado (getDashboardWithTransfers):**
+- Overview de transferências com estatísticas completas
+- Alertas automáticos de transferências pendentes (prioridade alta)
+- Últimas 5 transferências recentes
+- Taxa de aprovação calculada
+- Integração com alertas existentes do sistema
+
+**Widget de Transferências Pendentes:**
+- Lista priorizada por urgência (critical/high/medium/low)
+- Cálculo automático de tempo de espera (dias + horas)
+- Classificação de urgência baseada em tempo:
+  * Critical: 7+ dias
+  * High: 3-6 dias
+  * Medium: 1-2 dias
+  * Low: < 1 dia
+- Resumo por nível de urgência
+- Dados completos do paciente e profissionais
+
+#### **Endpoints Administrativos Implementados:**
+
+**GESTÃO DE TRANSFERÊNCIAS (6 endpoints):**
+
+1. **GET /api/admin/transfers/pending** - Lista transferências pendentes
+   - Paginação completa
+   - Ordenação configurável
+   - Inclui dados de paciente e profissionais
+
+2. **PUT /api/admin/transfers/:id/approve** - Aprovar transferência
+   - auto_complete (default true) efetiva imediatamente
+   - Notas administrativas opcionais
+   - Workflow: pending → approved → completed
+
+3. **PUT /api/admin/transfers/:id/reject** - Rejeitar transferência
+   - Motivo obrigatório (10+ caracteres)
+   - Notificação automática ao solicitante
+   - Preserva histórico completo
+
+4. **POST /api/admin/transfers/:id/complete** - Completar manualmente
+   - Para transferências já aprovadas
+   - Efetiva mudança do paciente
+   - Salva snapshots para auditoria
+
+5. **GET /api/admin/transfers/:id** - Detalhes completos
+   - Todas as informações da transferência
+   - Relacionamentos incluídos
+   - Metadados contextuais
+
+6. **GET /api/admin/transfers/history** - Histórico completo
+   - Múltiplos filtros (status, datas, paciente, profissional)
+   - Paginação otimizada
+   - Ordenação temporal
+
+**DASHBOARD E WIDGETS (2 endpoints):**
+
+1. **GET /api/admin/dashboard** - Dashboard atualizado
+   - Estatísticas de transferências integradas
+   - Alertas automáticos de pendentes
+   - Overview completo da clínica
+
+2. **GET /api/admin/widgets/pending-transfers** - Widget dedicado
+   - Lista priorizada por urgência
+   - Cálculo de tempo de espera
+   - Classificação automática (critical/high/medium/low)
+
+**RELATÓRIOS E ANÁLISES (2 endpoints):**
+
+1. **GET /api/admin/reports/transfers** - Relatório detalhado
+   - Estatísticas por período
+   - Top 10 profissionais mais ativos
+   - Análise de motivos comuns (keywords)
+   - Timeline completa de transferências
+
+2. **GET /api/admin/transfers/stats** - Estatísticas gerais
+   - Total por status
+   - Taxa de aprovação calculada
+   - Últimas 5 transferências
+   - KPIs principais
+
+**AÇÕES EM LOTE (1 endpoint):**
+
+1. **POST /api/admin/transfers/bulk-action** - Processar múltiplas
+   - Aprovar várias de uma vez
+   - Rejeitar várias com mesmo motivo
+   - Resultado detalhado (success/failed)
+   - Validação individual de cada transferência
+
+#### **Funções Auxiliares Implementadas:**
+
+**getTransfersSummary():**
+- Calcula estatísticas agregadas
+- Taxa de aprovação automática
+- Transferências recentes formatadas
+- Usado pelo dashboard principal
+
+**Análises Avançadas:**
+- Profissionais mais ativos (sent/received/total)
+- Palavras-chave mais comuns em motivos
+- Distribuição temporal de transferências
+- Métricas de performance (aprovação, tempo de resposta)
+
+#### **Integrações com Sistema Existente:**
+
+**Alertas do Dashboard:**
+- ⚠️ **Warning (alta prioridade):** Transferências pendentes
+- ℹ️ **Info (média):** Profissionais inativos
+- ℹ️ **Info (baixa):** Anamneses pendentes
+
+**Controles de Segurança:**
+- ✅ JWT + requireAdmin em todas as rotas
+- ✅ Auditoria automática com processed_by
+- ✅ Snapshots preservam estado original
+- ✅ Histórico completo imutável
+- ✅ Validações rigorosas em todas as operações
+
+**Validações de Ações em Lote:**
+- Mínimo 1 ID na lista
+- Todos IDs devem ser UUIDs válidos
+- Ação deve ser "approve" ou "reject"
+- Motivo obrigatório para rejeição em lote
+- Processamento individual com error handling
+
+#### **Recursos de Performance:**
+
+**Otimizações:**
+- Queries otimizadas com índices
+- Includes Sequelize para evitar N+1
+- Paginação em todas as listagens
+- Cálculos de urgência eficientes
+- Cache de estatísticas (onde aplicável)
+
+**Escalabilidade:**
+- Ações em lote para grandes volumes
+- Filtros avançados para segmentação
+- Ordenação flexível
+- Limites configuráveis
+
+#### **Documentação Criada:**
+- ✅ Guia completo para administradores
+- ✅ Exemplos de uso de todos os endpoints
+- ✅ Checklist de aprovação/rejeição
+- ✅ Troubleshooting de problemas comuns
+- ✅ Indicadores de performance recomendados
+- ✅ Boas práticas e dicas operacionais
+
 ---
 
 # 4. ROADMAP DE DESENVOLVIMENTO

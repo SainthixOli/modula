@@ -13,9 +13,10 @@
  */
 
 const { Op } = require('sequelize');
-const { User, Patient, Session } = require('../models');
+const { User, Patient } = require('../models');
 const { AppError, createNotFoundError, createValidationError } = require('../middleware/errorHandler');
 const crypto = require('crypto');
+const { Transfer } = require('../models');
 
 /**
  * DASHBOARD E ESTATÍSTICAS
@@ -110,6 +111,499 @@ const getDashboard = async (req, res) => {
   });
 };
 
+
+/**
+ * Obter resumo de transferências para dashboard admin
+ * Função auxiliar para getDashboard()
+ */
+const getTransfersSummary = async () => {
+  const [
+    total,
+    pending,
+    approved,
+    rejected,
+    completed,
+    recent,
+  ] = await Promise.all([
+    Transfer.count(),
+    Transfer.count({ where: { status: 'pending' } }),
+    Transfer.count({ where: { status: 'approved' } }),
+    Transfer.count({ where: { status: 'rejected' } }),
+    Transfer.count({ where: { status: 'completed' } }),
+    Transfer.findAll({
+      limit: 5,
+      order: [['requested_at', 'DESC']],
+      include: [
+        { 
+          model: require('../models/Patient'), 
+          as: 'Patient', 
+          attributes: ['id', 'full_name'] 
+        },
+        { 
+          model: require('../models/User'), 
+          as: 'FromUser', 
+          attributes: ['id', 'full_name'] 
+        },
+        { 
+          model: require('../models/User'), 
+          as: 'ToUser', 
+          attributes: ['id', 'full_name'] 
+        },
+      ],
+    }),
+  ]);
+
+  // Calcular taxa de aprovação
+  const processed = approved + rejected;
+  const approval_rate = processed > 0 ? ((approved / processed) * 100).toFixed(2) : 0;
+
+  return {
+    total,
+    by_status: {
+      pending,
+      approved,
+      rejected,
+      completed,
+    },
+    metrics: {
+      approval_rate: parseFloat(approval_rate),
+      pending_action_required: pending,
+    },
+    recent_transfers: recent.map(t => ({
+      id: t.id,
+      patient_name: t.Patient?.full_name,
+      from: t.FromUser?.full_name,
+      to: t.ToUser?.full_name,
+      status: t.status,
+      requested_at: t.requested_at,
+    })),
+  };
+};
+
+/**
+ * Dashboard administrativo atualizado com transferências
+ * ATUALIZAR a função getDashboard existente
+ */
+const getDashboardWithTransfers = async (req, res) => {
+  // Estatísticas de profissionais
+  const totalProfessionals = await User.count({
+    where: { user_type: 'professional' },
+  });
+
+  const activeProfessionals = await User.count({
+    where: {
+      user_type: 'professional',
+      status: 'active',
+    },
+  });
+
+  const inactiveProfessionals = totalProfessionals - activeProfessionals;
+
+  // Estatísticas de pacientes
+  const totalPatients = await Patient.count();
+  const activePatients = await Patient.count({
+    where: { status: 'active' },
+  });
+  const inactivePatients = await Patient.count({
+    where: { status: 'inactive' },
+  });
+
+  // Estatísticas de sessões (se existir)
+  let sessionsStats = null;
+  try {
+    const Session = require('../models/Session');
+    const currentMonth = new Date();
+    currentMonth.setDate(1);
+    currentMonth.setHours(0, 0, 0, 0);
+
+    sessionsStats = {
+      total_this_month: await Session.count({
+        where: {
+          session_date: { [Op.gte]: currentMonth },
+        },
+      }),
+      completed_this_month: await Session.count({
+        where: {
+          session_date: { [Op.gte]: currentMonth },
+          status: 'completed',
+        },
+      }),
+    };
+  } catch (error) {
+    console.log('Session model not available yet');
+  }
+
+  // Estatísticas de transferências
+  const transfersStats = await getTransfersSummary();
+
+  // Atividades recentes
+  const recentProfessionals = await User.findAll({
+    where: { user_type: 'professional' },
+    order: [['created_at', 'DESC']],
+    limit: 5,
+    attributes: ['id', 'full_name', 'email', 'status', 'created_at'],
+  });
+
+  // Alertas do sistema
+  const alerts = [];
+
+  // Alerta de transferências pendentes
+  if (transfersStats.by_status.pending > 0) {
+    alerts.push({
+      type: 'warning',
+      message: `${transfersStats.by_status.pending} transferência(s) aguardando aprovação`,
+      action: 'review_transfers',
+      priority: 'high',
+    });
+  }
+
+  // Alerta de profissionais inativos
+  if (inactiveProfessionals > 0) {
+    alerts.push({
+      type: 'info',
+      message: `${inactiveProfessionals} profissional(is) inativo(s)`,
+      action: 'review_professionals',
+      priority: 'medium',
+    });
+  }
+
+  // Alerta de anamneses pendentes
+  try {
+    const Anamnesis = require('../models/Anamnesis');
+    const pendingAnamnesis = await Anamnesis.count({
+      where: { status: 'draft' },
+    });
+
+    if (pendingAnamnesis > 0) {
+      alerts.push({
+        type: 'info',
+        message: `${pendingAnamnesis} anamnese(s) não finalizada(s)`,
+        action: 'review_anamnesis',
+        priority: 'low',
+      });
+    }
+  } catch (error) {
+    console.log('Anamnesis model not available yet');
+  }
+
+  res.json({
+    success: true,
+    data: {
+      overview: {
+        professionals: {
+          total: totalProfessionals,
+          active: activeProfessionals,
+          inactive: inactiveProfessionals,
+        },
+        patients: {
+          total: totalPatients,
+          active: activePatients,
+          inactive: inactivePatients,
+        },
+        sessions: sessionsStats,
+        transfers: transfersStats,
+      },
+      recent_activity: {
+        professionals: recentProfessionals,
+        transfers: transfersStats.recent_transfers,
+      },
+      alerts,
+    },
+  });
+};
+
+/**
+ * Widget de transferências pendentes para dashboard
+ * GET /api/admin/widgets/pending-transfers
+ */
+const getPendingTransfersWidget = async (req, res) => {
+  const { limit = 10 } = req.query;
+
+  const transfers = await Transfer.findAll({
+    where: { status: 'pending' },
+    limit: parseInt(limit),
+    order: [['requested_at', 'ASC']], // Mais antigas primeiro
+    include: [
+      { 
+        model: require('../models/Patient'), 
+        as: 'Patient', 
+        attributes: ['id', 'full_name', 'cpf'] 
+      },
+      { 
+        model: require('../models/User'), 
+        as: 'FromUser', 
+        attributes: ['id', 'full_name', 'email', 'professional_register'] 
+      },
+      { 
+        model: require('../models/User'), 
+        as: 'ToUser', 
+        attributes: ['id', 'full_name', 'email', 'professional_register'] 
+      },
+    ],
+  });
+
+  // Calcular tempo de espera
+  const now = new Date();
+  const transfersWithWaitTime = transfers.map(transfer => {
+    const waitTimeMs = now - new Date(transfer.requested_at);
+    const waitTimeDays = Math.floor(waitTimeMs / (1000 * 60 * 60 * 24));
+    const waitTimeHours = Math.floor((waitTimeMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+
+    // Determinar urgência
+    let urgency = 'low';
+    if (waitTimeDays >= 7) urgency = 'critical';
+    else if (waitTimeDays >= 3) urgency = 'high';
+    else if (waitTimeDays >= 1) urgency = 'medium';
+
+    return {
+      id: transfer.id,
+      patient: {
+        id: transfer.Patient.id,
+        name: transfer.Patient.full_name,
+        cpf: transfer.Patient.cpf,
+      },
+      from_professional: {
+        id: transfer.FromUser.id,
+        name: transfer.FromUser.full_name,
+        register: transfer.FromUser.professional_register,
+      },
+      to_professional: {
+        id: transfer.ToUser.id,
+        name: transfer.ToUser.full_name,
+        register: transfer.ToUser.professional_register,
+      },
+      reason: transfer.reason,
+      requested_at: transfer.requested_at,
+      wait_time: {
+        days: waitTimeDays,
+        hours: waitTimeHours,
+        display: waitTimeDays > 0 
+          ? `${waitTimeDays}d ${waitTimeHours}h` 
+          : `${waitTimeHours}h`,
+      },
+      urgency,
+    };
+  });
+
+  // Ordenar por urgência
+  const sortedTransfers = transfersWithWaitTime.sort((a, b) => {
+    const urgencyOrder = { critical: 0, high: 1, medium: 2, low: 3 };
+    return urgencyOrder[a.urgency] - urgencyOrder[b.urgency];
+  });
+
+  res.json({
+    success: true,
+    data: {
+      pending_count: transfers.length,
+      transfers: sortedTransfers,
+      summary: {
+        critical: sortedTransfers.filter(t => t.urgency === 'critical').length,
+        high: sortedTransfers.filter(t => t.urgency === 'high').length,
+        medium: sortedTransfers.filter(t => t.urgency === 'medium').length,
+        low: sortedTransfers.filter(t => t.urgency === 'low').length,
+      },
+    },
+  });
+};
+
+/**
+ * Estatísticas detalhadas de transferências para relatórios
+ * GET /api/admin/reports/transfers
+ */
+const getTransfersReport = async (req, res) => {
+  const {
+    start_date,
+    end_date,
+    professional_id,
+    group_by = 'month', // day, week, month, year
+  } = req.query;
+
+  // Construir filtros
+  const where = {};
+  
+  if (start_date || end_date) {
+    where.requested_at = {};
+    if (start_date) where.requested_at[Op.gte] = new Date(start_date);
+    if (end_date) where.requested_at[Op.lte] = new Date(end_date);
+  }
+
+  if (professional_id) {
+    where[Op.or] = [
+      { from_user_id: professional_id },
+      { to_user_id: professional_id },
+    ];
+  }
+
+  // Buscar todas as transferências no período
+  const transfers = await Transfer.findAll({
+    where,
+    include: [
+      { model: require('../models/User'), as: 'FromUser', attributes: ['id', 'full_name'] },
+      { model: require('../models/User'), as: 'ToUser', attributes: ['id', 'full_name'] },
+    ],
+    order: [['requested_at', 'ASC']],
+  });
+
+  // Estatísticas gerais
+  const stats = await Transfer.getStats({ 
+    startDate: start_date, 
+    endDate: end_date,
+    userId: professional_id,
+  });
+
+  // Profissionais mais ativos
+  const professionalActivity = {};
+  transfers.forEach(transfer => {
+    // Enviadas
+    if (!professionalActivity[transfer.from_user_id]) {
+      professionalActivity[transfer.from_user_id] = {
+        name: transfer.FromUser?.full_name,
+        sent: 0,
+        received: 0,
+      };
+    }
+    professionalActivity[transfer.from_user_id].sent++;
+
+    // Recebidas
+    if (!professionalActivity[transfer.to_user_id]) {
+      professionalActivity[transfer.to_user_id] = {
+        name: transfer.ToUser?.full_name,
+        sent: 0,
+        received: 0,
+      };
+    }
+    professionalActivity[transfer.to_user_id].received++;
+  });
+
+  const topProfessionals = Object.entries(professionalActivity)
+    .map(([id, data]) => ({
+      professional_id: id,
+      name: data.name,
+      sent: data.sent,
+      received: data.received,
+      total: data.sent + data.received,
+    }))
+    .sort((a, b) => b.total - a.total)
+    .slice(0, 10);
+
+  // Motivos mais comuns (análise de texto)
+  const reasonKeywords = {};
+  transfers.forEach(transfer => {
+    if (transfer.reason) {
+      const words = transfer.reason.toLowerCase()
+        .split(/\s+/)
+        .filter(word => word.length > 4); // Palavras com mais de 4 caracteres
+
+      words.forEach(word => {
+        reasonKeywords[word] = (reasonKeywords[word] || 0) + 1;
+      });
+    }
+  });
+
+  const topReasons = Object.entries(reasonKeywords)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10)
+    .map(([word, count]) => ({ keyword: word, count }));
+
+  res.json({
+    success: true,
+    data: {
+      period: {
+        start: start_date || 'início',
+        end: end_date || 'hoje',
+      },
+      statistics: stats,
+      transfers_list: transfers.map(t => ({
+        id: t.id,
+        from: t.FromUser?.full_name,
+        to: t.ToUser?.full_name,
+        status: t.status,
+        requested_at: t.requested_at,
+        processed_at: t.processed_at,
+      })),
+      top_professionals: topProfessionals,
+      common_reasons: topReasons,
+    },
+  });
+};
+
+/**
+ * Ações em lote para transferências
+ * POST /api/admin/transfers/bulk-action
+ */
+const bulkTransferAction = async (req, res) => {
+  const { transfer_ids, action, reason, notes } = req.body;
+  const adminId = req.userId;
+
+  if (!Array.isArray(transfer_ids) || transfer_ids.length === 0) {
+    throw new AppError('Lista de IDs de transferências inválida', 400, 'INVALID_IDS');
+  }
+
+  if (!['approve', 'reject'].includes(action)) {
+    throw new AppError('Ação inválida. Use "approve" ou "reject"', 400, 'INVALID_ACTION');
+  }
+
+  if (action === 'reject' && (!reason || reason.trim().length < 10)) {
+    throw new AppError(
+      'Motivo é obrigatório para rejeição em lote',
+      400,
+      'REASON_REQUIRED'
+    );
+  }
+
+  // Buscar transferências
+  const transfers = await Transfer.findAll({
+    where: {
+      id: { [Op.in]: transfer_ids },
+      status: 'pending',
+    },
+  });
+
+  if (transfers.length === 0) {
+    throw new AppError('Nenhuma transferência pendente encontrada', 404, 'NO_PENDING_TRANSFERS');
+  }
+
+  // Processar cada transferência
+  const results = {
+    success: [],
+    failed: [],
+  };
+
+  for (const transfer of transfers) {
+    try {
+      if (action === 'approve') {
+        await transfer.approve(adminId, notes);
+        await transfer.complete(); // Auto-completar
+        results.success.push({
+          transfer_id: transfer.id,
+          status: 'completed',
+        });
+      } else if (action === 'reject') {
+        await transfer.reject(adminId, reason);
+        results.success.push({
+          transfer_id: transfer.id,
+          status: 'rejected',
+        });
+      }
+    } catch (error) {
+      results.failed.push({
+        transfer_id: transfer.id,
+        error: error.message,
+      });
+    }
+  }
+
+  res.json({
+    success: true,
+    message: `${results.success.length} transferência(s) processada(s)`,
+    data: {
+      processed: results.success.length,
+      failed: results.failed.length,
+      results,
+    },
+  });
+};
+
 /**
  * GET /api/admin/stats/overview
  * Estatísticas detalhadas da clínica
@@ -134,6 +628,8 @@ const getOverviewStats = async (req, res) => {
     default: // month
       startDate = new Date(now.getFullYear(), now.getMonth(), 1);
   }
+
+  
 
   const [growthStats, statusDistribution] = await Promise.all([
     // Estatísticas de crescimento
@@ -203,6 +699,7 @@ const getOverviewStats = async (req, res) => {
  * Lista profissionais com filtros e paginação
  */
 const listProfessionals = async (req, res) => {
+  // Extrair e validar parâmetros de query
   const page = Math.max(1, parseInt(req.query.page) || 1);
   const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20));
   const search = req.query.search?.trim() || '';
@@ -210,10 +707,12 @@ const listProfessionals = async (req, res) => {
   const sortBy = req.query.sortBy || 'full_name';
   const order = req.query.order?.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
   
+  // Construir condições de busca
   const whereConditions = {
     user_type: 'professional'
   };
   
+  // Filtro por busca (nome, email ou registro)
   if (search) {
     whereConditions[Op.or] = [
       { full_name: { [Op.iLike]: `%${search}%` } },
@@ -222,33 +721,34 @@ const listProfessionals = async (req, res) => {
     ];
   }
   
+  // Filtro por status
   if (status && ['active', 'inactive', 'suspended'].includes(status)) {
     whereConditions.status = status;
   }
   
+  // Validar campo de ordenação
   const allowedSortFields = ['full_name', 'email', 'status', 'created_at', 'last_login'];
   const validSortBy = allowedSortFields.includes(sortBy) ? sortBy : 'full_name';
   
   try {
+    // Buscar profissionais com contagem total
     const { rows: professionals, count: total } = await User.findAndCountAll({
       where: whereConditions,
+      attributes: {
+        exclude: ['password', 'reset_password_token']
+      },
       include: [{
         model: Patient,
         as: 'patients',
         attributes: [],
         required: false
       }],
-      // <<< MUDANÇA AQUI: Trocamos 'exclude' por uma lista explícita >>>
-      attributes: [
-        'id',
-        'full_name',
-        'email',
-        'phone',
-        'specialty',
-        'professional_register',
-        'status',
-        [User.sequelize.fn('COUNT', User.sequelize.col('patients.id')), 'patient_count']
-      ],
+      attributes: {
+        include: [
+          [User.sequelize.fn('COUNT', User.sequelize.col('patients.id')), 'patient_count']
+        ],
+        exclude: ['password', 'reset_password_token']
+      },
       group: ['User.id'],
       subQuery: false,
       limit,
@@ -257,6 +757,7 @@ const listProfessionals = async (req, res) => {
       distinct: true
     });
     
+    // Calcular metadados de paginação
     const totalPages = Math.ceil(total / limit);
     
     res.json({
@@ -286,21 +787,21 @@ const listProfessionals = async (req, res) => {
     throw new AppError('Erro interno ao buscar profissionais', 500);
   }
 };
-    
 
 /**
  * POST /api/admin/professionals
  * Criar novo profissional com senha temporária
  */
 const createProfessional = async (req, res) => {
-  console.log("BACKEND: Pacote recebido na API:", req.body);
-  const { full_name, email, professional_register, phone, specialty } = req.body;
+  const { full_name, email, professional_register } = req.body;
   
-  const existingEmail = await User.findOne({ where: { email: email.toLowerCase() } });
+  // Verificar se email já existe
+  const existingEmail = await User.findByEmail(email);
   if (existingEmail) {
     throw new AppError('Este email já está em uso', 409, 'EMAIL_EXISTS');
   }
   
+  // Verificar se registro profissional já existe (se fornecido)
   if (professional_register) {
     const existingRegister = await User.findOne({
       where: { professional_register: professional_register.trim() }
@@ -310,30 +811,35 @@ const createProfessional = async (req, res) => {
     }
   }
   
+  // Gerar senha temporária segura (8 caracteres alfanuméricos)
   const temporaryPassword = crypto.randomBytes(4).toString('hex').toUpperCase();
   
   try {
+    // Criar profissional
     const newProfessional = await User.create({
       full_name: full_name.trim(),
       email: email.toLowerCase().trim(),
       professional_register: professional_register?.trim() || null,
-      phone: phone || null, // MUDANÇA AQUI: Salvando o telefone
-      specialty: specialty || null, // MUDANÇA AQUI: Salvando a especialidade
       password: temporaryPassword, // Será hasheada automaticamente pelo hook
       user_type: 'professional',
       is_first_access: true,
       status: 'active'
     });
     
+    // Remover dados sensíveis para resposta
     const professionalData = newProfessional.toJSON();
     delete professionalData.password;
     delete professionalData.reset_password_token;
+    
+    // TODO: Implementar envio de email com credenciais
+    // await emailService.sendWelcomeEmail(email, temporaryPassword);
     
     res.status(201).json({
       success: true,
       message: 'Profissional criado com sucesso',
       data: {
         professional: professionalData,
+        // Mostrar senha temporária apenas uma vez para o admin
         credentials: {
           email: email,
           temporary_password: temporaryPassword,
@@ -360,67 +866,38 @@ const getProfessionalById = async (req, res) => {
       id,
       user_type: 'professional'
     },
-    attributes: [
-      'id',
-      'full_name',
-      'email',
-      'phone',
-      'specialty',
-      'professional_register',
-      'status',
-      'last_login',
-      'created_at'
-    ],
+    attributes: {
+      exclude: ['password', 'reset_password_token']
+    },
     include: [{
       model: Patient,
       as: 'patients',
-      attributes: ['id', 'full_name', 'status'], 
+      attributes: ['id', 'full_name', 'status', 'created_at', 'last_appointment'],
+      limit: 5, // Últimos 5 pacientes para preview
+      order: [['created_at', 'DESC']]
     }]
   });
   
   if (!professional) {
     throw createNotFoundError('Profissional não encontrado');
   }
-
-  const now = new Date();
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-  const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-
-  const [
-    totalSessions, 
-    sessionsInMonth, 
-    totalSchedulable, 
-    totalCompleted
-  ] = await Promise.all([
-    Session.count({ where: { user_id: id } }),
-    Session.count({
-      where: {
-        user_id: id,
-        session_date: {
-          [Op.between]: [startOfMonth, endOfMonth]
-        }
-      }
-    }),
-    Session.count({ where: { user_id: id, status: ['completed', 'scheduled'] } }),
-    Session.count({ where: { user_id: id, status: 'completed' } })
-  ]);
   
-  const professionalData = professional.toJSON();
-
-  const statistics = {
-    total_patients: professionalData.patients.length,
-    active_patients: professionalData.patients.filter(p => p.status === 'active').length,
-    sessions_in_month: sessionsInMonth,
-    attendance_rate: totalSchedulable > 0 ? Math.round((totalCompleted / totalSchedulable) * 100) : 0,
-    total_sessions: totalSessions, 
-  };
+  // Calcular estatísticas do profissional
+  const [totalPatients, activePatients] = await Promise.all([
+    Patient.count({ where: { user_id: id } }),
+    Patient.count({ where: { user_id: id, status: 'active' } })
+  ]);
   
   res.json({
     success: true,
     message: 'Profissional encontrado com sucesso',
     data: {
-      ...professionalData,
-      statistics,
+      ...professional.toJSON(),
+      statistics: {
+        total_patients: totalPatients,
+        active_patients: activePatients,
+        inactive_patients: totalPatients - activePatients
+      }
     }
   });
 };
@@ -810,7 +1287,13 @@ module.exports = {
   // Transferências (futuro)
   listPendingTransfers,
   approveTransfer,
-  rejectTransfer
+  rejectTransfer,
+// Novas funções de transferência
+  getDashboardWithTransfers,
+  getPendingTransfersWidget,
+  getTransfersReport,
+  bulkTransferAction,
+  getTransfersSummary, // Helper function
 };
 
 /**
