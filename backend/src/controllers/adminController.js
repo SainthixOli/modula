@@ -690,29 +690,28 @@ const getOverviewStats = async (req, res) => {
   });
 };
 
-/**
- * GESTÃO DE PROFISSIONAIS
- */
 
 /**
- * GET /api/admin/professionals
- * Lista profissionais com filtros e paginação
- */
+* 
+* GESTÃO DE PROFISSIONAIS
+*/
+
+/**
+* GET /api/admin/professionals
+* Lista profissionais com filtros e paginação
+*/
 const listProfessionals = async (req, res) => {
-  // Extrair e validar parâmetros de query
   const page = Math.max(1, parseInt(req.query.page) || 1);
   const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20));
   const search = req.query.search?.trim() || '';
   const status = req.query.status || '';
   const sortBy = req.query.sortBy || 'full_name';
   const order = req.query.order?.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
-  
-  // Construir condições de busca
+
   const whereConditions = {
     user_type: 'professional'
   };
-  
-  // Filtro por busca (nome, email ou registro)
+
   if (search) {
     whereConditions[Op.or] = [
       { full_name: { [Op.iLike]: `%${search}%` } },
@@ -720,46 +719,48 @@ const listProfessionals = async (req, res) => {
       { professional_register: { [Op.iLike]: `%${search}%` } }
     ];
   }
-  
-  // Filtro por status
+
   if (status && ['active', 'inactive', 'suspended'].includes(status)) {
     whereConditions.status = status;
   }
-  
-  // Validar campo de ordenação
+
   const allowedSortFields = ['full_name', 'email', 'status', 'created_at', 'last_login'];
   const validSortBy = allowedSortFields.includes(sortBy) ? sortBy : 'full_name';
-  
+
   try {
-    // Buscar profissionais com contagem total
-    const { rows: professionals, count: total } = await User.findAndCountAll({
+    // Busca os profissionais da página atual
+    const { rows: professionals } = await User.findAndCountAll({ // <<< MUDANÇA: Removido 'count: total' daqui
       where: whereConditions,
-      attributes: {
+      attributes: { // Mantido attributes para buscar todos os campos
         exclude: ['password', 'reset_password_token']
       },
       include: [{
         model: Patient,
-        as: 'patients',
+        as: 'Patients', // <<< MUDANÇA: Alias corrigido para Maiúsculo
         attributes: [],
         required: false
       }],
+      // <<< MUDANÇA: Movido 'attributes' para fora do include
+      // <<< MUDANÇA: Corrigido o alias na contagem
       attributes: {
         include: [
-          [User.sequelize.fn('COUNT', User.sequelize.col('patients.id')), 'patient_count']
+          [User.sequelize.fn('COUNT', User.sequelize.col('Patients.id')), 'patient_count']
         ],
-        exclude: ['password', 'reset_password_token']
+        exclude: ['password', 'reset_password_token'] // Exclui senha aqui também
       },
       group: ['User.id'],
       subQuery: false,
       limit,
       offset: (page - 1) * limit,
       order: [[validSortBy, order]],
-      distinct: true
+      // <<< MUDANÇA: Removido 'distinct: true' que pode causar problemas com group
     });
-    
-    // Calcular metadados de paginação
-    const totalPages = Math.ceil(total / limit);
-    
+
+    // <<< MUDANÇA: Contagem separada para obter o total correto >>>
+    const totalCount = await User.count({ where: whereConditions });
+
+    const totalPages = Math.ceil(totalCount / limit);
+
     res.json({
       success: true,
       message: 'Profissionais listados com sucesso',
@@ -768,7 +769,7 @@ const listProfessionals = async (req, res) => {
         pagination: {
           current_page: page,
           per_page: limit,
-          total: total,
+          total: totalCount, // <<< MUDANÇA: Usando a contagem correta
           total_pages: totalPages,
           has_next_page: page < totalPages,
           has_prev_page: page > 1
@@ -781,13 +782,12 @@ const listProfessionals = async (req, res) => {
         }
       }
     });
-    
+
   } catch (error) {
     console.error('Erro ao listar profissionais:', error);
     throw new AppError('Erro interno ao buscar profissionais', 500);
   }
 };
-
 /**
  * POST /api/admin/professionals
  * Criar novo profissional com senha temporária
@@ -860,44 +860,46 @@ const createProfessional = async (req, res) => {
  */
 const getProfessionalById = async (req, res) => {
   const { id } = req.params;
-  
+
   const professional = await User.findOne({
     where: {
       id,
       user_type: 'professional'
     },
     attributes: {
-      exclude: ['password', 'reset_password_token']
+      exclude: ['password', 'reset_password_token'] 
     },
     include: [{
       model: Patient,
-      as: 'patients',
-      attributes: ['id', 'full_name', 'status', 'created_at', 'last_appointment'],
-      limit: 5, // Últimos 5 pacientes para preview
-      order: [['created_at', 'DESC']]
+      as: 'Patients', 
+      attributes: ['id', 'full_name', 'status'], 
     }]
   });
-  
+
   if (!professional) {
     throw createNotFoundError('Profissional não encontrado');
   }
-  
-  // Calcular estatísticas do profissional
-  const [totalPatients, activePatients] = await Promise.all([
-    Patient.count({ where: { user_id: id } }),
-    Patient.count({ where: { user_id: id, status: 'active' } })
-  ]);
-  
+
+  const professionalData = professional.toJSON();
+
+  const totalPatients = professionalData.Patients ? professionalData.Patients.length : 0;
+  const activePatients = professionalData.Patients ? professionalData.Patients.filter(p => p.status === 'active').length : 0;
+
+  const statistics = {
+    total_patients: totalPatients,
+    active_patients: activePatients,
+    inactive_patients: totalPatients - activePatients, 
+    sessions_in_month: 0,
+    attendance_rate: 0,
+    total_sessions: 0,
+  };
+
   res.json({
     success: true,
     message: 'Profissional encontrado com sucesso',
     data: {
-      ...professional.toJSON(),
-      statistics: {
-        total_patients: totalPatients,
-        active_patients: activePatients,
-        inactive_patients: totalPatients - activePatients
-      }
+      ...professionalData,
+      statistics: statistics 
     }
   });
 };

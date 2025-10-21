@@ -168,21 +168,6 @@ const User = sequelize.define('User', {
         user.password = await bcrypt.hash(user.password, 12);
       }
     },
-
-    // Remover campos sensíveis ao converter para JSON
-    afterFind: (users) => {
-      if (Array.isArray(users)) {
-        users.forEach(user => {
-          if (user.dataValues) {
-            delete user.dataValues.password;
-            delete user.dataValues.reset_password_token;
-          }
-        });
-      } else if (users && users.dataValues) {
-        delete users.dataValues.password;
-        delete users.dataValues.reset_password_token;
-      }
-    }
   },
 
   // Índices para otimização
