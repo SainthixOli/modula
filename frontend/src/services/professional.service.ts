@@ -43,12 +43,12 @@ export interface CreatePatientData {
 
 export interface Session {
   id: string;
-  session_date: string;
+  session_date: string; // Vem como string da API
   status: 'scheduled' | 'completed' | 'cancelled' | 'no_show';
   duration: number;
   notes?: string;
   patient: {
-    id: string; // Adicionando o ID do paciente
+    id: string;
     full_name: string;
   };
 }
@@ -62,7 +62,7 @@ export interface SessionPayload {
 }
 
 
-// --- Funções de Pacientes ---
+// --- Funções de Pacientes (EXISTENTES) ---
 
 export const getMyPatients = async (): Promise<Patient[]> => {
   const response = await api.get('/professional/patients');
@@ -85,15 +85,44 @@ export const getPatientDetails = async (id: string): Promise<PatientDetails> => 
 
 /**
  * Busca as sessões de um profissional em um determinado período.
+ * Mapeia para a função 'listSessions' do backend.
  */
 export const getSessions = async (startDate: Date, endDate: Date): Promise<Session[]> => {
-  const response = await api.get('/professional/sessions', {
+  const response = await api.get('/sessions', {
     params: {
       startDate: startDate.toISOString(),
       endDate: endDate.toISOString(),
     }
   });
+
+  return Array.isArray(response.data.data) ? response.data.data : [];
+};
+
+/**
+ * Cria uma nova sessão.
+ * Mapeia para a função 'createSession' do backend.
+ */
+export const createSession = async (data: SessionPayload): Promise<Session> => {
+  const response = await api.post('/sessions', data);
   return response.data.data;
 };
 
+/**
+ * Atualiza uma sessão existente.
+ * Mapeia para a função 'updateScheduledSession' do backend.
+ */
+export const updateSession = async (id: string, data: Partial<SessionPayload>): Promise<Session> => {
+  // Vamos assumir que a rota de update é a padrão 'PUT /api/professional/sessions/:id'
+  const response = await api.put(`/sessions/${id}`, data);
+  return response.data.data;
+};
 
+/**
+ * Exclui/Cancela uma sessão.
+ * Mapeia para a função 'cancelSession' do backend (que é mais segura).
+ */
+export const deleteSession = async (id: string): Promise<void> => {
+  // Vamos assumir que a rota para cancelar é 'DELETE /api/professional/sessions/:id'
+  // ou 'PUT /api/professional/sessions/:id/cancel'. DELETE é mais padrão.
+  await api.delete(`/sessions/${id}`);
+};

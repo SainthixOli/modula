@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { login } from "@/services/auth.service"; 
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,23 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    const userType = localStorage.getItem('userType');
+
+    // Se o token E o userType já existem, o usuário está logado.
+    if (token && userType) {
+      console.log('Login.tsx: Usuário já está logado. Redirecionando...');
+      
+      // Chuta ele para o dashboard certo
+      if (userType === 'admin') {
+        navigate('/admin/dashboard');
+      } else if (userType === 'professional') {
+        navigate('/professional/dashboard');
+      }
+    }
+  }, [navigate]);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -23,7 +40,6 @@ const Login = () => {
     try {
        const userData = await login(email, password);
       
-      // <<< A VERIFICAÇÃO MÁGICA ACONTECE AQUI >>>
       if (userData.is_first_access) {
         toast.info("Primeiro acesso! Por favor, altere sua senha.");
         navigate('/first-access');

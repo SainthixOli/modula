@@ -35,6 +35,7 @@ const { validateToken } = require('./src/middleware/auth');
 const authRoutes = require('./src/routes/auth');
 const adminRoutes = require('./src/routes/admin');
 const professionalRoutes = require('./src/routes/professional');
+const sessionRoutes = require('./src/routes/sessions');
 const transferRoutes = require('./src/routes/transfers');
 const notificationRoutes = require('./src/routes/notifications');
 // TODO: Importar rotas futuras
@@ -193,6 +194,9 @@ app.use('/api/notifications', notificationRoutes);
 
 // MÓDULO DO PROFISSIONAL (requer token + profissional) 
 app.use('/api/professional', validateToken, professionalRoutes);
+
+// MÓDULO DE SESSÕES (requer token)
+app.use('/api/sessions', validateToken, sessionRoutes);
 
 // TODO: MÓDULOS FUTUROS
 // app.use('/api/patients', validateToken, patientRoutes);

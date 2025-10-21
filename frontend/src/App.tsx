@@ -12,6 +12,7 @@ import CriarSenha from "./pages/CriarSenha";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 import FirstAccessPage from './pages/FirstAccessPage';
+import ProtectedRoute from './components/shared/ProtectedRoute';
 
 // Importações de Páginas do Profissional
 import ProfessionalDashboard from "./pages/professional/ProfessionalDashboard";
@@ -55,48 +56,52 @@ const App = () => {
     };
   }, []);
 
-  return (
+return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
         <Sonner />
         <BrowserRouter>
           <Routes>
-            {/* Rotas Gerais e de Autenticação */}
+            {/* --- Rotas Públicas (NÃO precisam de segurança) --- */}
             <Route path="/" element={<Login />} />
             <Route path="/first-access" element={<FirstAccessPage />} />
             <Route path="/redefinir-senha" element={<ResetSenhaPage />} />
             <Route path="/redefinir-senha/:token" element={<CriarSenha />} />
-            <Route path="/dashboard" element={<Dashboard />} />
             
-            {/* Rotas do Profissional */}
-            <Route path="/professional/dashboard" element={<ProfessionalDashboard />} />
-            <Route path="/professional/patients" element={<PatientsPage />} />
-            <Route path="/professional/patients/new" element={<NewPatientPage />} />
-            <Route path="/professional/patients/:id" element={<PatientDetailPage />} />
-            <Route path="/professional/patients/:id/edit" element={<EditPatientPage />} />
-            <Route path="/professional/patients/:patientId/anamnesi/fill" element={<FillAnamnesiPage />} />
-            <Route path="/professional/calendar" element={<CalendarPage />} />
-            <Route path="/professional/reports" element={<ReportsPage />} />
-            <Route path="/professional/anamnesi-templates" element={<AnamnesiTemplatesPage />} />
-            <Route path="/professional/settings" element={<SettingsPage />} />
-            <Route path="/professional/notifications" element={<NotificationsPage />} />
-            <Route path="/professional/sessions" element={<SessionsPage />} />
-            <Route path="/professional/audit-logs" element={<AuditLogsPage />} />
-            <Route path="/professional/backup" element={<BackupPage />} />
-            
-            {/* Rotas do Admin */}
-            <Route path="/admin/dashboard" element={<AdminDashboard />} />
-            <Route path="/admin/professionals" element={<ProfessionalsPage />} />
-            <Route path="/admin/professionals/new" element={<AddProfessionalPage />} />
-            <Route path="/admin/professionals/:id" element={<ProfessionalDetailPage />} />
-            <Route path="/admin/professionals/:id/edit" element={<EditProfessionalPage />} />
-            <Route path="/admin/reports" element={<AdminDashboard />} /> {/* Nota: Esta rota aponta para AdminDashboard, conforme o original */}
-            <Route path="/admin/settings" element={<AdminSettingsPage />} />
-            <Route path="/admin/transfers" element={<TransfersPage />} />
-            <Route path="/admin/monitoring" element={<MonitoringPage />} />
-            <Route path="/admin/notifications" element={<NotificationsAdminPage />} />
-            
+            {/* --- Rotas Protegidas (SÓ ENTRA QUEM TEM TOKEN) --- */}
+            <Route element={<ProtectedRoute />}>
+              <Route path="/dashboard" element={<Dashboard />} />
+              
+              {/* Rotas do Profissional */}
+              <Route path="/professional/dashboard" element={<ProfessionalDashboard />} />
+              <Route path="/professional/patients" element={<PatientsPage />} />
+              <Route path="/professional/patients/new" element={<NewPatientPage />} />
+              <Route path="/professional/patients/:id" element={<PatientDetailPage />} />
+              <Route path="/professional/patients/:id/edit" element={<EditPatientPage />} />
+              <Route path="/professional/patients/:patientId/anamnesi/fill" element={<FillAnamnesiPage />} />
+              <Route path="/professional/calendar" element={<CalendarPage />} />
+              <Route path="/professional/reports" element={<ReportsPage />} />
+              <Route path="/professional/anamnesi-templates" element={<AnamnesiTemplatesPage />} />
+              <Route path="/professional/settings" element={<SettingsPage />} />
+              <Route path="/professional/notifications" element={<NotificationsPage />} />
+              <Route path="/professional/sessions" element={<SessionsPage />} />
+              <Route path="/professional/audit-logs" element={<AuditLogsPage />} />
+              <Route path="/professional/backup" element={<BackupPage />} />
+              
+              {/* Rotas do Admin */}
+              <Route path="/admin/dashboard" element={<AdminDashboard />} />
+              <Route path="/admin/professionals" element={<ProfessionalsPage />} />
+              <Route path="/admin/professionals/new" element={<AddProfessionalPage />} />
+              <Route path="/admin/professionals/:id" element={<ProfessionalDetailPage />} />
+              <Route path="/admin/professionals/:id/edit" element={<EditProfessionalPage />} />
+              <Route path="/admin/reports" element={<AdminDashboard />} />
+              <Route path="/admin/settings" element={<AdminSettingsPage />} />
+              <Route path="/admin/transfers" element={<TransfersPage />} />
+              <Route path="/admin/monitoring" element={<MonitoringPage />} />
+              <Route path="/admin/notifications" element={<NotificationsAdminPage />} />
+            </Route>
+
             {/* Rota "Catch-all" para página não encontrada */}
             <Route path="*" element={<NotFound />} />
           </Routes>

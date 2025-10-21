@@ -65,10 +65,10 @@ const createSessionSchema = Joi.object({
       'follow_up',
       'evaluation',
       'therapy_session',
-      'group_therapy',
-      'family_therapy',
+      'group_session',
+      'family_session',
       'emergency',
-      'return',
+      'reassessment',
       'discharge'
     )
     .required()
@@ -483,7 +483,7 @@ const validateNoScheduleConflict = async (req, res, next) => {
     const sessionId = req.params.id; // Para updates
 
     // Construir datetime completo
-    const sessionDateTime = new Date(`${session_date}T${session_time}`);
+    const sessionDateTime = new Date(session_date);
     const sessionEnd = new Date(sessionDateTime.getTime() + duration_minutes * 60000);
 
     // Buscar sessões conflitantes
@@ -494,7 +494,7 @@ const validateNoScheduleConflict = async (req, res, next) => {
         status: {
           [Op.in]: ['scheduled', 'confirmed', 'in_progress']
         },
-        id: sessionId ? { [Op.ne]: sessionId } : undefined, // Excluir a própria sessão em updates
+        ...(sessionId && { id: { [Op.ne]: sessionId } }),
         [Op.or]: [
           // Sessão nova começa durante uma sessão existente
           {
@@ -526,7 +526,7 @@ const validateNoScheduleConflict = async (req, res, next) => {
       include: [
         {
           model: require('../models').Patient,
-          as: 'patient',
+          as: 'Patient',
           attributes: ['full_name']
         }
       ]
@@ -538,7 +538,7 @@ const validateNoScheduleConflict = async (req, res, next) => {
         message: 'Conflito de horário detectado',
         conflicts: conflictingSessions.map(session => ({
           session_id: session.id,
-          patient_name: session.patient.full_name,
+          patient_name: session.Patient.full_name,
           session_date: session.session_date,
           duration: session.duration_minutes
         }))

@@ -1,12 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Sidebar } from "@/components/shared/Sidebar";
 import { Header } from "@/components/shared/Header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
 import { Badge } from "@/components/ui/badge";
-import { ChevronLeft, ChevronRight, Plus, Edit, Trash2 } from "lucide-react";
-import { format } from "date-fns";
+import { ChevronLeft, ChevronRight, Plus, Edit, Trash2, CalendarIcon } from "lucide-react";
+// <<< IMPORT CORRIGIDO AQUI >>>
+import { format, startOfMonth, endOfMonth, isSameDay, set, isBefore, startOfToday } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
   Dialog,
@@ -20,7 +22,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import {
   Select,
   SelectContent,
@@ -34,191 +36,219 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { CalendarIcon } from "lucide-react";
+import { 
+  getSessions, 
+  getMyPatients, 
+  createSession, 
+  updateSession, 
+  deleteSession, 
+  Session, 
+  Patient,
+  SessionPayload 
+} from "@/services/professional.service";
 
-interface Appointment {
-  id: string;
-  time: string;
-  patient: string;
-  patientId: string;
-  type: string;
-  duration: string;
-  notes?: string;
-  date: Date;
-}
+type SessionStatus = 'scheduled' | 'completed' | 'cancelled' | 'no_show';
+
+// <<< CORREÇÃO AQUI: "type" foi adicionado ao formulário >>>
+const initialFormData = {
+  date: new Date(),
+  time: "",
+  patientId: "",
+  type: "Consulta", // Campo para o TIPO (o que o backend espera)
+  status: "scheduled" as SessionStatus, // Campo para o STATUS
+  duration: 50,
+  notes: "",
+};
 
 export default function CalendarPage() {
-  const { toast } = useToast();
-  const [date, setDate] = useState<Date | undefined>(new Date());
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [date, setDate] = useState<Date>(new Date());
+  const [sessions, setSessions] = useState<Session[]>([]);
+  const [patients, setPatients] = useState<Patient[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
+  const [editingSession, setEditingSession] = useState<Session | null>(null);
+  const [formData, setFormData] = useState(initialFormData);
 
-  const [appointments, setAppointments] = useState<Appointment[]>([
-    { id: "1", time: "09:00", patient: "Stacy Mitchell", patientId: "1", type: "Consulta", duration: "50", date: new Date(), notes: "" },
-    { id: "2", time: "10:00", patient: "Amy Dunham", patientId: "2", type: "Retorno", duration: "50", date: new Date(), notes: "" },
-    { id: "3", time: "11:00", patient: "Demi Joan", patientId: "3", type: "Avaliação", duration: "50", date: new Date(), notes: "" },
-    { id: "4", time: "14:00", patient: "Susan Myers", patientId: "4", type: "Consulta", duration: "50", date: new Date(), notes: "" },
-    { id: "5", time: "15:00", patient: "Denzel White", patientId: "5", type: "Consulta", duration: "50", date: new Date(), notes: "" },
-  ]);
+  const loadData = async (currentDate: Date) => {
+    setIsLoading(true);
+    try {
+      const firstDay = startOfMonth(currentDate);
+      const lastDay = endOfMonth(currentDate);
+      const [sessionData, patientData] = await Promise.all([
+        getSessions(firstDay, lastDay),
+        getMyPatients(),
+      ]);
+      setSessions(sessionData || []);
+      setPatients(patientData || []);
+    } catch (error) {
+      toast.error("Falha ao carregar dados da agenda.");
+      console.error("Falha ao carregar dados:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-  const [formData, setFormData] = useState({
-    date: new Date(),
-    time: "",
-    patientId: "",
-    type: "",
-    duration: "50",
-    notes: "",
-  });
+  useEffect(() => {
+    loadData(date);
+  }, [date]);
 
-  // Mock patients
-  const patients = [
-    { id: "1", name: "Stacy Mitchell" },
-    { id: "2", name: "Amy Dunham" },
-    { id: "3", name: "Demi Joan" },
-    { id: "4", name: "Susan Myers" },
-    { id: "5", name: "Denzel White" },
-  ];
+  useEffect(() => {
+    const patientIdFromUrl = searchParams.get('patientId');
+    if (patientIdFromUrl && patients.length > 0) {
+      openDialog(undefined, patientIdFromUrl);
+      setSearchParams({});
+    }
+  }, [patients, searchParams, setSearchParams]);
 
-  const hours = Array.from({ length: 12 }, (_, i) => i + 8);
-
-  const handleCreateAppointment = () => {
+const handleSubmit = async () => {
     if (!formData.date || !formData.time || !formData.patientId || !formData.type) {
-      toast({
-        title: "Erro",
-        description: "Preencha todos os campos obrigatórios",
-        variant: "destructive",
-      });
+      toast.error("Data, Horário, Paciente e Tipo são obrigatórios.");
       return;
     }
 
-    const patient = patients.find(p => p.id === formData.patientId);
-    if (!patient) return;
+    const [hour, minute] = formData.time.split(':').map(Number);
+    // IMPORTANTE: Garanta que a data seja enviada em UTC (formato ISO)
+    const sessionDateTime = set(formData.date, { hours: hour, minutes: minute }).toISOString();
 
-    const newAppointment: Appointment = {
-      id: Date.now().toString(),
-      time: formData.time,
-      patient: patient.name,
-      patientId: formData.patientId,
-      type: formData.type,
-      duration: formData.duration,
-      date: formData.date,
-      notes: formData.notes,
-    };
+    if (!editingSession && isBefore(new Date(sessionDateTime), startOfToday())) {
+        toast.error("Data da sessão não pode ser no passado.");
+        return;
+    }
 
-    setAppointments([...appointments, newAppointment]);
-    setIsDialogOpen(false);
-    resetForm();
-    toast({
-      title: "Sucesso",
-      description: "Agendamento criado com sucesso",
-    });
+      const sessionTypeMap = {
+        "Consulta": "first_consultation", 
+        "Avaliação": "evaluation",
+        "Sessão de Terapia": "therapy_session",
+        "Retorno": "follow_up", 
+        "Reavaliação": "reassessment",
+        "Emergência": "emergency",
+        "Terapia em Grupo": "group_session", 
+        "Terapia Familiar": "family_session", 
+        "Alta": "discharge"
+};
+
+    const apiSessionType = sessionTypeMap[formData.type]; 
+
+    if (!apiSessionType) {
+      toast.error(`Tipo de sessão inválido no frontend: ${formData.type}`);
+      return;
+    }
+
+    try {
+      if (editingSession) {
+        const updatePayload = {
+          session_date: sessionDateTime,
+          session_time: formData.time,
+          session_type: apiSessionType,           // Correto
+          duration_minutes: Number(formData.duration), // Correto
+          notes: formData.notes,
+          status: formData.status                  // Correto (status é permitido no update)
+        };
+
+        // @ts-ignore
+        await updateSession(editingSession.id, updatePayload);
+        toast.success("Agendamento atualizado com sucesso!");
+
+      } else {
+        // PAYLOAD PARA CRIAR
+        const createPayload = {
+          patient_id: formData.patientId,
+          session_date: sessionDateTime,
+          session_time: formData.time,
+          session_type: apiSessionType,           // Correto
+          duration_minutes: Number(formData.duration), // Correto
+          notes: formData.notes
+          // 'status' NÃO VAI AQUI
+        };
+        
+        // @ts-ignore
+        await createSession(createPayload);
+        toast.success("Agendamento criado com sucesso!");
+      }
+
+      setIsDialogOpen(false);
+      loadData(date);
+    } catch (error: any) {
+       const apiErrorMessage = error.response?.data?.message || `Falha ao ${editingSession ? 'atualizar' : 'criar'} agendamento.`;
+       toast.error(apiErrorMessage);
+    }
   };
 
-  const handleEditAppointment = () => {
-    if (!editingAppointment) return;
-
-    const patient = patients.find(p => p.id === formData.patientId);
-    if (!patient) return;
-
-    setAppointments(
-      appointments.map((a) =>
-        a.id === editingAppointment.id
-          ? {
-              ...editingAppointment,
-              time: formData.time,
-              patient: patient.name,
-              patientId: formData.patientId,
-              type: formData.type,
-              duration: formData.duration,
-              date: formData.date,
-              notes: formData.notes,
-            }
-          : a
-      )
-    );
-    setIsDialogOpen(false);
-    setEditingAppointment(null);
-    resetForm();
-    toast({
-      title: "Sucesso",
-      description: "Agendamento atualizado com sucesso",
-    });
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteSession(id);
+      toast.success("Agendamento excluído com sucesso.");
+      loadData(date);
+    } catch (error) {
+      toast.error("Falha ao excluir agendamento.");
+    }
   };
 
-  const handleDeleteAppointment = (id: string) => {
-    setAppointments(appointments.filter((a) => a.id !== id));
-    toast({
-      title: "Sucesso",
-      description: "Agendamento excluído com sucesso",
-    });
-  };
-
-  const openEditDialog = (appointment: Appointment) => {
-    setEditingAppointment(appointment);
-    setFormData({
-      date: appointment.date,
-      time: appointment.time,
-      patientId: appointment.patientId,
-      type: appointment.type,
-      duration: appointment.duration,
-      notes: appointment.notes || "",
-    });
+  const openDialog = (session?: Session, preselectedPatientId?: string) => {
+    if (session) {
+      setEditingSession(session);
+      setFormData({
+        date: new Date(session.session_date),
+        time: format(new Date(session.session_date), "HH:mm"),
+        patientId: session.patient.id,
+        status: session.status,
+        // @ts-ignore
+        type: session.session_type || "Consulta", // Adiciona o 'type'
+        duration: session.duration,
+        notes: session.notes || "",
+      });
+    } else {
+      setEditingSession(null);
+      setFormData({
+        ...initialFormData,
+        date: date,
+        patientId: preselectedPatientId || ""
+      });
+    }
     setIsDialogOpen(true);
   };
 
-  const resetForm = () => {
-    setFormData({
-      date: new Date(),
-      time: "",
-      patientId: "",
-      type: "",
-      duration: "50",
-      notes: "",
-    });
-    setEditingAppointment(null);
-  };
+  const hours = Array.from({ length: 12 }, (_, i) => i + 8);
 
   return (
     <div className="flex min-h-screen bg-background">
       <Sidebar userType="professional" />
-
       <div className="flex-1 flex flex-col">
         <Header userName="Dr. Oliver" />
-
         <main className="flex-1 p-6 overflow-auto">
           <div className="flex items-center justify-between mb-6">
             <div>
               <h1 className="text-3xl font-bold">Calendário</h1>
               <p className="text-muted-foreground">
-                {date && format(date, "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+                {format(date, "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
               </p>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" size="icon">
+              <Button variant="outline" size="icon" onClick={() => setDate(d => new Date(d.getFullYear(), d.getMonth() - 1, 1))}>
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              <Button variant="outline" size="icon">
+              <Button variant="outline" size="icon" onClick={() => setDate(d => new Date(d.getFullYear(), d.getMonth() + 1, 1))}>
                 <ChevronRight className="h-4 w-4" />
               </Button>
               
               <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button onClick={resetForm}>
+                  <Button onClick={() => openDialog()}>
                     <Plus className="h-4 w-4 mr-2" />
                     Novo Agendamento
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>
-                      {editingAppointment ? "Editar Agendamento" : "Novo Agendamento"}
-                    </DialogTitle>
+                    <DialogTitle>{editingSession ? "Editar Agendamento" : "Novo Agendamento"}</DialogTitle>
                     <DialogDescription>
                       Preencha os dados do agendamento
                     </DialogDescription>
                   </DialogHeader>
 
-                  <div className="space-y-4">
+                  <div className="space-y-4 py-4">
                     <div className="space-y-2">
                       <Label htmlFor="date">Data *</Label>
                       <Popover>
@@ -234,13 +264,12 @@ export default function CalendarPage() {
                             {formData.date ? format(formData.date, "PPP", { locale: ptBR }) : "Selecione a data"}
                           </Button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
+                        <PopoverContent className="w-auto p-0">
                           <Calendar
                             mode="single"
                             selected={formData.date}
-                            onSelect={(date) => date && setFormData({ ...formData, date })}
+                            onSelect={(d) => d && setFormData({ ...formData, date: d })}
                             initialFocus
-                            className={cn("p-3 pointer-events-auto")}
                           />
                         </PopoverContent>
                       </Popover>
@@ -256,14 +285,13 @@ export default function CalendarPage() {
                           onChange={(e) => setFormData({ ...formData, time: e.target.value })}
                         />
                       </div>
-
                       <div className="space-y-2">
                         <Label htmlFor="duration">Duração (min) *</Label>
                         <Input
                           id="duration"
                           type="number"
                           value={formData.duration}
-                          onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
+                          onChange={(e) => setFormData({ ...formData, duration: Number(e.target.value) })}
                         />
                       </div>
                     </div>
@@ -280,29 +308,49 @@ export default function CalendarPage() {
                         <SelectContent>
                           {patients.map((patient) => (
                             <SelectItem key={patient.id} value={patient.id}>
-                              {patient.name}
+                              {patient.full_name}
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="type">Tipo de Consulta *</Label>
-                      <Select
-                        value={formData.type}
-                        onValueChange={(value) => setFormData({ ...formData, type: value })}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione o tipo" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Consulta">Consulta</SelectItem>
-                          <SelectItem value="Retorno">Retorno</SelectItem>
-                          <SelectItem value="Avaliação">Avaliação</SelectItem>
-                          <SelectItem value="Sessão">Sessão</SelectItem>
-                        </SelectContent>
-                      </Select>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="type">Tipo de Consulta *</Label>
+                        <Select
+                          value={formData.type}
+                          onValueChange={(value) => setFormData({ ...formData, type: value })}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione o tipo" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Consulta">Consulta</SelectItem>
+                            <SelectItem value="Retorno">Retorno</SelectItem>
+                            <SelectItem value="Avaliação">Avaliação</SelectItem>
+                            <SelectItem value="Sessão">Sessão</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="status">Status da Sessão *</Label>
+                        <Select
+                          value={formData.status}
+                          onValueChange={(value) => setFormData({ ...formData, status: value as SessionStatus })}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione o status" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="scheduled">Agendada</SelectItem>
+                            <SelectItem value="completed">Realizada</SelectItem>
+                            <SelectItem value="cancelled">Cancelada</SelectItem>
+                            <SelectItem value="no_show">Falta</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
 
                     <div className="space-y-2">
@@ -320,99 +368,90 @@ export default function CalendarPage() {
                     <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
                       Cancelar
                     </Button>
-                    <Button onClick={editingAppointment ? handleEditAppointment : handleCreateAppointment}>
-                      {editingAppointment ? "Salvar Alterações" : "Criar Agendamento"}
+                    <Button onClick={handleSubmit}>
+                      {editingSession ? "Salvar Alterações" : "Criar Agendamento"}
                     </Button>
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
             </div>
           </div>
-
+          
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
             <Card>
               <CardContent className="p-4">
                 <Calendar
                   mode="single"
                   selected={date}
-                  onSelect={setDate}
+                  onSelect={(day) => day && setDate(day)}
+                  onMonthChange={setDate}
+                  locale={ptBR}
                   className="rounded-md"
                 />
-                
-                <div className="mt-4 space-y-2">
-                  <h3 className="font-semibold text-sm">Legenda</h3>
-                  <div className="flex items-center gap-2 text-sm">
-                    <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-                    <span>Consulta</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                    <span>Retorno</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <div className="w-3 h-3 rounded-full bg-purple-500"></div>
-                    <span>Avaliação</span>
-                  </div>
-                </div>
               </CardContent>
             </Card>
 
             <Card className="lg:col-span-3">
               <CardContent className="p-6">
                 <div className="space-y-1">
-                  {hours.map((hour) => {
-                    const hourStr = `${hour.toString().padStart(2, "0")}:00`;
-                    const appointment = appointments.find((apt) => apt.time === hourStr);
+                  {isLoading ? (
+                    <p className="text-center text-muted-foreground py-4">Carregando agenda...</p>
+                  ) : (
+                    hours.map((hour) => {
+                      const hourStr = `${hour.toString().padStart(2, "0")}:00`;
+                      
+                      const session = Array.isArray(sessions) ? sessions.find((s) => 
+                        format(new Date(s.session_date), 'HH:mm') === hourStr && 
+                        isSameDay(new Date(s.session_date), date)
+                      ) : undefined;
 
-                    return (
-                      <div
-                        key={hour}
-                        className="flex items-start gap-4 py-3 border-b last:border-0"
-                      >
-                        <div className="w-16 text-sm text-muted-foreground font-medium">
-                          {hourStr}
-                        </div>
-                        {appointment ? (
-                          <div className="flex-1 p-3 rounded-lg bg-primary/5 border border-primary/20 hover:bg-primary/10 transition-colors">
-                            <div className="flex items-start justify-between">
-                              <div className="flex-1">
-                                <h4 className="font-semibold">{appointment.patient}</h4>
-                                <p className="text-sm text-muted-foreground">
-                                  {appointment.time} - {appointment.duration}min
-                                </p>
-                                {appointment.notes && (
-                                  <p className="text-xs text-muted-foreground mt-1">{appointment.notes}</p>
-                                )}
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <Badge variant="secondary">{appointment.type}</Badge>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => openEditDialog(appointment)}
-                                >
-                                  <Edit className="h-3 w-3" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleDeleteAppointment(appointment.id)}
-                                >
-                                  <Trash2 className="h-3 w-3 text-destructive" />
-                                </Button>
+                      return (
+                        <div
+                          key={hour}
+                          className="flex items-start gap-4 py-3 border-b last:border-0"
+                        >
+                          <div className="w-16 text-sm text-muted-foreground font-medium">
+                            {hourStr}
+                          </div>
+                          {session ? (
+                            <div className="flex-1 p-3 rounded-lg bg-primary/5 border border-primary/20">
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1">
+                                  <h4 className="font-semibold">{session.patient.full_name}</h4>
+                                  <p className="text-sm text-muted-foreground">
+                                    {format(new Date(session.session_date), 'HH:mm')} - {session.duration}min
+                                  </p>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <Badge variant="secondary" className="capitalize">{session.status}</Badge>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => openDialog(session)}
+                                  >
+                                    <Edit className="h-3 w-3" />
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleDelete(session.id)}
+                                  >
+                                    <Trash2 className="h-3 w-3 text-destructive" />
+                                  </Button>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        ) : (
-                          <div className="flex-1 p-3 rounded-lg border-2 border-dashed hover:bg-muted/50 cursor-pointer transition-colors">
-                            <p className="text-sm text-muted-foreground text-center">
-                              Horário disponível
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
+                          ) : (
+                            <div className="flex-1 p-3 rounded-lg border-2 border-dashed hover:bg-muted/50 cursor-pointer" onClick={() => openDialog()}>
+                              <p className="text-sm text-muted-foreground text-center">
+                                Horário disponível
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })
+                  )}
                 </div>
               </CardContent>
             </Card>
