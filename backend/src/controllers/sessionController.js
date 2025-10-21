@@ -28,6 +28,7 @@
 const { Session, Patient, User } = require('../models');
 const { Op } = require('sequelize');
 const { AppError } = require('../middleware/errorHandler');
+const notificationTriggers = require('../services/notificationTriggers');
 
 // ============================================
 // FUNÇÕES DE AGENDAMENTO
@@ -226,6 +227,8 @@ const updateScheduledSession = async (req, res) => {
       }
     ]
   });
+
+ await notificationTriggers.notifySessionCancelled(session, reason);
 
   res.json({
     success: true,

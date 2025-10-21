@@ -23,6 +23,7 @@ const {
   createAuthorizationError
 } = require('../middleware/errorHandler');
 const bcrypt = require('bcryptjs');
+const notificationTriggers = require('../services/notificationTriggers');
 
 /**
  * DASHBOARD E ESTATÍSTICAS PESSOAIS
@@ -467,6 +468,11 @@ const createPatient = async (req, res) => {
     
     // Retornar dados do paciente criado
     const patientResponse = newPatient.toJSON();
+
+    await notificationTriggers.notifyNewPatient(
+    patient,
+    req.userId
+  );
     
     res.status(201).json({
       success: true,

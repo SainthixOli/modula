@@ -1735,6 +1735,194 @@ Alternativa:
 
 ---
 
+### **SISTEMA DE NOTIFICAÇÕES AUTOMÁTICAS (100% COMPLETO)**
+
+#### **Arquivos Implementados:**
+- `src/services/notificationTriggers.js` - Sistema de triggers (850 linhas)
+- Guia de integração completo em Markdown
+
+**Total:** 850+ linhas de código implementadas!
+
+#### **Triggers Implementados:**
+
+**TRANSFERÊNCIAS (3 triggers):**
+1. **notifyTransferRequested** - Após criar transferência
+   - Notifica: Todos os admins ativos + Profissional destino
+   - Tipo: warning (admins), info (destino)
+   - Prioridade: high (admins), medium (destino)
+   - Ação: approve_transfer (admins), link (destino)
+
+2. **notifyTransferApproved** - Após aprovar transferência
+   - Notifica: Profissional origem + Profissional destino
+   - Tipo: success (ambos)
+   - Prioridade: medium (origem), high (destino)
+   - Ação: link (origem), view_patient (destino)
+
+3. **notifyTransferRejected** - Após rejeitar transferência
+   - Notifica: Profissional solicitante
+   - Tipo: error
+   - Prioridade: medium
+   - Inclui motivo da rejeição
+
+**SESSÕES (3 triggers):**
+1. **notifyUpcomingSessions** - Job diário (08:00)
+   - Busca: Sessões agendadas para amanhã
+   - Notifica: Profissional responsável
+   - Tipo: reminder
+   - Prioridade: medium
+   - Expira: Após o dia da sessão
+
+2. **notifyPendingEvolutions** - Job diário (18:00)
+   - Busca: Sessões completadas sem evolução (últimos 3 dias)
+   - Agrupa: Por profissional
+   - Notifica: Lista de pacientes pendentes
+   - Tipo: warning
+   - Prioridade: high
+
+3. **notifySessionCancelled** - Após cancelar sessão
+   - Notifica: Profissional responsável
+   - Tipo: info
+   - Prioridade: low
+   - Inclui motivo do cancelamento
+
+**ANAMNESE (2 triggers):**
+1. **notifyPendingAnamnesis** - Job semanal (Segunda 09:00)
+   - Busca: Anamneses draft/in_progress há 7+ dias
+   - Agrupa: Por profissional
+   - Notifica: Lista de pacientes pendentes
+   - Tipo: warning
+   - Prioridade: medium
+
+2. **notifyAnamnesisCompleted** - Após completar anamnese
+   - Notifica: Profissional responsável
+   - Tipo: success
+   - Prioridade: low
+   - Sugere: Agendar primeira sessão
+
+**PACIENTES (1 trigger):**
+1. **notifyNewPatient** - Após criar paciente
+   - Notifica: Profissional responsável
+   - Tipo: success
+   - Prioridade: medium
+   - Ação: complete_anamnesis
+   - Sugere: Preencher anamnese
+
+**SISTEMA (2 triggers):**
+1. **notifyBackupCompleted** - Após executar backup
+   - Notifica: Todos os admins ativos
+   - Tipo: success
+   - Prioridade: low
+   - Inclui: Tamanho e próximo backup
+
+2. **notifyScheduledMaintenance** - Manual (admin)
+   - Notifica: TODOS os usuários ativos
+   - Tipo: warning
+   - Prioridade: high
+   - Inclui: Data, horário início/fim
+   - Expira: No dia da manutenção
+
+#### **Cron Jobs Configurados:**
+
+**setupCronJobs()** - Configura 3 jobs automáticos:
+
+1. **Diário às 08:00** - `notifyUpcomingSessions()`
+   - Expressão cron: `0 8 * * *`
+   - Descrição: Lembretes de sessões de amanhã
+
+2. **Diário às 18:00** - `notifyPendingEvolutions()`
+   - Expressão cron: `0 18 * * *`
+   - Descrição: Avisos de evoluções pendentes
+
+3. **Segunda às 09:00** - `notifyPendingAnamnesis()`
+   - Expressão cron: `0 9 * * 1`
+   - Descrição: Avisos de anamneses pendentes 7+ dias
+
+#### **Recursos Técnicos:**
+
+**Dependência:**
+- `node-cron` - Agendamento de tarefas periódicas
+
+**Integração:**
+- Import em controllers relevantes
+- Chamadas assíncronas (não bloqueantes)
+- Try-catch para não quebrar operações principais
+- Logs detalhados de execução
+
+**Agrupamento Inteligente:**
+- Múltiplas sessões pendentes → 1 notificação
+- Múltiplas anamneses pendentes → 1 notificação
+- Lista até 3 pacientes + contador
+
+**Configuração Automática:**
+- Expiração por tipo (reminder: 7 dias, info: 30 dias)
+- Prioridade baseada no contexto
+- Ações específicas por evento
+- Entidade relacionada sempre linkada
+
+#### **Pontos de Integração:**
+
+**Controllers que devem chamar triggers:**
+1. `transferController.js` - 3 triggers
+2. `sessionController.js` - 1 trigger
+3. `professionalController.js` - 1 trigger
+4. `anamnesisController.js` - 1 trigger
+
+**Inicialização (server.js):**
+```javascript
+const notificationTriggers = require('./src/services/notificationTriggers');
+notificationTriggers.setupCronJobs();
+```
+
+#### **Logs de Execução:**
+
+Todos os triggers geram logs para monitoramento:
+- `[TRIGGER]` - Sucesso na criação de notificações
+- `[TRIGGER ERROR]` - Erro (não bloqueia operação principal)
+- `[CRON]` - Execução de jobs agendados
+
+**Exemplos:**
+```
+[TRIGGER] Notificação de transferência enviada para 2 admin(s)
+[TRIGGER] 5 notificações de lembrete criadas
+[CRON] Executando: notifyUpcomingSessions
+[TRIGGER ERROR] notifyTransferRequested: User not found
+```
+
+#### **Notificações por Contexto:**
+
+**Alta Prioridade (Requer atenção):**
+- Transferências pendentes (admins)
+- Novo paciente transferido
+- Evoluções pendentes há 3+ dias
+- Manutenção programada
+
+**Média Prioridade (Informativo):**
+- Transferência solicitada (destino)
+- Novo paciente cadastrado
+- Lembretes de sessões
+- Anamneses pendentes 7+ dias
+
+**Baixa Prioridade (FYI):**
+- Sessão cancelada
+- Anamnese completada
+- Backup realizado
+
+#### **Estatísticas Esperadas:**
+
+Por dia (clínica com 10 profissionais, 100 pacientes ativos):
+- ~10 lembretes de sessões (08:00)
+- ~5 avisos de evoluções pendentes (18:00)
+- ~3-5 notificações de eventos (transferências, novos pacientes)
+
+Por semana:
+- ~70 notificações de lembretes
+- ~35 notificações de evoluções
+- ~5 notificações de anamneses (segunda)
+- ~15-25 notificações de eventos
+- **Total:** ~125-135 notificações/semana
+
+---
+
 # 4. ROADMAP DE DESENVOLVIMENTO
 
 ## 🗓️ CRONOGRAMA GERAL

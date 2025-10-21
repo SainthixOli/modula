@@ -26,7 +26,7 @@ require('dotenv').config();
 require('./src/config/database');
 // Importar configurações do banco de dados
 const { connectDB } = require('./src/config/database');
-
+const notificationTriggers = require('./src/services/notificationTriggers');
 // Importar middlewares personalizados
 const { errorHandler, notFound } = require('./src/middleware/errorHandler');
 const { validateToken } = require('./src/middleware/auth');
@@ -249,6 +249,14 @@ async function startServer() {
       throw new Error(`Variáveis de ambiente obrigatórias não definidas: ${missingVars.join(', ')}`);
     }
     
+    // ============================================
+    // CONFIGURAR NOTIFICATION TRIGGERS
+    // ============================================
+
+    // Inicializar cron jobs
+    notificationTriggers.setupCronJobs();
+    console.log('✓ Notification triggers configurados');
+
     // Iniciar servidor
     const server = app.listen(PORT, () => {
       console.log('🚀 ====================================');

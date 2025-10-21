@@ -15,6 +15,7 @@
 const { Transfer, Patient, User } = require('../models');
 const { AppError } = require('../middleware/errorHandler');
 const { Op } = require('sequelize');
+const notificationTriggers = require('../services/notificationTriggers');
 
 // ============================================
 // OPERAÇÕES DO PROFISSIONAL
@@ -121,6 +122,11 @@ const requestTransfer = async (req, res) => {
       { model: User, as: 'ToUser', attributes: ['id', 'full_name', 'email'] },
     ],
   });
+
+  await notificationTriggers.notifyTransferRequested(
+    transfer, 
+    req.user.full_name
+  );
 
   res.status(201).json({
     success: true,
@@ -351,6 +357,11 @@ const approveTransfer = async (req, res) => {
     await transfer.complete();
   }
 
+  await notificationTriggers.notifyTransferApproved(
+    transfer,
+    req.user.full_name
+  );
+
   res.json({
     success: true,
     message: auto_complete 
@@ -407,6 +418,12 @@ const rejectTransfer = async (req, res) => {
 
   // Rejeitar transferência
   await transfer.reject(adminId, reason);
+
+  await notificationTriggers.notifyTransferRejected(
+    transfer,
+    req.user.full_name,
+    reason
+  );
 
   res.json({
     success: true,
