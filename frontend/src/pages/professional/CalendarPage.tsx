@@ -7,7 +7,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
 import { Badge } from "@/components/ui/badge";
 import { ChevronLeft, ChevronRight, Plus, Edit, Trash2, CalendarIcon } from "lucide-react";
-// <<< IMPORT CORRIGIDO AQUI >>>
 import { format, startOfMonth, endOfMonth, isSameDay, set, isBefore, startOfToday } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
@@ -49,13 +48,12 @@ import {
 
 type SessionStatus = 'scheduled' | 'completed' | 'cancelled' | 'no_show';
 
-// <<< CORREÇÃO AQUI: "type" foi adicionado ao formulário >>>
 const initialFormData = {
   date: new Date(),
   time: "",
   patientId: "",
-  type: "Consulta", // Campo para o TIPO (o que o backend espera)
-  status: "scheduled" as SessionStatus, // Campo para o STATUS
+  type: "Consulta", 
+  status: "scheduled" as SessionStatus, 
   duration: 50,
   notes: "",
 };
@@ -109,7 +107,6 @@ const handleSubmit = async () => {
     }
 
     const [hour, minute] = formData.time.split(':').map(Number);
-    // IMPORTANTE: Garanta que a data seja enviada em UTC (formato ISO)
     const sessionDateTime = set(formData.date, { hours: hour, minutes: minute }).toISOString();
 
     if (!editingSession && isBefore(new Date(sessionDateTime), startOfToday())) {
@@ -141,10 +138,10 @@ const handleSubmit = async () => {
         const updatePayload = {
           session_date: sessionDateTime,
           session_time: formData.time,
-          session_type: apiSessionType,           // Correto
-          duration_minutes: Number(formData.duration), // Correto
+          session_type: apiSessionType,           
+          duration_minutes: Number(formData.duration), 
           notes: formData.notes,
-          status: formData.status                  // Correto (status é permitido no update)
+          status: formData.status                  
         };
 
         // @ts-ignore
@@ -157,10 +154,9 @@ const handleSubmit = async () => {
           patient_id: formData.patientId,
           session_date: sessionDateTime,
           session_time: formData.time,
-          session_type: apiSessionType,           // Correto
-          duration_minutes: Number(formData.duration), // Correto
+          session_type: apiSessionType,           
+          duration_minutes: Number(formData.duration), 
           notes: formData.notes
-          // 'status' NÃO VAI AQUI
         };
         
         // @ts-ignore
@@ -195,7 +191,7 @@ const handleSubmit = async () => {
         patientId: session.patient.id,
         status: session.status,
         // @ts-ignore
-        type: session.session_type || "Consulta", // Adiciona o 'type'
+        type: session.session_type || "Consulta", 
         duration: session.duration,
         notes: session.notes || "",
       });
