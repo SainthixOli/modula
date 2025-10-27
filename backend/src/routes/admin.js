@@ -353,6 +353,13 @@ router.put('/transfers/:id/reject',
   asyncHandler(adminController.rejectTransfer)
 );
 
+router.get(
+  '/professionals/:id/stats',
+  validateToken,  
+  requireAdmin,   
+  asyncHandler(adminController.getProfessionalStats) 
+);
+
 
 // Middleware para validar UUID nos parâmetros
 const validateUUIDParam = param('id')

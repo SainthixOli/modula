@@ -20,7 +20,7 @@
  * - Suporte a múltiplos períodos de análise
  */
 
-const { User, Patient, Session, Anamnesis, sequelize } = require('../models');
+const { User, Patient, Session, Anamnesis} = require('../models');
 const { Op } = require('sequelize');
 
 // ============================================
@@ -204,6 +204,92 @@ const getMonthlyStats = async (year = null, month = null) => {
     },
     by_professional: Object.values(byProfessional)
   };
+};
+
+/**
+ * CALCULA AS ESTATÍSTICAS PARA O DETALHE DO PROFISSIONAL
+ * (Sessões no Mês, Taxa de Presença, Total de Sessões)
+ * @param {string} professionalId - O ID do profissional (user_id)
+ */
+const getStatsForProfessional = async (professionalId) => {
+  try {
+    // --- Pega as datas do mês atual ---
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+    // --- 1. Busca TODAS as SESSÕES ---
+    const allSessions = await Session.findAll({
+      where: { 'user_id': professionalId }, // Usando 'user_id'
+      attributes: ['status', 'start_time'], // Puxa só o que a gente precisa
+      raw: true,
+    });
+
+    // --- 2. Busca TODOS os PACIENTES (pra contar os ativos) ---
+    const allPatients = await Patient.findAll({
+      // Usando 'uuid-do-profissional' (como tá no Patient.js)
+      where: { 'uuid-do-profissional': professionalId }, 
+      attributes: ['status'],
+      raw: true,
+    });
+
+    // --- 3. Processa os números no JavaScript ---
+    let sessions_in_month = 0;
+    let completed = 0;
+    let canceled = 0;
+    let absent = 0;
+
+    for (const session of allSessions) {
+      const sessionDate = new Date(session.start_time);
+
+      // Conta "Sessões no Mês"
+      if (sessionDate >= startOfMonth && sessionDate <= endOfMonth) {
+        sessions_in_month += 1;
+      }
+
+      // Conta status para "Taxa de Presença"
+      if (session.status === 'completed') {
+        completed += 1;
+      } else if (session.status === 'canceled') {
+        canceled += 1;
+      } else if (session.status === 'no_show') {
+        absent += 1;
+      }
+    }
+
+    // --- 4. Calcula a Taxa de Presença (sua lógica) ---
+    // (Completas) / (Completas + Canceladas + Faltas)
+    // Se uma sessão for "cancelada", ela não entra na taxa de presença.
+    // A taxa é (Completas) / (Completas + Faltas)
+    const totalAtendimentos = stats.COMPLETED + stats.CANCELED + stats.ABSENT;
+    let attendance_rate = 0;
+    if (totalAtendimentos > 0) {
+      attendance_rate = Math.round((completed / totalAtendimentos) * 100);
+    }
+
+    // --- 5. Conta Pacientes Ativos ---
+    const active_patients = allPatients.filter(p => p.status === 'ACTIVE').length;
+
+    // --- 6. Retorna o objeto que o frontend espera ---
+    return {
+      total_sessions: allSessions.length,       // Total de Sessões
+      sessions_in_month: sessions_in_month,   // Sessões no Mês
+      attendance_rate: attendance_rate,     // Taxa de Presença
+      total_patients: allPatients.length,   // (Bônus, já que buscamos)
+      active_patients: active_patients,     // Pacientes Ativos
+    };
+
+  } catch (error) {
+    console.error('Erro ao calcular estatísticas do profissional:', error);
+    // Retorna zerado pra não quebrar o frontend
+    return {
+      total_sessions: 0,
+      sessions_in_month: 0,
+      attendance_rate: 0,
+      total_patients: 0,
+      active_patients: 0,
+    };
+  }
 };
 
 // ============================================
@@ -522,6 +608,7 @@ module.exports = {
   // Visão geral
   getClinicOverview,
   getMonthlyStats,
+  getStatsForProfessional,
   
   // Produtividade
   getProfessionalProductivity,

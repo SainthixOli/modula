@@ -83,9 +83,6 @@ export default function ProfessionalsPage() {
       </div>
     );
   }
-
-// DENTRO DO SEU ARQUIVO: src/pages/admin/ProfessionalsPage.tsx
-
   return (
     <div className="flex min-h-screen bg-background">
       <Sidebar userType="admin" />
@@ -180,11 +177,11 @@ export default function ProfessionalsPage() {
                         </div>
                         <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
                           {prof.specialty && <span>{prof.specialty}</span>}
-                          {/* <<< CORREÇÃO AQUI >>> */}
+                          
                           {prof.specialty && prof.professional_register && <span>•</span>}
-                          {/* <<< CORREÇÃO AQUI >>> */}
+                          
                           {prof.professional_register && <span>{prof.professional_register}</span>}
-                          {/* <<< CORREÇÃO AQUI >>> */}
+                          
                           {(prof.specialty || prof.professional_register) && <span>•</span>}
                           <span className="font-medium text-foreground">{prof.patient_count} pacientes</span>
                         </div>

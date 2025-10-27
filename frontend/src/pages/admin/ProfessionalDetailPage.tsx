@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, Edit, Mail, Phone, Calendar, Users, Activity, Key } from "lucide-react";
 import { toast } from "sonner";
 import { getProfessionalDetails, resetPassword } from "@/services/admin.service";
+import { StatsCard } from '@/components/shared/StatsCard';
 import { format, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -40,10 +41,9 @@ export default function ProfessionalDetailPage() {
   const [professional, setProfessional] = useState<ProfessionalDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  // <<< CORREÇÃO AQUI: A DECLARAÇÃO DO ESTADO DE LOADING ESTAVA FALTANDO >>>
   const [isResettingPassword, setIsResettingPassword] = useState(false);
 
-  useEffect(() => {
+useEffect(() => {
     if (!id) {
       setError("ID do profissional não fornecido.");
       setIsLoading(false);
@@ -51,9 +51,14 @@ export default function ProfessionalDetailPage() {
     }
 
     const loadData = async () => {
+      setProfessional(null);
+      setError(null);
+      setIsLoading(true); 
+
       try {
         const data = await getProfessionalDetails(id);
         setProfessional(data);
+
       } catch (err) {
         console.error("Erro ao buscar detalhes do profissional:", err);
         setError("Não foi possível carregar os dados do profissional.");
@@ -139,7 +144,6 @@ export default function ProfessionalDetailPage() {
                       {professional.status === "active" ? "Ativo" : "Inativo"}
                     </Badge>
                     
-                    {/* <<< VERIFICAÇÃO ADICIONADA AQUI >>> */}
                     {professional.last_login && (
                       <Badge variant="outline">Último acesso: {formatDistanceToNow(new Date(professional.last_login), { locale: ptBR, addSuffix: true })}</Badge>
                     )}
@@ -189,7 +193,6 @@ export default function ProfessionalDetailPage() {
                   <CardContent className="space-y-4">
                     <div className="flex items-center gap-3"><Activity className="h-4 w-4 text-muted-foreground" /><div><p className="text-sm text-muted-foreground">Especialidade</p><p className="font-medium">{professional.specialty}</p></div></div>
                     <div className="flex items-center gap-3"><Calendar className="h-4 w-4 text-muted-foreground" /><div><p className="text-sm text-muted-foreground">Data de Cadastro</p>
-                      {/* <<< VERIFICAÇÃO ADICIONADA AQUI >>> */}
                       <p className="font-medium">{professional.created_at ? format(new Date(professional.created_at), "dd/MM/yyyy", { locale: ptBR }) : 'N/A'}</p>
                     </div></div>
                     <div className="flex items-center gap-3"><Users className="h-4 w-4 text-muted-foreground" /><div><p className="text-sm text-muted-foreground">Total de Pacientes</p><p className="font-medium">{professional.statistics?.total_patients ?? 0}</p></div></div>

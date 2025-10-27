@@ -13,10 +13,11 @@
  */
 
 const { Op } = require('sequelize');
-const { User, Patient } = require('../models');
+const { User, Patient, Session } = require('../models');
 const { AppError, createNotFoundError, createValidationError } = require('../middleware/errorHandler');
 const crypto = require('crypto');
 const { Transfer } = require('../models');
+const statsService = require('../services/statsService');
 
 /**
  * DASHBOARD E ESTATÍSTICAS
@@ -861,6 +862,7 @@ const createProfessional = async (req, res) => {
 const getProfessionalById = async (req, res) => {
   const { id } = req.params;
 
+  // 1. O SEU CÓDIGO 
   const professional = await User.findOne({
     where: {
       id,
@@ -880,20 +882,73 @@ const getProfessionalById = async (req, res) => {
     throw createNotFoundError('Profissional não encontrado');
   }
 
-  const professionalData = professional.toJSON();
+  // --- LÓGICA DE CÁLCULO  ---
 
+  // 2. Pega as datas do mês atual
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+  // 3. Busca TODAS as sessões 
+  const allSessions = await Session.findAll({
+    where: { 
+      'user_id': id // 'id' é o professionalId da URL
+    },
+    attributes: ['status', 'session_date'],
+  });
+
+  // 4. Calcula os números no JavaScript 
+  let sessions_in_month = 0;
+  let completed = 0;
+  let canceled = 0;
+  let absent = 0;
+
+  for (const session of allSessions) {
+    const sessionDate = new Date(session.session_date);
+
+    // Conta "Sessões no Mês"
+    if (sessionDate >= startOfMonth && sessionDate <= endOfMonth) {
+      sessions_in_month += 1;
+    }
+
+    // Conta status para "Taxa de Presença"
+    if (session.status === 'completed') { //
+      completed += 1;
+    } else if (session.status === 'canceled') { //
+      canceled += 1;
+    } else if (session.status === 'no_show') { //
+      absent += 1;
+    }
+  }
+
+  // 5. Calcula Taxa de Presença 
+  // (Completas) / (Completas + Canceladas + Faltas)
+  const totalRelevantSessions = completed + canceled + absent;
+  let attendance_rate = 0;
+  if (totalRelevantSessions > 0) {
+    // (Completas / Total) * 100
+    attendance_rate = Math.round((completed / totalRelevantSessions) * 100);
+  }
+  
+  // --- FIM DA LÓGICA DE CÁLCULO ---
+
+
+  // 6. Pacientes
+  const professionalData = professional.toJSON();
   const totalPatients = professionalData.Patients ? professionalData.Patients.length : 0;
   const activePatients = professionalData.Patients ? professionalData.Patients.filter(p => p.status === 'active').length : 0;
 
+  // 7. JUNTA TUDO (Substitui os '0' pelos valores reais)
   const statistics = {
     total_patients: totalPatients,
     active_patients: activePatients,
     inactive_patients: totalPatients - activePatients, 
-    sessions_in_month: 0,
-    attendance_rate: 0,
-    total_sessions: 0,
+    sessions_in_month: sessions_in_month,   
+    attendance_rate: attendance_rate,     
+    total_sessions: allSessions.length, 
   };
 
+  // 8. Resposta 
   res.json({
     success: true,
     message: 'Profissional encontrado com sucesso',
@@ -1148,6 +1203,17 @@ const getProfessionalsStats = async (req, res) => {
 };
 
 /**
+ * @route GET /api/admin/professionals/:id/stats
+ * @desc Pega estatísticas de sessões de um profissional específico
+ * @access Private (Admin)
+ */
+const getProfessionalStats = async (req, res) => {
+  const { id } = req.params;
+  const stats = await statsService.getStatsForProfessional(id);
+  res.status(200).json({ success: true, data: stats });
+};
+
+/**
  * GET /api/admin/stats/patients
  * Estatísticas gerais dos pacientes da clínica
  */
@@ -1280,6 +1346,7 @@ module.exports = {
   getProfessionalById,
   updateProfessional,
   updateProfessionalStatus,
+  getProfessionalStats, // <-- ADICIONA ESSA
   resetProfessionalPassword,
   
   // Estatísticas
