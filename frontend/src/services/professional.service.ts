@@ -10,16 +10,34 @@ export interface Patient {
   status: 'active' | 'inactive';
 }
 
-export interface PatientDetails extends Patient {
-  cpf: string;
-  phone: string;
-  email: string;
-  address: { street?: string, number?: string, city?: string } | string | null;
-  marital_status: string;
-  occupation: string;
-  first_appointment: string;
-  last_appointment: string;
-  sessions: any[];
+export interface PatientDetails {
+  id: string; 
+  user_id?: string; 
+  full_name: string; 
+  birth_date?: string | null; 
+  gender?: string | null; 
+  cpf?: string | null; 
+  rg?: string | null; 
+  phone?: string | null; 
+  email?: string | null; 
+  address?: string | null; 
+  emergency_contact?: object | null; 
+  marital_status?: string | null; 
+  occupation?: string | null; 
+  insurance_info?: object | null; 
+  status: 'active' | 'inactive'; 
+  notes?: string | null; 
+  medical_history?: string | null; 
+  current_medications?: string | null; 
+  allergies?: string | null; 
+  first_appointment?: string | null; 
+  last_appointment?: string | null;
+  metadata?: object | null; 
+  created_at?: string; 
+  updated_at?: string; 
+  deleted_at?: string | null; 
+  age?: number; 
+  sessions?: any[]; 
 }
 
 export interface CreatePatientData {
@@ -33,6 +51,23 @@ export interface CreatePatientData {
   occupation?: string;
   email?: string;
   address?: string;
+  medical_history?: string;
+  current_medications?: string;
+  allergies?: string;
+  notes?: string;
+}
+
+export interface PatientFormData {
+  full_name?: string;
+  birth_date?: string;
+  cpf?: string;
+  phone?: string;
+  gender?: string; 
+  rg?: string;
+  marital_status?: string; 
+  occupation?: string;
+  email?: string;
+  address?: string; 
   medical_history?: string;
   current_medications?: string;
   allergies?: string;
@@ -62,7 +97,7 @@ export interface SessionPayload {
 }
 
 
-// --- Funções de Pacientes (EXISTENTES) ---
+// --- Funções de Pacientes ---
 
 export const getMyPatients = async (): Promise<Patient[]> => {
   const response = await api.get('/professional/patients');
@@ -78,6 +113,36 @@ export const getPatientDetails = async (id: string): Promise<PatientDetails> => 
   console.log(`Buscando detalhes do paciente com ID: ${id}`);
   const response = await api.get(`/professional/patients/${id}`);
   return response.data.data;
+};
+
+/**
+ * Busca os detalhes de um paciente específico pelo ID.
+ */
+const getPatientById = async (id: string): Promise<Patient> => {
+  console.log(`Buscando detalhes do paciente com ID: ${id}`);
+  const response = await api.get(`/professional/patients/${id}`); 
+  return response.data.data; 
+};
+
+/**
+ * Atualiza os dados de um paciente existente.
+ * @param id - O ID do paciente a ser atualizado.
+ * @param patientData - Os novos dados do paciente (interface PatientFormData).
+ */
+const updatePatient = async (id: string, patientData: Partial<PatientFormData>): Promise<Patient> => {
+  console.log(`Enviando atualização para o paciente com ID: ${id}`, patientData);
+  // Usa a rota PUT que já existe no backend
+  const response = await api.put(`/professional/patients/${id}`, patientData);
+  return response.data.data; // Retorna o paciente atualizado
+};
+
+// Adiciona as funções novas no objeto exportado
+export const professionalService = {
+ getMyPatients, 
+  createPatient, 
+  getPatientById,
+  updatePatient,
+  getPatientDetails, 
 };
 
 
@@ -122,7 +187,7 @@ export const updateSession = async (id: string, data: Partial<SessionPayload>): 
  * Mapeia para a função 'cancelSession' do backend (que é mais segura).
  */
 export const deleteSession = async (id: string): Promise<void> => {
-  // Vamos assumir que a rota para cancelar é 'DELETE /api/professional/sessions/:id'
-  // ou 'PUT /api/professional/sessions/:id/cancel'. DELETE é mais padrão.
+  
   await api.delete(`/sessions/${id}`);
 };
+

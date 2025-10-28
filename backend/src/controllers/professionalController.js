@@ -627,6 +627,37 @@ const updatePatient = async (req, res) => {
 };
 
 /**
+ * DELETE /api/professional/patients/:id
+ * Excluir (soft delete) um paciente
+ */
+const deletePatient = async (req, res) => {
+  // O middleware 'checkResourceOwnership' já deve ter carregado
+  // o paciente em req.resource e verificado a posse.
+  const patient = req.resource; 
+
+  if (!patient) {
+    // Se o middleware não carregou, algo deu muito errado
+    throw new AppError('Paciente não encontrado ou acesso não autorizado', 404);
+  }
+
+  try {
+    // Soft delete: O Sequelize (com paranoid: true no model)
+    // só vai marcar a coluna 'deletedAt'
+    await patient.destroy(); 
+
+    // Retorna 200 OK com uma mensagem de sucesso
+    res.status(200).json({ 
+      success: true,
+      message: 'Paciente excluído com sucesso' 
+    });
+
+  } catch (error) {
+    console.error('Erro ao excluir paciente:', error);
+    throw new AppError('Erro interno ao excluir paciente', 500);
+  }
+};
+
+/**
  * PUT /api/professional/patients/:id/status
  * Alterar status do paciente
  */
@@ -1010,6 +1041,7 @@ module.exports = {
   createPatient,
   getPatientById,
   updatePatient,
+  deletePatient,
   updatePatientStatus,
   
   // Busca e filtros
