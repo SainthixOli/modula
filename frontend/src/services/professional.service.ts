@@ -109,6 +109,22 @@ export const createPatient = async (patientData: CreatePatientData) => {
   return response.data;
 };
 
+/**
+ * Atualiza o status de um paciente (ex: 'active', 'inactive').
+ * @param id - O ID do paciente.
+ * @param newStatus - O novo status ('active' ou 'inactive').
+ * @param reason - Opcional: Motivo da alteração (para auditoria).
+ */
+export const updatePatientStatus = async (id: string, newStatus: 'active' | 'inactive', reason?: string): Promise<PatientDetails> => { // Retorna os detalhes atualizados
+  console.log(`Atualizando status do paciente ${id} para ${newStatus}`);
+  const payload: { status: string; reason?: string } = { status: newStatus };
+  if (reason) {
+    payload.reason = reason;
+  }
+  const response = await api.put(`/professional/patients/${id}/status`, payload);
+  return response.data.data; // A API retorna o paciente atualizado
+};
+
 export const getPatientDetails = async (id: string): Promise<PatientDetails> => {
   console.log(`Buscando detalhes do paciente com ID: ${id}`);
   const response = await api.get(`/professional/patients/${id}`);
@@ -143,6 +159,7 @@ export const professionalService = {
   getPatientById,
   updatePatient,
   getPatientDetails, 
+  updatePatientStatus,
 };
 
 

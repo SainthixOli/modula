@@ -8,9 +8,24 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, Edit, Calendar, FileText, Activity, Phone, Mail, MapPin, User } from "lucide-react";
-import { getPatientDetails, PatientDetails } from "@/services/professional.service";
+import { getPatientDetails, PatientDetails, professionalService } from "@/services/professional.service";
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { toast } from 'sonner'; // Ou useToast
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose, 
+} from "@/components/ui/dialog"; //
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"; //
+import { Label } from "@/components/ui/label"; //
+
 
 export default function PatientDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -19,6 +34,34 @@ export default function PatientDetailPage() {
   const [patient, setPatient] = useState<PatientDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
+  const [newStatus, setNewStatus] = useState<'active' | 'inactive'>('active'); 
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+
+  const handleStatusChange = async () => {
+  if (!id || !patient) return;
+
+  setIsUpdatingStatus(true);
+  try {
+    // Chama a função do service que a gente criou
+    const updatedPatient = await professionalService.updatePatientStatus(id, newStatus /*, statusChangeReason */); 
+
+    // Atualiza o estado local pra refletir a mudança na hora!
+    setPatient(updatedPatient); 
+
+    toast.success("Status do paciente atualizado com sucesso!");
+    setIsStatusDialogOpen(false); // Fecha o dialog
+    // setStatusChangeReason(""); // Limpa o motivo se usar
+
+  } catch (err: any) {
+    console.error("Erro ao atualizar status do paciente:", err);
+    const apiErrorMessage = err.response?.data?.message || "Ocorreu um erro ao atualizar.";
+    toast.error(`Falha ao atualizar status: ${apiErrorMessage}`);
+  } finally {
+    setIsUpdatingStatus(false);
+  }
+};
 
   useEffect(() => {
     if (!id) {
@@ -103,6 +146,58 @@ export default function PatientDetailPage() {
                   Agendar
                 </Button>
                 <Button onClick={() => navigate(`/professional/patients/${patient.id}/edit`)}><Edit className="h-4 w-4 mr-2" />Editar</Button>
+              
+            <Dialog open={isStatusDialogOpen} onOpenChange={setIsStatusDialogOpen}>
+              <DialogTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setNewStatus(patient?.status === 'active' ? 'inactive' : 'active')}
+                >
+                  <Activity className="h-4 w-4 mr-2" /> 
+                  Alterar Status
+                </Button>
+              </DialogTrigger>
+
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>Alterar Status do Paciente</DialogTitle>
+                  <DialogDescription>
+                    Selecione o novo status para <strong>{patient?.full_name}</strong>. O status atual é <strong>{patient?.status === 'active' ? 'Ativo' : 'Inativo'}</strong>.
+                  </DialogDescription>
+                </DialogHeader>
+
+                <div className="grid gap-4 py-4">
+                  <RadioGroup 
+                    value={newStatus} 
+                    onValueChange={(value: 'active' | 'inactive') => setNewStatus(value)}
+                    className="space-y-2"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="active" id="status-active" />
+                      <Label htmlFor="status-active">Ativo</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="inactive" id="status-inactive" />
+                      <Label htmlFor="status-inactive">Inativo</Label>
+                    </div>
+                  </RadioGroup>
+                </div>
+
+                <DialogFooter>
+                   <DialogClose asChild>
+                     <Button type="button" variant="outline">Cancelar</Button>
+                   </DialogClose>
+                  <Button 
+                    type="button" 
+                    onClick={handleStatusChange} 
+                    disabled={isUpdatingStatus || newStatus === patient?.status} // Desabilita se for o mesmo status
+                  >
+                    {isUpdatingStatus ? "Salvando..." : "Salvar Alteração"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+            {/* ================================================================ */}
               </div>
             </div>
           </div>
