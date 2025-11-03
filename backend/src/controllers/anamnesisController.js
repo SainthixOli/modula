@@ -282,8 +282,29 @@ const createAnamnesis = async (req, res) => {
 const updateAnamnesisSection = async (req, res) => {
   const { id, sectionName } = req.params;
   const sectionData = req.body;
-  const anamnesis = req.anamnesis; // Já validado pelo middleware
+  const data = req.body;
   
+  let anamnesis = req.anamnesis; 
+  if (!anamnesis) {
+    console.log(`[updateAnamnesisSection] req.anamnesis não encontrado. Buscando manualmente...`);
+    const { Anamnesis } = require('../models');
+    anamnesis = await Anamnesis.findByPk(id);
+    
+    if (!anamnesis) {
+      throw createNotFoundError('Anamnese não encontrada');
+    }
+    
+  }
+
+  const oldData = anamnesis[sectionName] || {};
+  
+  anamnesis[sectionName] = { ...oldData, ...data }; 
+  
+  anamnesis.last_modified_section = sectionName;
+  anamnesis.changed(sectionName, true); 
+
+  await anamnesis.save();
+
   // Validar nome da seção
   const validSections = [
     'identification', 'family_history', 'medical_history',

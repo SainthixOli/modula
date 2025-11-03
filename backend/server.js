@@ -40,7 +40,7 @@ const transferRoutes = require('./src/routes/transfers');
 const notificationRoutes = require('./src/routes/notifications');
 // TODO: Importar rotas futuras
 // const patientRoutes = require('./src/routes/patient');
-// const anamnesisRoutes = require('./src/routes/anamnesis');
+const anamnesisRoutes = require('./src/routes/anamnesis');
 // const sessionRoutes = require('./src/routes/sessions');
 
 const app = express();
@@ -200,7 +200,7 @@ app.use('/api/sessions', validateToken, sessionRoutes);
 
 // TODO: MÓDULOS FUTUROS
 // app.use('/api/patients', validateToken, patientRoutes);
-// app.use('/api/anamnesis', validateToken, anamnesisRoutes);
+app.use('/api/anamnesis', validateToken, anamnesisRoutes);
 // app.use('/api/sessions', validateToken, sessionRoutes);
 
 /**

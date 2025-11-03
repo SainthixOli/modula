@@ -470,7 +470,7 @@ const createPatient = async (req, res) => {
     const patientResponse = newPatient.toJSON();
 
     await notificationTriggers.notifyNewPatient(
-    patient,
+    newPatient,
     req.userId
   );
     

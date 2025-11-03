@@ -29,6 +29,7 @@ import NotificationsPage from "./pages/professional/NotificationsPage";
 import SessionsPage from "./pages/professional/SessionsPage";
 import AuditLogsPage from "./pages/professional/AuditLogsPage";
 import BackupPage from "./pages/professional/BackupPage";
+import ViewAnamnesiPage from "./pages/professional/ViewAnamnesiPage";
 
 // Importações de Páginas do Admin
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -88,6 +89,7 @@ return (
               <Route path="/professional/sessions" element={<SessionsPage />} />
               <Route path="/professional/audit-logs" element={<AuditLogsPage />} />
               <Route path="/professional/backup" element={<BackupPage />} />
+              <Route path="/professional/patients/:patientId/view-anamnesis/:anamnesisId" element={<ViewAnamnesiPage />} />
               
               {/* Rotas do Admin */}
               <Route path="/admin/dashboard" element={<AdminDashboard />} />

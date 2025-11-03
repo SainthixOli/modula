@@ -96,6 +96,100 @@ export interface SessionPayload {
   status?: Session['status'];
 }
 
+// --- Interfaces para Anamnese ---
+
+export interface AnamnesisIdentification {
+  assessment_date?: string | Date;
+  [key: string]: any;
+}
+
+export interface AnamnesisFamilyHistory {
+  description?: string;
+  [key: string]: any;
+}
+
+interface MedicationObject {
+  name: string;
+  dose?: string;
+  frequency?: string;
+  [key: string]: any;
+}
+
+export interface AnamnesisMedicalHistory {
+  current_medications?: MedicationObject[]; 
+  [key: string]: any;
+}
+
+export interface AnamnesisPsychologicalHistory {
+  current_mood?: 'Estável' | 'Ansioso' | 'Deprimido' | 'Eufórico' | string;
+  previous_treatment_history?: string;
+  suicidal_thoughts?: 'Sim' | 'Não' | 'Não informado' | string;
+  [key: string]: any;
+}
+
+export interface AnamnesisCurrentComplaint {
+  main_complaint?: string;
+  onset?: string | object; 
+  duration?: string;
+  symptoms?: string[];
+  [key: string]: any;
+}
+
+
+export interface Anamnesis {
+  id: string;
+  patient_id: string;
+  user_id: string; // ID do profissional
+  status: 'draft' | 'completed' | string;
+  completion_percentage: number;
+  completed_at: string | null;
+  last_modified_section: string | null;
+  
+  // Seções JSONB
+  identification: AnamnesisIdentification;
+  family_history: AnamnesisFamilyHistory;
+  medical_history: AnamnesisMedicalHistory;
+  psychological_history: AnamnesisPsychologicalHistory;
+  current_complaint: AnamnesisCurrentComplaint;
+  
+  // Outras seções (pode preencher depois)
+  lifestyle: object;
+  relationships: object;
+  treatment_goals: object;
+  
+  // Campos de texto
+  professional_observations: string | null;
+  clinical_impression: string | null;
+  initial_treatment_plan: string | null;
+  
+  metadata: object;
+  revision_count: number;
+  last_auto_save: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+
+export interface CreateAnamnesisPayload {
+  patientId: string; // O backend deve converter para patient_id
+  
+  // Enviamos os objetos JSONB correspondentes ao formulário
+  identification?: AnamnesisIdentification;
+  family_history?: AnamnesisFamilyHistory;
+  medical_history?: AnamnesisMedicalHistory;
+  psychological_history?: AnamnesisPsychologicalHistory;
+  current_complaint?: AnamnesisCurrentComplaint;
+
+  // Outros campos de texto (se o seu form de criação já tiver)
+  professional_observations?: string;
+  clinical_impression?: string;
+  initial_treatment_plan?: string;
+}
+
+
+export type UpdateAnamnesisPayload = Omit<Partial<CreateAnamnesisPayload>, 'patientId'> & {
+  status?: 'draft' | 'completed';
+};
 
 // --- Funções de Pacientes ---
 
@@ -152,17 +246,6 @@ const updatePatient = async (id: string, patientData: Partial<PatientFormData>):
   return response.data.data; // Retorna o paciente atualizado
 };
 
-// Adiciona as funções novas no objeto exportado
-export const professionalService = {
- getMyPatients, 
-  createPatient, 
-  getPatientById,
-  updatePatient,
-  getPatientDetails, 
-  updatePatientStatus,
-};
-
-
 // --- Funções para a Agenda ---
 
 /**
@@ -207,4 +290,82 @@ export const deleteSession = async (id: string): Promise<void> => {
   
   await api.delete(`/sessions/${id}`);
 };
+
+// --- Funções para Anamnese ---
+
+/**
+ * 
+ * Rota: POST /api/anamnesis
+ */
+export async function createAnamnesis(data: CreateAnamnesisPayload): Promise<Anamnesis> {
+  console.log('Enviando dados da anamnese:', data);
+  const { patientId, ...restOfData } = data; 
+  const response = await api.post(`/anamnesis/patient/${patientId}`, restOfData); 
+  return response.data.data; 
+};
+
+export async function getAnamnesisByPatient(patientId: string): Promise<Anamnesis[]> {
+  console.log(`Buscando anamneses para o paciente: ${patientId}`);
+  
+  try {
+    const response = await api.get(`/anamnesis/patient/${patientId}`); 
+    
+    
+    const anamnesis = response.data.data.anamnesis; 
+
+    if (anamnesis && anamnesis.id) {
+      console.log('getAnamnesisByPatient SUCESSO, ID encontrado:', anamnesis.id);
+      return [anamnesis]; // Retorna a anamnese num array
+    }
+    
+    // Se o backend retornou 200 mas o 'data.data.anamnesis' tá zoado
+    console.error('getAnamnesisByPatient FALHOU: O objeto data.data.anamnesis está inválido.', response.data);
+    return [];
+
+  } catch (error) {
+    // Se o GET deu 404, 500, etc.
+    console.error('getAnamnesisByPatient ERRO CRÍTICO (catch):', error);
+    return [];
+  }
+};
+
+/**
+ * Rota: GET /api/anamnesis/:id
+ */
+export async function getAnamnesisById(id: string): Promise<Anamnesis> {
+  console.log(`Buscando anamnese com ID: ${id}`);
+  const response = await api.get(`/anamnesis/${id}`);
+  return response.data.data;
+};
+
+
+/**
+ * Rota: PUT /api/anamnesis/:id/section/:sectionName
+ */
+export async function updateAnamnesisSection(
+  id: string, 
+  sectionName: string, 
+  data: object 
+): Promise<Anamnesis> {
+  console.log(`Atualizando seção ${sectionName} da anamnese ${id}`, data);
+  const response = await api.put(`/anamnesis/${id}/section/${sectionName}`, data);
+  return response.data.data; // Retorna a anamnese atualizada
+};
+
+
+// Adiciona as funções novas no objeto exportado
+export const professionalService = {
+ getMyPatients, 
+  createPatient, 
+  getPatientById,
+  updatePatient,
+  getPatientDetails, 
+  updatePatientStatus,
+  createAnamnesis,
+  getAnamnesisByPatient,
+  getAnamnesisById,
+  updateAnamnesisSection,
+};
+
+
 
