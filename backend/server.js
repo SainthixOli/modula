@@ -30,6 +30,7 @@ const notificationTriggers = require('./src/services/notificationTriggers');
 // Importar middlewares personalizados
 const { errorHandler, notFound } = require('./src/middleware/errorHandler');
 const { validateToken } = require('./src/middleware/auth');
+const { collectMetrics, captureErrors } = require('./src/middleware/monitoringMiddleware');
 
 // Importar todas as rotas
 const authRoutes = require('./src/routes/auth');
@@ -40,6 +41,7 @@ const transferRoutes = require('./src/routes/transfers');
 const notificationRoutes = require('./src/routes/notifications');
 const backupRoutes = require('./src/modules/backup/routes/backupRoutes');
 const auditRoutes = require('./src/routes/audit');
+const monitoringRoutes = require('./src/routes/monitoring');
 // TODO: Importar rotas futuras
 // const patientRoutes = require('./src/routes/patient');
 const anamnesisRoutes = require('./src/routes/anamnesis');
@@ -123,6 +125,9 @@ app.use((req, res, next) => {
   next();
 });
 
+// Middleware de coleta de métricas (deve estar antes das rotas)
+app.use(collectMetrics);
+
 /**
  * ROTA DE HEALTH CHECK
  * Endpoint para verificar se o servidor está funcionando
@@ -205,6 +210,9 @@ app.use('/api/backups', backupRoutes);
 // MÓDULO DE AUDITORIA (requer token + admin)
 app.use('/api/audit', auditRoutes);
 
+// MÓDULO DE MONITORAMENTO
+app.use('/api/monitoring', monitoringRoutes);
+
 // TODO: MÓDULOS FUTUROS
 // app.use('/api/patients', validateToken, patientRoutes);
 app.use('/api/anamnesis', validateToken, anamnesisRoutes);
@@ -214,6 +222,12 @@ app.use('/api/anamnesis', validateToken, anamnesisRoutes);
  * Captura requisições para rotas inexistentes
  */
 app.use('*', notFound);
+
+/**
+ * MIDDLEWARE DE CAPTURA DE ERROS (MONITORAMENTO)
+ * Captura erros para métricas antes do handler final
+ */
+app.use(captureErrors);
 
 /**
  * MIDDLEWARE DE TRATAMENTO DE ERROS
@@ -285,6 +299,15 @@ async function startServer() {
     auditCleanupJob.start();
     console.log('✓ Audit cleanup job configurado');
 
+    // ============================================
+    // CONFIGURAR HEALTH CHECK JOB
+    // ============================================
+    
+    // Importar e iniciar job de health check
+    const healthCheckJob = require('./src/modules/monitoring/jobs/healthCheckJob');
+    healthCheckJob.start();
+    console.log('✓ Health check job configurado');
+
     // Iniciar servidor
     const server = app.listen(PORT, () => {
       console.log('🚀 ====================================');
@@ -303,6 +326,7 @@ async function startServer() {
       console.log('  ✅ Profissional (/api/professional/*)');
       console.log('  ✅ Backup (/api/backups/*)');
       console.log('  ✅ Auditoria (/api/audit/*)');
+      console.log('  ✅ Monitoramento (/api/monitoring/*)');
       console.log('  ⏳ Anamnese (em desenvolvimento)');
       console.log('  ⏳ Sessões (em desenvolvimento)');
       console.log('');
