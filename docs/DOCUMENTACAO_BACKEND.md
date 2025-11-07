@@ -1961,6 +1961,162 @@ Por semana:
 
 # 5. GUIA DE IMPLEMENTAÇÃO POR MÓDULO
 
+## 💾 MÓDULO DE BACKUP - ✅ IMPLEMENTADO
+
+### **Objetivo**
+Sistema automatizado de backup e restore do banco de dados PostgreSQL com compressão, rotação automática e gerenciamento via API.
+
+### **Arquivos Criados:**
+
+#### **`src/config/backup.js`**
+- **Responsabilidade:** Configurações centralizadas do sistema de backup
+- **Configurações:**
+  - `enabled`: Habilita/desabilita backup automático
+  - `schedule`: Cron expression (padrão: 2h da manhã)
+  - `path`: Diretório de armazenamento dos backups
+  - `retention`: Dias de retenção (padrão: 30 dias)
+  - `compression`: Configurações de compressão GZip
+  - `database`: Credenciais do PostgreSQL
+
+#### **`src/modules/backup/services/backupService.js`**
+- **Responsabilidade:** Lógica de negócio de backup e restore
+- **Métodos Implementados:**
+  - ✅ `createBackup()` - Criar backup completo com pg_dump
+  - ✅ `restoreBackup(backupName)` - Restaurar backup específico
+  - ✅ `listBackups()` - Listar todos os backups disponíveis
+  - ✅ `deleteBackup(backupName)` - Deletar backup específico
+  - ✅ `rotateBackups()` - Limpar backups antigos (30+ dias)
+  - ✅ `verifyBackup(backupName)` - Verificar integridade do backup
+  - ✅ `compressFile()` - Comprimir SQL com GZip
+  - ✅ `decompressFile()` - Descomprimir para restore
+
+#### **`src/modules/backup/controllers/backupController.js`**
+- **Responsabilidade:** Endpoints REST para gerenciamento de backups
+- **Métodos Implementados:**
+  - ✅ `createBackup()` - POST /api/backups
+  - ✅ `listBackups()` - GET /api/backups
+  - ✅ `restoreBackup()` - POST /api/backups/:name/restore
+  - ✅ `deleteBackup()` - DELETE /api/backups/:name
+  - ✅ `rotateBackups()` - POST /api/backups/rotate
+  - ✅ `verifyBackup()` - GET /api/backups/:name/verify
+
+#### **`src/modules/backup/routes/backupRoutes.js`**
+- **Responsabilidade:** Definição de rotas protegidas (admin only)
+- **Middlewares Aplicados:**
+  - ✅ `validateToken` - Autenticação JWT
+  - ✅ `authorizeAdmin` - Somente administradores
+
+#### **`src/modules/backup/jobs/backupJob.js`**
+- **Responsabilidade:** Job automático com node-cron
+- **Métodos Implementados:**
+  - ✅ `start()` - Iniciar cron job
+  - ✅ `stop()` - Parar cron job
+  - ✅ `executeNow()` - Executar backup manual
+  - ✅ `getNextExecution()` - Próxima execução agendada
+  - ✅ `isRunning()` - Status do job
+
+### **Funcionalidades Implementadas:**
+
+#### **✅ Backup Automático Diário**
+- Execução via cron job configurável
+- Padrão: Todo dia às 2h da manhã (`0 2 * * *`)
+- Logs detalhados de cada execução
+- Registro em arquivo JSON (`backup-log.json`)
+
+#### **✅ Compressão de Arquivos**
+- Algoritmo: GZip com nível 9 (máxima compressão)
+- Economia de ~80-90% de espaço em disco
+- Descompressão automática no restore
+
+#### **✅ Rotação Automática de Backups**
+- Mantém backups por 30 dias (configurável)
+- Limpeza automática após cada backup
+- Logs de quantos backups foram removidos
+
+#### **✅ Restore Point-in-Time**
+- Restauração de qualquer backup disponível
+- Suporte a backups comprimidos (.gz) e não comprimidos
+- Validação de integridade antes do restore
+
+#### **✅ Logs de Backup**
+- Arquivo `backups/backup-log.json` com histórico completo
+- Informações: nome, tamanho, timestamp, tipo, compressão
+- Rastreabilidade de todas as operações
+
+### **Endpoints da API:**
+
+```
+POST   /api/backups                   - Criar backup manual
+GET    /api/backups                   - Listar todos os backups
+POST   /api/backups/:name/restore     - Restaurar backup específico
+DELETE /api/backups/:name             - Deletar backup
+POST   /api/backups/rotate            - Rotacionar backups manualmente
+GET    /api/backups/:name/verify      - Verificar integridade
+```
+
+**Todos os endpoints requerem:**
+- ✅ Autenticação JWT válida
+- ✅ Permissão de administrador (role: 'admin')
+
+### **Configuração (Variáveis de Ambiente):**
+
+```env
+# Backup Configuration
+BACKUP_ENABLED=true                    # Habilitar backup automático
+BACKUP_SCHEDULE=0 2 * * *              # Cron: Todo dia às 2h
+BACKUP_PATH=./backups                  # Diretório de backups
+BACKUP_RETENTION_DAYS=30               # Dias de retenção
+```
+
+### **Integração com o Servidor:**
+
+Adicionado em `server.js`:
+```javascript
+const backupRoutes = require('./src/modules/backup/routes/backupRoutes');
+const backupJob = require('./src/modules/backup/jobs/backupJob');
+
+// Rotas
+app.use('/api/backups', backupRoutes);
+
+// Job automático
+backupJob.start();
+```
+
+### **Nomenclatura de Arquivos:**
+
+Padrão: `backup_YYYY-MM-DDTHH-mm-ss.sql.gz`
+
+Exemplo: `backup_2025-11-06T02-00-00.sql.gz`
+
+### **Segurança:**
+
+- ✅ Acesso restrito a administradores
+- ✅ Validação de nomes de arquivo (prevent path traversal)
+- ✅ Logs de auditoria de todas as operações
+- ✅ Senhas do banco não expostas (via PGPASSWORD)
+- ✅ Arquivos SQL temporários removidos após compressão
+
+### **Performance:**
+
+- ⚡ Compressão assíncrona (não bloqueia o servidor)
+- ⚡ Streams para arquivos grandes
+- ⚡ Rotação automática previne crescimento descontrolado
+- ⚡ Backup em horário de baixo uso (2h da manhã)
+
+### **Dependências Instaladas:**
+
+```json
+{
+  "node-cron": "^4.2.1"  // Job scheduling
+}
+```
+
+**Requisitos do Sistema:**
+- PostgreSQL com `pg_dump` e `psql` instalados
+- Permissões de escrita no diretório de backups
+
+---
+
 ## 🏢 MÓDULO ADMINISTRAÇÃO
 
 ### **Objetivo**
@@ -2792,7 +2948,7 @@ Hierarquia de erros:
 - [x] Índices para performance
 - [x] Constraints de integridade
 - [ ] Criptografia de dados sensíveis
-- [ ] Backup automatizado
+- [x] Backup automatizado
 - [ ] Auditoria de operações
 
 ### **Headers e Configurações**

@@ -37,6 +37,7 @@ const adminRoutes = require('./src/routes/admin');
 const professionalRoutes = require('./src/routes/professional');
 const transferRoutes = require('./src/routes/transfers');
 const notificationRoutes = require('./src/routes/notifications');
+const backupRoutes = require('./src/modules/backup/routes/backupRoutes');
 // TODO: Importar rotas futuras
 // const patientRoutes = require('./src/routes/patient');
 // const anamnesisRoutes = require('./src/routes/anamnesis');
@@ -194,6 +195,9 @@ app.use('/api/notifications', notificationRoutes);
 // MÓDULO DO PROFISSIONAL (requer token + profissional) 
 app.use('/api/professional', validateToken, professionalRoutes);
 
+// MÓDULO DE BACKUP (requer token + admin)
+app.use('/api/backups', backupRoutes);
+
 // TODO: MÓDULOS FUTUROS
 // app.use('/api/patients', validateToken, patientRoutes);
 // app.use('/api/anamnesis', validateToken, anamnesisRoutes);
@@ -257,6 +261,15 @@ async function startServer() {
     notificationTriggers.setupCronJobs();
     console.log('✓ Notification triggers configurados');
 
+    // ============================================
+    // CONFIGURAR BACKUP JOB
+    // ============================================
+    
+    // Importar e iniciar backup job
+    const backupJob = require('./src/modules/backup/jobs/backupJob');
+    backupJob.start();
+    console.log('✓ Backup job configurado');
+
     // Iniciar servidor
     const server = app.listen(PORT, () => {
       console.log('🚀 ====================================');
@@ -273,6 +286,7 @@ async function startServer() {
       console.log('  ✅ Autenticação (/api/auth/*)');
       console.log('  ✅ Administração (/api/admin/*)');  
       console.log('  ✅ Profissional (/api/professional/*)');
+      console.log('  ✅ Backup (/api/backups/*)');
       console.log('  ⏳ Anamnese (em desenvolvimento)');
       console.log('  ⏳ Sessões (em desenvolvimento)');
       console.log('');
