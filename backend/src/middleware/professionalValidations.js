@@ -190,7 +190,7 @@ const updatePatientSchema = Joi.object({
   rg: Joi.string().max(20).optional().allow(''),
   phone: phoneSchema.optional().allow(''),
   email: emailSchema.optional().allow(''),
-  address: addressSchema.optional(),
+  address: Joi.string().max(1000).optional().allow(null, ''),
   emergency_contact: emergencyContactSchema.optional(),
   marital_status: maritalStatusSchema.optional(),
   occupation: Joi.string().max(100).optional().allow(''),

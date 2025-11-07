@@ -14,6 +14,14 @@ export interface Professional {
   status: 'active' | 'inactive';
 }
 
+export interface ProfessionalSessionStats {
+  total: number;
+  SCHEDULED: number;
+  COMPLETED: number;
+  CANCELED: number;
+  ABSENT: number;
+}
+
 // Esta é a interface para as ESTATÍSTICAS
 export interface DashboardStats {
   professionals: {
@@ -98,6 +106,16 @@ export const getProfessionalDetails = async (id: string): Promise<ProfessionalDe
   return response.data.data;
 };
 
+  /**
+ * Busca as estatísticas de SESSÕES de um profissional específico.
+ * (Concluídas, Canceladas, Faltas, etc.)
+ */
+  export const getProfessionalSessionStats = async (id: string): Promise<ProfessionalSessionStats> => {
+    console.log(`Buscando estatísticas de SESSÃO do profissional com ID: ${id}`);
+    const response = await api.get(`/admin/professionals/${id}/stats`);
+    return response.data.data; // Isso vai retornar { total: 5, COMPLETED: 2, ... }
+  };
+
 /**
  * Reseta a senha de um profissional específico.
  */
@@ -106,5 +124,8 @@ export const resetPassword = async (professionalId: string) => {
   const response = await api.post(`/admin/professionals/${professionalId}/reset-password`, {
     sendEmail: false 
   });
+
+
+
   return response.data;
 };

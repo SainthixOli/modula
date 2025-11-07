@@ -45,7 +45,7 @@ const router = express.Router();
 // Cria automaticamente se não existir
 router.get('/patient/:patientId',
   requireProfessional,
-  validatePatientId,
+  //validatePatientId,
   checkResourceOwnership(Patient, 'patientId'),
   asyncHandler(anamnesisController.getPatientAnamnesis)
 );

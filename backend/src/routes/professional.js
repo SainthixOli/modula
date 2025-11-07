@@ -97,6 +97,16 @@ router.put('/patients/:id',
   asyncHandler(professionalController.updatePatient)
 );
 
+// DELETE /api/professional/patients/:id
+// Excluir (soft delete) um paciente específico
+// Inclui verificação de propriedade
+router.delete('/patients/:id',
+  requireProfessional,          
+  validatePatientId,            
+  checkResourceOwnership(Patient), 
+  asyncHandler(professionalController.deletePatient) 
+);
+
 // PUT /api/professional/patients/:id/status
 // Alterar status do paciente (ativo/inativo/alta/transferido)
 // Body: { status: string, reason?: string }

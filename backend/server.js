@@ -35,12 +35,13 @@ const { validateToken } = require('./src/middleware/auth');
 const authRoutes = require('./src/routes/auth');
 const adminRoutes = require('./src/routes/admin');
 const professionalRoutes = require('./src/routes/professional');
+const sessionRoutes = require('./src/routes/sessions');
 const transferRoutes = require('./src/routes/transfers');
 const notificationRoutes = require('./src/routes/notifications');
 const backupRoutes = require('./src/modules/backup/routes/backupRoutes');
 // TODO: Importar rotas futuras
 // const patientRoutes = require('./src/routes/patient');
-// const anamnesisRoutes = require('./src/routes/anamnesis');
+const anamnesisRoutes = require('./src/routes/anamnesis');
 // const sessionRoutes = require('./src/routes/sessions');
 
 const app = express();
@@ -195,13 +196,15 @@ app.use('/api/notifications', notificationRoutes);
 // MÓDULO DO PROFISSIONAL (requer token + profissional) 
 app.use('/api/professional', validateToken, professionalRoutes);
 
+// MÓDULO DE SESSÕES (requer token)
+app.use('/api/sessions', validateToken, sessionRoutes);
+
 // MÓDULO DE BACKUP (requer token + admin)
 app.use('/api/backups', backupRoutes);
 
 // TODO: MÓDULOS FUTUROS
 // app.use('/api/patients', validateToken, patientRoutes);
-// app.use('/api/anamnesis', validateToken, anamnesisRoutes);
-// app.use('/api/sessions', validateToken, sessionRoutes);
+app.use('/api/anamnesis', validateToken, anamnesisRoutes);
 
 /**
  * MIDDLEWARE DE ROTAS NÃO ENCONTRADAS

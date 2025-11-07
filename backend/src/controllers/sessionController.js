@@ -51,7 +51,7 @@ const createSession = async (req, res) => {
   }
 
   // Construir datetime completo
-  const sessionDateTime = new Date(`${session_date}T${session_time}`);
+  const sessionDateTime = new Date(session_date);
 
   // Calcular session_number sequencial
   const lastSession = await Session.findOne({
@@ -86,7 +86,7 @@ const createSession = async (req, res) => {
     include: [
       {
         model: Patient,
-        as: 'patient',
+        as: 'Patient',
         attributes: ['id', 'full_name', 'phone', 'email']
       }
     ]
@@ -132,7 +132,7 @@ const listSessions = async (req, res) => {
     include: [
       {
         model: Patient,
-        as: 'patient',
+        as: 'Patient',
         attributes: ['id', 'full_name', 'phone', 'email', 'status']
       }
     ]

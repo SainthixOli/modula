@@ -1,17 +1,14 @@
 /**
  * MÓDULA - VALIDAÇÕES DE ANAMNESE
- * 
- * Middlewares de validação específicos para o sistema de anamnese digital.
+ * * Middlewares de validação específicos para o sistema de anamnese digital.
  * Validações inteligentes por seção, contextuais e com feedback detalhado.
- * 
- * Validações implementadas:
+ * * Validações implementadas:
  * - Criação e atualização de anamneses
  * - Validações específicas por seção
  * - Auto-save com controle de conflitos
  * - Templates e estrutura de dados
  * - Query parameters para listagem
- * 
- */
+ * */
 
 const Joi = require('joi');
 const { createValidationError } = require('./errorHandler');
@@ -80,8 +77,15 @@ const identificationSchema = Joi.object({
     relationship: Joi.string().max(50).optional(),
     phone: Joi.string().pattern(/^\d{10,11}$/).optional(),
     email: Joi.string().email().optional()
-  }).optional()
-}).options({ stripUnknown: true });
+  }).optional(),
+
+  // --- CORREÇÃO ADICIONADA ---
+  // Aceita o campo 'assessment_date' (Data da Avaliação) que o form manda
+  assessment_date: Joi.date().optional().allow(null, '') 
+
+}).options({ stripUnknown: true }); // MUDADO DE 'stripUnknown' PARA 'unknown(true)'
+// -> Na verdade, .options({ stripUnknown: true }) JÁ ESTÁ CORRETO. Ele remove campos desconhecidos.
+//    O que a gente precisa é ADICIONAR os campos que o form manda.
 
 // Schema para História Familiar
 const familyHistorySchema = Joi.object({
@@ -123,7 +127,13 @@ const familyHistorySchema = Joi.object({
   ).optional(),
   
   genetic_conditions: Joi.array().items(Joi.string().max(100)).optional(),
-  family_dynamics: Joi.string().max(1000).optional().allow('')
+  family_dynamics: Joi.string().max(1000).optional().allow(''),
+
+  // --- CORREÇÃO ADICIONADA ---
+  // Aceita o campo 'description' (História Familiar) que o form (f2) manda
+  description: Joi.string().optional().allow(''),
+  // O 'mapFormToApi' também manda 'relevant_conditions', vamos garantir
+  relevant_conditions: Joi.array().items(Joi.string()).optional()
   
 }).options({ stripUnknown: true });
 
@@ -155,6 +165,7 @@ const medicalHistorySchema = Joi.object({
     })
   ).optional(),
   
+  // (Este já estava certo, aceitando array de objetos)
   current_medications: Joi.array().items(
     Joi.object({
       name: Joi.string().max(200).required(),
@@ -241,7 +252,25 @@ const psychologicalHistorySchema = Joi.object({
       impact: Joi.string().valid('leve', 'moderado', 'grave').optional(),
       treatment_received: Joi.boolean().optional()
     })
-  ).optional()
+  ).optional(),
+
+  // --- CORREÇÕES ADICIONADAS ---
+  // Aceita os campos simples que o form (f3, f5, f7) manda
+
+  // (Humor Atual)
+  current_mood: Joi.string().valid(
+    'stable', 'anxious', 'depressed', 'euphoric', 'irritable', 'other',
+    'Estável', 'Ansioso', 'Deprimido', 'Eufórico' // Aceita PT-BR
+  ).optional().allow(''),
+
+  // (Pensamentos Suicidas)
+  suicidal_thoughts: Joi.string().valid(
+    'yes', 'no', 'past', 'ideation_only', 'not_informed',
+    'Sim', 'Não', 'Não informado' // Aceita PT-BR
+  ).optional().allow(''),
+
+  // (Histórico de Tratamentos Anteriores)
+  previous_treatment_history: Joi.string().optional().allow('')
   
 }).options({ stripUnknown: true });
 
@@ -290,8 +319,12 @@ const currentComplaintSchema = Joi.object({
   ).optional(),
   
   what_helps: Joi.string().max(500).optional().allow(''),
-  what_worsens: Joi.string().max(500).optional().allow('')
+  what_worsens: Joi.string().max(500).optional().allow(''),
   
+  // --- CORREÇÃO ADICIONADA ---
+  // O mapFormToApi manda 'duration'
+  duration: Joi.string().optional().allow('')
+
 }).options({ stripUnknown: true });
 
 // Schema para Estilo de Vida
@@ -772,45 +805,44 @@ module.exports = {
 
 /**
  * DOCUMENTAÇÃO DE USO:
- * 
- * 1. VALIDAÇÃO POR SEÇÃO:
- *    - Cada seção tem seu schema específico
- *    - Validações contextuais baseadas no paciente
- *    - Seções críticas têm validação mais rigorosa
- * 
- * 2. AUTO-SAVE INTELIGENTE:
- *    - Detecta conflitos temporais
- *    - Valida integridade dos dados
- *    - Controle de versioning básico
- * 
- * 3. VALIDAÇÃO CONDICIONAL:
- *    - Por idade do paciente
- *    - Por contexto clínico
- *    - Por completude mínima
- * 
- * 4. SCHEMAS FLEXÍVEIS:
- *    - Permitem campos opcionais
- *    - Validação progressiva
- *    - Estruturas aninhadas complexas
- * 
- * EXEMPLO DE USO:
- * 
- * // Validação de seção crítica
+ 
+* * 1. VALIDAÇÃO POR SEÇÃO:
+ * - Cada seção tem seu schema específico
+ * - Validações contextuais baseadas no paciente
+ * - Seções críticas têm validação mais rigorosa
+
+* * 2. AUTO-SAVE INTELIGENTE:
+ * - Detecta conflitos temporais
+ * - Valida integridade dos dados
+ * - Controle de versioning básico
+ 
+* * 3. VALIDAÇÃO CONDICIONAL:
+ * - Por idade do paciente
+ * - Por contexto clínico
+ * - Por completude mínima
+ 
+* * 4. SCHEMAS FLEXÍVEIS:
+ * - Permitem campos opcionais
+ * - Validação progressiva
+ * - Estruturas aninhadas complexas
+ * * EXEMPLO DE USO:
+ 
+* * // Validação de seção crítica
  * router.put('/:id/section/:sectionName',
- *   requireProfessional,
- *   validateAnamnesisId,
- *   validateSectionName,
- *   validateByPatientAge,        // Validação contextual
- *   validateUpdateSection,       // Validação da estrutura
- *   asyncHandler(controller.updateSection)
+ * requireProfessional,
+ * validateAnamnesisId,
+ * validateSectionName,
+ * validateByPatientAge,        // Validação contextual
+ * validateUpdateSection,       // Validação da estrutura
+ * asyncHandler(controller.updateSection)
  * );
- * 
- * // Auto-save com controle de conflitos
+ 
+* * // Auto-save com controle de conflitos
  * router.post('/:id/auto-save',
- *   requireProfessional,
- *   validateAnamnesisId,
- *   validateAutoSaveConflicts,   // Detectar conflitos
- *   validateAutoSave,           // Validar dados
- *   asyncHandler(controller.autoSave)
+ * requireProfessional,
+ * validateAnamnesisId,
+ * validateAutoSaveConflicts,   // Detectar conflitos
+ * validateAutoSave,           // Validar dados
+ * asyncHandler(controller.autoSave)
  * );
  */

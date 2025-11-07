@@ -42,7 +42,9 @@ export const login = async (email, password) => {
 
   if (data?.tokens?.access_token) {
     const { access_token } = data.tokens;
+    const { user } = data;
     localStorage.setItem('authToken', access_token);
+    localStorage.setItem('userType', user.user_type);
     window.dispatchEvent(new Event("authChange"));
     console.log('Login realizado, token salvo e evento "authChange" disparado!');
     return data.user;
@@ -57,6 +59,7 @@ export const login = async (email, password) => {
 export const logout = () => {
   console.log('Executando serviço de logout...');
   localStorage.removeItem('authToken');
+  localStorage.removeItem('userType');
   window.dispatchEvent(new Event("authChange"));
   console.log('Logout realizado, token removido e evento "authChange" disparado!');
 };
