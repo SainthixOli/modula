@@ -5,6 +5,7 @@
  */
 
 const backupService = require('../services/backupService');
+const auditService = require('../../../services/auditService');
 
 class BackupController {
   /**
@@ -16,6 +17,9 @@ class BackupController {
       console.log(`[BackupController] Backup manual solicitado por usuário ${req.user.id}`);
       
       const backup = await backupService.createBackup();
+
+      // Registrar auditoria
+      await auditService.logBackup(req, backup, 'Backup manual criado');
 
       res.status(201).json({
         success: true,
@@ -58,6 +62,9 @@ class BackupController {
       console.log(`[BackupController] Restauração solicitada por usuário ${req.user.id}: ${name}`);
       
       const result = await backupService.restoreBackup(name);
+
+      // Registrar auditoria
+      await auditService.logRestore(req, name, `Backup ${name} restaurado`);
 
       res.json({
         success: true,

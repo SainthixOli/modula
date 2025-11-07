@@ -2117,6 +2117,239 @@ Exemplo: `backup_2025-11-06T02-00-00.sql.gz`
 
 ---
 
+## 🔍 MÓDULO DE AUDITORIA LGPD (ISSUE #20) - ✅ IMPLEMENTADO
+
+### **Objetivo**
+Sistema completo de logs de auditoria para compliance com LGPD, registrando todas as operações sensíveis realizadas no sistema.
+
+### **Compliance LGPD:**
+- **Art. 37:** Responsável pelo tratamento deve manter registros das operações
+- **Art. 48:** Comunicação ao titular sobre uso de seus dados
+- **Retenção:** 90 dias (configurável) conforme necessidade legal
+
+### **Arquivos Criados:**
+
+#### **`src/models/AuditLog.js`**
+- **Responsabilidade:** Modelo de dados para logs de auditoria
+- **Campos Principais:**
+  - `id`, `user_id`, `user_email`, `user_name`, `user_role`
+  - `action` (CREATE, READ, UPDATE, DELETE, LOGIN, etc)
+  - `resource` (user, patient, session, backup, etc)
+  - `resource_id`, `old_data`, `new_data`
+  - `ip_address`, `user_agent`
+  - `status` (success, failure, error)
+  - `description`, `metadata`
+  - `retention_until` (para LGPD)
+  - `created_at`
+- **Índices:** 9 índices para otimização de consultas
+- **Métodos Estáticos:**
+  - ✅ `log()` - Criar log simplificado
+  - ✅ `findLogs()` - Buscar logs com filtros
+  - ✅ `cleanExpiredLogs()` - Limpar logs expirados
+  - ✅ `getStats()` - Estatísticas de auditoria
+
+#### **`src/services/auditService.js`**
+- **Responsabilidade:** Lógica de negócio de auditoria
+- **Métodos Implementados:**
+  - ✅ `logAction()` - Registrar ação genérica
+  - ✅ `logCreate()` - Registrar criação de recurso
+  - ✅ `logUpdate()` - Registrar atualização
+  - ✅ `logDelete()` - Registrar exclusão
+  - ✅ `logAccess()` - Registrar acesso a dado sensível
+  - ✅ `logLogin()` - Registrar login bem-sucedido
+  - ✅ `logLoginFailed()` - Registrar tentativa falhada
+  - ✅ `logLogout()` - Registrar logout
+  - ✅ `logPasswordReset()` - Registrar reset de senha
+  - ✅ `logPasswordChanged()` - Registrar mudança de senha
+  - ✅ `logExport()` - Registrar exportação de dados
+  - ✅ `logTransfer()` - Registrar transferência
+  - ✅ `logBackup()` - Registrar backup
+  - ✅ `logRestore()` - Registrar restore
+  - ✅ `logAccessDenied()` - Registrar acesso negado
+  - ✅ `getLogs()` - Buscar logs com filtros
+  - ✅ `getStats()` - Obter estatísticas
+  - ✅ `cleanExpiredLogs()` - Limpar logs expirados
+  - ✅ `sanitizeData()` - Remover dados sensíveis
+  - ✅ `generateReport()` - Gerar relatório de auditoria
+
+#### **`src/middleware/auditMiddleware.js`**
+- **Responsabilidade:** Interceptar requisições para auditoria automática
+- **Middlewares Disponíveis:**
+  - ✅ `auditMiddleware()` - Middleware genérico
+  - ✅ `auditCreate()` - Para operações CREATE
+  - ✅ `auditRead()` - Para operações READ sensíveis
+  - ✅ `auditUpdate()` - Para operações UPDATE
+  - ✅ `auditDelete()` - Para operações DELETE
+  - ✅ `auditExport()` - Para exportações
+  - ✅ `auditAccessDenied()` - Para acessos negados
+
+#### **`src/controllers/auditController.js`**
+- **Responsabilidade:** Endpoints para consulta de logs
+- **Métodos Implementados:**
+  - ✅ `getLogs()` - GET /api/audit/logs
+  - ✅ `getLogById()` - GET /api/audit/logs/:id
+  - ✅ `getStats()` - GET /api/audit/stats
+  - ✅ `generateReport()` - GET /api/audit/report
+  - ✅ `getUserLogs()` - GET /api/audit/user/:userId
+  - ✅ `getResourceLogs()` - GET /api/audit/resource/:resource/:resourceId
+  - ✅ `cleanExpiredLogs()` - POST /api/audit/clean
+  - ✅ `getActions()` - GET /api/audit/actions
+  - ✅ `getResources()` - GET /api/audit/resources
+
+#### **`src/routes/audit.js`**
+- **Responsabilidade:** Rotas protegidas para admins
+- **Autenticação:** JWT obrigatório
+- **Autorização:** Somente role 'admin'
+
+#### **`src/modules/audit/jobs/auditCleanupJob.js`**
+- **Responsabilidade:** Job de limpeza automática de logs expirados
+- **Schedule:** Todo dia às 3h da manhã (após backup)
+- **Métodos:**
+  - ✅ `start()` - Iniciar cron job
+  - ✅ `stop()` - Parar job
+  - ✅ `executeNow()` - Executar limpeza manual
+  - ✅ `getInfo()` - Informações do job
+
+### **Funcionalidades Implementadas:**
+
+#### **✅ Log de Todas as Operações Sensíveis**
+- Criação, leitura, atualização e exclusão de recursos
+- Tentativas de login (sucesso e falha)
+- Mudanças de senha e resets
+- Exportações de dados
+- Transferências de pacientes
+- Backups e restores
+- Acessos negados
+
+#### **✅ Identificação do Usuário e Timestamp**
+- ID, email, nome e role do usuário
+- IP de origem
+- User agent do navegador
+- Timestamp preciso (created_at)
+
+#### **✅ Dados Antes/Depois de Alterações**
+- `old_data`: Estado anterior (UPDATE/DELETE)
+- `new_data`: Estado novo (CREATE/UPDATE)
+- Sanitização automática de senhas e tokens
+
+#### **✅ Retenção Apropriada de Logs**
+- Padrão: 90 dias (LGPD mínimo)
+- Configurável via `AUDIT_RETENTION_DAYS`
+- Backups e restores: 365 dias (maior retenção)
+- Limpeza automática diária
+
+#### **✅ Interface para Consulta de Logs**
+- Filtros: usuário, ação, recurso, status, período
+- Paginação e ordenação
+- Busca por recurso específico
+- Estatísticas agregadas
+- Geração de relatórios
+
+### **Endpoints da API:**
+
+```
+GET    /api/audit/logs                           - Listar logs (com filtros)
+GET    /api/audit/logs/:id                       - Detalhes de um log
+GET    /api/audit/stats                          - Estatísticas
+GET    /api/audit/report                         - Gerar relatório
+GET    /api/audit/user/:userId                   - Logs de usuário
+GET    /api/audit/resource/:resource/:resourceId - Logs de recurso
+POST   /api/audit/clean                          - Limpar logs expirados
+GET    /api/audit/actions                        - Listar ações disponíveis
+GET    /api/audit/resources                      - Listar recursos disponíveis
+```
+
+**Todos os endpoints requerem:**
+- ✅ Autenticação JWT válida
+- ✅ Permissão de administrador (role: 'admin')
+
+### **Tipos de Ações Registradas:**
+
+- `CREATE` - Criação de recurso
+- `READ` - Leitura de dado sensível
+- `UPDATE` - Atualização de recurso
+- `DELETE` - Exclusão de recurso
+- `LOGIN` - Login bem-sucedido
+- `LOGOUT` - Logout
+- `LOGIN_FAILED` - Tentativa de login falhada
+- `PASSWORD_RESET` - Reset de senha
+- `PASSWORD_CHANGED` - Mudança de senha
+- `EXPORT` - Exportação de dados
+- `TRANSFER` - Transferência de paciente
+- `BACKUP` - Criação de backup
+- `RESTORE` - Restauração de backup
+- `ACCESS_DENIED` - Acesso negado
+
+### **Recursos Auditados:**
+
+- `user` - Usuários do sistema
+- `patient` - Pacientes
+- `session` - Sessões terapêuticas
+- `anamnesis` - Anamneses
+- `transfer` - Transferências
+- `notification` - Notificações
+- `backup` - Backups
+- `system` - Operações do sistema
+
+### **Configuração (Variáveis de Ambiente):**
+
+```env
+# Auditoria LGPD
+AUDIT_RETENTION_DAYS=90                # Dias de retenção (padrão: 90)
+AUDIT_CLEANUP_ENABLED=true             # Limpeza automática
+AUDIT_CLEANUP_SCHEDULE=0 3 * * *       # Cron: Todo dia às 3h
+```
+
+### **Integração com o Sistema:**
+
+Adicionado em `server.js`:
+```javascript
+const auditRoutes = require('./src/routes/audit');
+const auditCleanupJob = require('./src/modules/audit/jobs/auditCleanupJob');
+
+// Rotas
+app.use('/api/audit', auditRoutes);
+
+// Job de limpeza
+auditCleanupJob.start();
+```
+
+### **Integração com Módulos Existentes:**
+
+- ✅ **Backup Controller:** Logs de backup/restore integrados
+- ✅ **Auth (futuro):** Login, logout, mudança de senha
+- ✅ **Admin (futuro):** Operações CRUD de usuários
+- ✅ **Professional (futuro):** Operações com pacientes
+
+### **Segurança:**
+
+- ✅ Acesso restrito a administradores
+- ✅ Sanitização automática de dados sensíveis (senhas, tokens)
+- ✅ Validação de entrada em todos os endpoints
+- ✅ Logs de auditoria imutáveis (sem UPDATE)
+- ✅ Registro de IP e user agent para rastreabilidade
+- ✅ Proteção contra path traversal e SQL injection
+
+### **Performance:**
+
+- ⚡ 9 índices otimizados para consultas comuns
+- ⚡ Índices compostos para filtros múltiplos
+- ⚡ JSONB para armazenamento eficiente de metadados
+- ⚡ Paginação em todas as consultas
+- ⚡ Limpeza automática previne crescimento descontrolado
+
+### **LGPD Compliance:**
+
+- ✅ Registro de todas as operações com dados pessoais
+- ✅ Identificação clara de quem acessou/modificou
+- ✅ Timestamp preciso de cada operação
+- ✅ Retenção configurável conforme necessidade legal
+- ✅ Remoção automática após período de retenção
+- ✅ Rastreabilidade completa para auditorias
+- ✅ Relatórios para prestação de contas
+
+---
+
 ## 🏢 MÓDULO ADMINISTRAÇÃO
 
 ### **Objetivo**

@@ -39,10 +39,10 @@ const sessionRoutes = require('./src/routes/sessions');
 const transferRoutes = require('./src/routes/transfers');
 const notificationRoutes = require('./src/routes/notifications');
 const backupRoutes = require('./src/modules/backup/routes/backupRoutes');
+const auditRoutes = require('./src/routes/audit');
 // TODO: Importar rotas futuras
 // const patientRoutes = require('./src/routes/patient');
 const anamnesisRoutes = require('./src/routes/anamnesis');
-// const sessionRoutes = require('./src/routes/sessions');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -202,6 +202,9 @@ app.use('/api/sessions', validateToken, sessionRoutes);
 // MÓDULO DE BACKUP (requer token + admin)
 app.use('/api/backups', backupRoutes);
 
+// MÓDULO DE AUDITORIA (requer token + admin)
+app.use('/api/audit', auditRoutes);
+
 // TODO: MÓDULOS FUTUROS
 // app.use('/api/patients', validateToken, patientRoutes);
 app.use('/api/anamnesis', validateToken, anamnesisRoutes);
@@ -273,6 +276,15 @@ async function startServer() {
     backupJob.start();
     console.log('✓ Backup job configurado');
 
+    // ============================================
+    // CONFIGURAR AUDIT CLEANUP JOB
+    // ============================================
+    
+    // Importar e iniciar job de limpeza de logs
+    const auditCleanupJob = require('./src/modules/audit/jobs/auditCleanupJob');
+    auditCleanupJob.start();
+    console.log('✓ Audit cleanup job configurado');
+
     // Iniciar servidor
     const server = app.listen(PORT, () => {
       console.log('🚀 ====================================');
@@ -290,6 +302,7 @@ async function startServer() {
       console.log('  ✅ Administração (/api/admin/*)');  
       console.log('  ✅ Profissional (/api/professional/*)');
       console.log('  ✅ Backup (/api/backups/*)');
+      console.log('  ✅ Auditoria (/api/audit/*)');
       console.log('  ⏳ Anamnese (em desenvolvimento)');
       console.log('  ⏳ Sessões (em desenvolvimento)');
       console.log('');
