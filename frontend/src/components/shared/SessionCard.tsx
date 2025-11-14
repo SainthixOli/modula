@@ -71,9 +71,9 @@ export const SessionCard = ({ session, opacity = false }: SessionCardProps) => {
               </div>
             </div>
             
-            {(session.session_notes || session.notes) && (
+            {session.notes && (
               <p className="text-sm text-muted-foreground mt-3 italic">
-                {session.session_notes || session.notes}
+                {session.notes}
               </p>
             )}
           </div>

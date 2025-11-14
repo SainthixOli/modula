@@ -51,7 +51,7 @@ const SessionsPage = () => {
   // Filtra sessões por busca
   const filteredSessions = sessions.filter(session => {
     const patientData = session.Patient || session.patient;
-    const notesData = session.session_notes || session.notes;
+    const notesData = session.notes;
     return patientData?.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
            notesData?.toLowerCase().includes(searchQuery.toLowerCase());
   });
