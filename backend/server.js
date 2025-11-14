@@ -52,6 +52,7 @@ const { collectMetrics, captureErrors } = require('./src/middleware/monitoringMi
 // Importar todas as rotas
 const authRoutes = require('./src/routes/auth');
 const adminRoutes = require('./src/routes/admin');
+const dashboardRoutes = require('./src/routes/dashboard');
 const professionalRoutes = require('./src/routes/professional');
 const sessionRoutes = require('./src/routes/sessions');
 const transferRoutes = require('./src/routes/transfers');
@@ -246,11 +247,14 @@ app.use('/api/auth', authRoutes);
 // MÓDULO DE ADMINISTRAÇÃO (requer token + admin)
 app.use('/api/admin', validateToken, adminRoutes);
 
-// Rotas de transferências
-app.use('/api/transfers', transferRoutes);
+// MÓDULO DE DASHBOARD (requer token + admin)
+app.use('/api/dashboard', dashboardRoutes);
 
-// Rotas de notificações
-app.use('/api/notifications', notificationRoutes);
+// Rotas de transferências (requer token)
+app.use('/api/transfers', validateToken, transferRoutes);
+
+// Rotas de notificações (requer token)
+app.use('/api/notifications', validateToken, notificationRoutes);
 
 // Nota: As rotas admin já estão incluídas no arquivo notifications.js
 // com o prefixo /admin, então:

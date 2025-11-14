@@ -102,6 +102,8 @@ return (
               <Route path="/admin/transfers" element={<TransfersPage />} />
               <Route path="/admin/monitoring" element={<MonitoringPage />} />
               <Route path="/admin/notifications" element={<NotificationsAdminPage />} />
+              <Route path="/admin/audit-logs" element={<AuditLogsPage />} />
+              <Route path="/admin/backup" element={<BackupPage />} />
             </Route>
 
             {/* Rota "Catch-all" para página não encontrada */}

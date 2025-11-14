@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Users, TrendingUp, Activity, Calendar as CalendarIcon, ChevronDown, MoreVertical } from "lucide-react";
+import { Users, TrendingUp, Activity, Calendar as CalendarIcon, ChevronDown, MoreVertical, Loader2 } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -16,29 +16,35 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { getProfessionalDashboard, ProfessionalDashboardStats } from "@/services/professional.service";
+import { useToast } from "@/hooks/use-toast";
 
 export default function ProfessionalDashboard() {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [selectedFilter, setSelectedFilter] = useState("Hoje");
-  
-  // Mock data - substituir por chamadas reais à API
-  const stats = {
-    visitsToday: 104,
-    newPatients: { value: 40, trend: 51 },
-    oldPatients: { value: 64, trend: -20 },
-    totalPatients: 104,
-  };
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState<ProfessionalDashboardStats | null>(null);
+  const { toast } = useToast();
 
-  const todayPatients = [
-    { id: "1", name: "Stacy Mitchell", schedule: "Visita Semanal", time: "9h15" },
-    { id: "2", name: "Amy Dunham", schedule: "Verificação de rotina", time: "9h30" },
-    { id: "3", name: "Demi Joan", schedule: "Relatório", time: "9h50" },
-    { id: "4", name: "Susan Myers", schedule: "Visita Semanal", time: "10h15" },
-  ];
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const dashboardData = await getProfessionalDashboard();
+        setStats(dashboardData);
+      } catch (error) {
+        console.error('Erro ao carregar dashboard:', error);
+        toast({
+          title: 'Erro',
+          description: 'Não foi possível carregar os dados do dashboard',
+          variant: 'destructive',
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const upcomingEvents = [
-    { title: "Encontro mensal de médicos", date: "8 de outubro de 2025 | 16h00" },
-  ];
+    fetchData();
+  }, [toast]);
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -53,33 +59,33 @@ export default function ProfessionalDashboard() {
             Bom dia <span className="text-primary">Dr. Oliver!</span>
           </h1>
 
+          {loading ? (
+            <div className="flex items-center justify-center h-64">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : stats ? (
+            <>
           {/* Main Stats Card */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
             <Card className="lg:col-span-2 bg-gradient-to-br from-primary via-secondary to-accent text-white border-0">
               <CardContent className="p-6">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <p className="text-white/80 text-sm mb-2">Visitas para hoje</p>
-                    <h2 className="text-5xl font-bold mb-6">{stats.visitsToday}</h2>
+                    <p className="text-white/80 text-sm mb-2">Sessões para hoje</p>
+                    <h2 className="text-5xl font-bold mb-6">{stats.todaySessions || 0}</h2>
                     
                     <div className="grid grid-cols-2 gap-4">
                       <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
-                        <p className="text-white/80 text-sm mb-1">Novos Pacientes</p>
+                        <p className="text-white/80 text-sm mb-1">Total de Pacientes</p>
                         <div className="flex items-baseline gap-2">
-                          <span className="text-2xl font-bold">{stats.newPatients.value}</span>
-                          <Badge className="bg-green-500/20 text-green-300 border-0">
-                            +{stats.newPatients.trend}%
-                          </Badge>
+                          <span className="text-2xl font-bold">{stats.totalPatients || 0}</span>
                         </div>
                       </div>
                       
                       <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
-                        <p className="text-white/80 text-sm mb-1">Antigos Pacientes</p>
+                        <p className="text-white/80 text-sm mb-1">Pacientes Ativos</p>
                         <div className="flex items-baseline gap-2">
-                          <span className="text-2xl font-bold">{stats.oldPatients.value}</span>
-                          <Badge className="bg-red-500/20 text-red-300 border-0">
-                            {stats.oldPatients.trend}%
-                          </Badge>
+                          <span className="text-2xl font-bold">{stats.activePatients || 0}</span>
                         </div>
                       </div>
                     </div>
@@ -112,18 +118,26 @@ export default function ProfessionalDashboard() {
                 />
                 
                 <div className="mt-4">
-                  <h4 className="font-semibold mb-2 text-sm">Chegando</h4>
-                  {upcomingEvents.map((event, index) => (
-                    <div key={index} className="flex gap-3 p-3 rounded-lg bg-primary/5">
-                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                        <span className="text-sm font-medium text-primary">M</span>
+                  <h4 className="font-semibold mb-2 text-sm">Próximas Sessões</h4>
+                  {stats.upcomingSessions && stats.upcomingSessions.length > 0 ? (
+                    stats.upcomingSessions.slice(0, 3).map((session: any, index: number) => (
+                      <div key={index} className="flex gap-3 p-3 rounded-lg bg-primary/5 mb-2">
+                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                          <span className="text-sm font-medium text-primary">
+                            {session.patient_name?.charAt(0) || 'P'}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium">{session.patient_name || 'Paciente'}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(session.date).toLocaleDateString('pt-BR')} às {session.time || ''}
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-sm font-medium">{event.title}</p>
-                        <p className="text-xs text-muted-foreground">{event.date}</p>
-                      </div>
-                    </div>
-                  ))}
+                    ))
+                  ) : (
+                    <p className="text-xs text-muted-foreground">Nenhuma sessão agendada</p>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -149,9 +163,32 @@ export default function ProfessionalDashboard() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-3">
-                {todayPatients.map((patient) => (
-                  <PatientCard key={patient.id} {...patient} />
-                ))}
+                {stats.recentPatients && stats.recentPatients.length > 0 ? (
+                  stats.recentPatients.slice(0, 4).map((patient: any) => (
+                    <div key={patient.id} className="flex items-center justify-between p-3 rounded-lg border">
+                      <div className="flex items-center gap-3">
+                        <Avatar>
+                          <AvatarFallback>
+                            {patient.full_name?.charAt(0) || 'P'}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="font-medium text-sm">{patient.full_name}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {patient.age ? `${patient.age} anos` : 'Idade não informada'}
+                          </p>
+                        </div>
+                      </div>
+                      <Badge variant={patient.status === 'active' ? 'default' : 'secondary'}>
+                        {patient.status === 'active' ? 'Ativo' : 'Inativo'}
+                      </Badge>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-muted-foreground text-center py-4">
+                    Nenhum paciente registrado
+                  </p>
+                )}
               </CardContent>
             </Card>
 
@@ -220,6 +257,12 @@ export default function ProfessionalDashboard() {
               </CardContent>
             </Card>
           </div>
+          </>
+          ) : (
+            <div className="text-center text-muted-foreground">
+              Nenhum dado disponível
+            </div>
+          )}
         </main>
       </div>
     </div>

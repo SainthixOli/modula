@@ -78,6 +78,11 @@ export default function CalendarPage() {
         getSessions(firstDay, lastDay),
         getMyPatients(),
       ]);
+      
+      console.log('📅 Sessões carregadas:', sessionData);
+      console.log('📆 Período:', { firstDay, lastDay });
+      console.log('📍 Data selecionada:', currentDate);
+      
       setSessions(sessionData || []);
       setPatients(patientData || []);
     } catch (error) {
@@ -106,11 +111,40 @@ const handleSubmit = async () => {
       return;
     }
 
-    const [hour, minute] = formData.time.split(':').map(Number);
-    const sessionDateTime = set(formData.date, { hours: hour, minutes: minute }).toISOString();
+    // Validar formato do horário (HH:MM em 24h)
+    const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+    if (!timeRegex.test(formData.time)) {
+      toast.error("Formato de horário inválido. Use formato 24h (ex: 14:30)");
+      return;
+    }
 
-    if (!editingSession && isBefore(new Date(sessionDateTime), startOfToday())) {
-        toast.error("Data da sessão não pode ser no passado.");
+    const [hour, minute] = formData.time.split(':').map(Number);
+    
+    // Validar hora e minuto
+    if (isNaN(hour) || isNaN(minute) || hour < 0 || hour > 23 || minute < 0 || minute > 59) {
+      toast.error("Horário inválido. Use formato 24h (ex: 14:30). Hora: 00-23, Minutos: 00-59");
+      return;
+    }
+
+    // Criar datetime combinando data e hora
+    const sessionDateTime = set(formData.date, { 
+      hours: hour, 
+      minutes: minute,
+      seconds: 0,
+      milliseconds: 0
+    });
+
+    console.log('📝 Dados do formulário:', {
+      date: formData.date,
+      time: formData.time,
+      sessionDateTime: sessionDateTime.toISOString(),
+      hour,
+      minute
+    });
+
+    // Validar se não está no passado (apenas para novas sessões)
+    if (!editingSession && isBefore(sessionDateTime, new Date())) {
+        toast.error("Data e horário da sessão não podem ser no passado.");
         return;
     }
 
@@ -136,15 +170,16 @@ const handleSubmit = async () => {
     try {
       if (editingSession) {
         const updatePayload = {
-          session_date: sessionDateTime,
+          session_date: sessionDateTime.toISOString(),
           session_time: formData.time,
           session_type: apiSessionType,           
           duration_minutes: Number(formData.duration), 
-          notes: formData.notes,
+          notes: formData.notes || '',
           status: formData.status                  
         };
 
-        // @ts-ignore
+        console.log('📤 Enviando payload para atualizar sessão:', updatePayload);
+
         await updateSession(editingSession.id, updatePayload);
         toast.success("Agendamento atualizado com sucesso!");
 
@@ -152,47 +187,63 @@ const handleSubmit = async () => {
         // PAYLOAD PARA CRIAR
         const createPayload = {
           patient_id: formData.patientId,
-          session_date: sessionDateTime,
+          session_date: sessionDateTime.toISOString(),
           session_time: formData.time,
           session_type: apiSessionType,           
           duration_minutes: Number(formData.duration), 
-          notes: formData.notes
+          notes: formData.notes || ''
         };
         
-        // @ts-ignore
-        await createSession(createPayload);
+        console.log('📤 Enviando payload para criar sessão:', createPayload);
+        console.log('🕐 Horário formatado:', formData.time, '(deve estar em formato 24h: HH:MM)');
+        
+        const createdSession = await createSession(createPayload);
+        console.log('✅ Sessão criada com sucesso:', createdSession);
         toast.success("Agendamento criado com sucesso!");
       }
 
       setIsDialogOpen(false);
-      loadData(date);
+      
+      // Recarregar dados após criar/atualizar
+      console.log('🔄 Recarregando dados da agenda...');
+      await loadData(date);
+      console.log('✅ Dados recarregados!');
     } catch (error: any) {
-       const apiErrorMessage = error.response?.data?.message || `Falha ao ${editingSession ? 'atualizar' : 'criar'} agendamento.`;
+       console.error('❌ Erro ao criar/atualizar sessão:', error);
+       const apiErrorMessage = error.response?.data?.message || error.response?.data?.errors?.[0]?.message || `Falha ao ${editingSession ? 'atualizar' : 'criar'} agendamento.`;
        toast.error(apiErrorMessage);
     }
   };
 
   const handleDelete = async (id: string) => {
+    if (!window.confirm('Tem certeza que deseja excluir este agendamento?')) {
+      return;
+    }
+
     try {
+      console.log('🗑️ Excluindo sessão:', id);
       await deleteSession(id);
+      console.log('✅ Sessão excluída com sucesso');
       toast.success("Agendamento excluído com sucesso.");
-      loadData(date);
-    } catch (error) {
-      toast.error("Falha ao excluir agendamento.");
+      await loadData(date);
+    } catch (error: any) {
+      console.error('❌ Erro ao excluir sessão:', error);
+      console.error('❌ Detalhes:', error.response?.data);
+      toast.error(error.response?.data?.message || "Falha ao excluir agendamento.");
     }
   };
 
   const openDialog = (session?: Session, preselectedPatientId?: string) => {
     if (session) {
       setEditingSession(session);
+      const patientData = session.Patient || session.patient;
       setFormData({
         date: new Date(session.session_date),
         time: format(new Date(session.session_date), "HH:mm"),
-        patientId: session.patient.id,
+        patientId: patientData.id,
         status: session.status,
-        // @ts-ignore
         type: session.session_type || "Consulta", 
-        duration: session.duration,
+        duration: session.duration_minutes || session.duration || 50,
         notes: session.notes || "",
       });
     } else {
@@ -273,13 +324,40 @@ const handleSubmit = async () => {
 
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="time">Horário *</Label>
+                        <Label htmlFor="time">Horário * (formato 24h: HH:MM)</Label>
                         <Input
                           id="time"
-                          type="time"
+                          type="text"
                           value={formData.time}
-                          onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+                          onChange={(e) => {
+                            let value = e.target.value.replace(/[^0-9:]/g, ''); // Remove caracteres inválidos
+                            
+                            // Auto-adicionar : após 2 dígitos
+                            if (value.length === 2 && !value.includes(':')) {
+                              value = value + ':';
+                            }
+                            
+                            // Limitar a 5 caracteres (HH:MM)
+                            if (value.length > 5) {
+                              value = value.substring(0, 5);
+                            }
+                            
+                            console.log('⏰ Horário digitado:', value);
+                            setFormData({ ...formData, time: value });
+                          }}
+                          onBlur={(e) => {
+                            // Validar ao sair do campo
+                            const value = e.target.value;
+                            if (value && !value.match(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/)) {
+                              toast.error('Formato de horário inválido. Use HH:MM (ex: 14:30)');
+                            }
+                          }}
+                          placeholder="14:30"
+                          maxLength={5}
                         />
+                        <p className="text-xs text-muted-foreground">
+                          Digite no formato 24h. Ex: 08:00, 14:30, 18:45
+                        </p>
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="duration">Duração (min) *</Label>
@@ -288,6 +366,9 @@ const handleSubmit = async () => {
                           type="number"
                           value={formData.duration}
                           onChange={(e) => setFormData({ ...formData, duration: Number(e.target.value) })}
+                          min="15"
+                          max="180"
+                          step="5"
                         />
                       </div>
                     </div>
@@ -393,33 +474,61 @@ const handleSubmit = async () => {
                   {isLoading ? (
                     <p className="text-center text-muted-foreground py-4">Carregando agenda...</p>
                   ) : (
-                    hours.map((hour) => {
-                      const hourStr = `${hour.toString().padStart(2, "0")}:00`;
-                      
-                      const session = Array.isArray(sessions) ? sessions.find((s) => 
-                        format(new Date(s.session_date), 'HH:mm') === hourStr && 
-                        isSameDay(new Date(s.session_date), date)
-                      ) : undefined;
+                    <>
+                      {/* Mostrar todas as sessões do dia */}
+                      {(() => {
+                        const daySessionsFiltered = Array.isArray(sessions) ? sessions.filter((s) => {
+                          try {
+                            const sessionDate = new Date(s.session_date);
+                            return isSameDay(sessionDate, date);
+                          } catch (e) {
+                            console.error('Erro ao processar data da sessão:', s, e);
+                            return false;
+                          }
+                        }).sort((a, b) => {
+                          // Ordenar por horário
+                          return new Date(a.session_date).getTime() - new Date(b.session_date).getTime();
+                        }) : [];
 
-                      return (
-                        <div
-                          key={hour}
-                          className="flex items-start gap-4 py-3 border-b last:border-0"
-                        >
-                          <div className="w-16 text-sm text-muted-foreground font-medium">
-                            {hourStr}
-                          </div>
-                          {session ? (
+                        console.log('🔍 Sessões do dia selecionado:', date, daySessionsFiltered);
+
+                        if (daySessionsFiltered.length === 0) {
+                          return (
+                            <p className="text-center text-muted-foreground py-8">
+                              Nenhuma sessão agendada para {format(date, "dd/MM/yyyy")}
+                            </p>
+                          );
+                        }
+
+                        return daySessionsFiltered.map((session) => {
+                          const patientData = session.Patient || session.patient;
+                          const duration = session.duration_minutes || session.duration || 50;
+                          
+                          return (
+                          <div
+                            key={session.id}
+                            className="flex items-start gap-4 py-3 border-b last:border-0"
+                          >
+                            <div className="w-16 text-sm text-muted-foreground font-medium">
+                              {format(new Date(session.session_date), 'HH:mm')}
+                            </div>
                             <div className="flex-1 p-3 rounded-lg bg-primary/5 border border-primary/20">
                               <div className="flex items-start justify-between">
                                 <div className="flex-1">
-                                  <h4 className="font-semibold">{session.patient.full_name}</h4>
+                                  <h4 className="font-semibold">{patientData.full_name}</h4>
                                   <p className="text-sm text-muted-foreground">
-                                    {format(new Date(session.session_date), 'HH:mm')} - {session.duration}min
+                                    {format(new Date(session.session_date), 'HH:mm')} - {duration}min
                                   </p>
+                                  {session.notes && (
+                                    <p className="text-xs text-muted-foreground mt-1">{session.notes}</p>
+                                  )}
                                 </div>
                                 <div className="flex items-center gap-2">
-                                  <Badge variant="secondary" className="capitalize">{session.status}</Badge>
+                                  <Badge variant="secondary" className="capitalize">
+                                    {session.status === 'scheduled' ? 'Agendada' : 
+                                     session.status === 'completed' ? 'Realizada' :
+                                     session.status === 'cancelled' ? 'Cancelada' : 'Falta'}
+                                  </Badge>
                                   <Button
                                     variant="ghost"
                                     size="sm"
@@ -437,16 +546,23 @@ const handleSubmit = async () => {
                                 </div>
                               </div>
                             </div>
-                          ) : (
-                            <div className="flex-1 p-3 rounded-lg border-2 border-dashed hover:bg-muted/50 cursor-pointer" onClick={() => openDialog()}>
-                              <p className="text-sm text-muted-foreground text-center">
-                                Horário disponível
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })
+                          </div>
+                        );
+                        });
+                      })()}
+                      
+                      {/* Botão para adicionar nova sessão */}
+                      <div className="pt-4">
+                        <Button
+                          variant="outline"
+                          className="w-full"
+                          onClick={() => openDialog()}
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Adicionar sessão neste dia
+                        </Button>
+                      </div>
+                    </>
                   )}
                 </div>
               </CardContent>

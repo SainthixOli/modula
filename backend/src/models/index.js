@@ -24,6 +24,7 @@ const Anamnesis = require('./Anamnesis');
 const Session = require('./Session');
 const Transfer = require('./Transfer');
 const Notification = require('./Notification');
+const AuditLog = require('./AuditLog');
 
 // ============================================
 // ASSOCIAÇÕES: USER ↔ PATIENT
@@ -261,6 +262,7 @@ module.exports = {
   Session,
   Transfer,
   Notification,
+  AuditLog,
 };
 
 /**

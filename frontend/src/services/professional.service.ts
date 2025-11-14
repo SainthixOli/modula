@@ -1,5 +1,17 @@
 import api from './api';
 
+// --- Interfaces para Dashboard ---
+
+export interface ProfessionalDashboardStats {
+  totalPatients: number;
+  activePatients: number;
+  todaySessions: number;
+  completedSessions: number;
+  canceledSessions: number;
+  upcomingSessions: any[];
+  recentPatients: any[];
+}
+
 // --- Interfaces para Pacientes ---
 
 export interface Patient {
@@ -78,20 +90,38 @@ export interface PatientFormData {
 
 export interface Session {
   id: string;
-  session_date: string; // Vem como string da API
+  patient_id: string;
+  user_id: string;
+  session_number: number;
+  session_date: string; // ISO string da API
+  session_type: string;
+  duration_minutes: number;
+  duration: number; // Alias para compatibilidade
+  location?: string;
   status: 'scheduled' | 'completed' | 'cancelled' | 'no_show';
-  duration: number;
   notes?: string;
+  is_billable?: boolean;
+  reminder_sent?: boolean;
   patient: {
     id: string;
     full_name: string;
+    phone?: string;
+    email?: string;
+  };
+  Patient?: { // Alias para compatibilidade
+    id: string;
+    full_name: string;
+    phone?: string;
+    email?: string;
   };
 }
 
 export interface SessionPayload {
-  patientId: string;
-  sessionDate: Date;
-  duration: number;
+  patient_id: string;
+  session_date: string; // ISO string
+  session_time: string; // HH:MM formato 24h
+  session_type: string; // first_consultation, follow_up, etc.
+  duration_minutes: number;
   notes?: string;
   status?: Session['status'];
 }
@@ -255,12 +285,13 @@ const updatePatient = async (id: string, patientData: Partial<PatientFormData>):
 export const getSessions = async (startDate: Date, endDate: Date): Promise<Session[]> => {
   const response = await api.get('/sessions', {
     params: {
-      startDate: startDate.toISOString(),
-      endDate: endDate.toISOString(),
+      date_from: startDate.toISOString(),
+      date_to: endDate.toISOString(),
     }
   });
 
-  return Array.isArray(response.data.data) ? response.data.data : [];
+  // Backend retorna { success, data: { sessions, pagination } }
+  return Array.isArray(response.data.data?.sessions) ? response.data.data.sessions : [];
 };
 
 /**
@@ -286,9 +317,12 @@ export const updateSession = async (id: string, data: Partial<SessionPayload>): 
  * Exclui/Cancela uma sessão.
  * Mapeia para a função 'cancelSession' do backend (que é mais segura).
  */
-export const deleteSession = async (id: string): Promise<void> => {
-  
-  await api.delete(`/sessions/${id}`);
+export const deleteSession = async (id: string, cancellation_reason?: string): Promise<void> => {
+  await api.delete(`/sessions/${id}`, {
+    data: { 
+      cancellation_reason: cancellation_reason || 'Cancelado pelo profissional' 
+    }
+  });
 };
 
 // --- Funções para Anamnese ---
@@ -338,6 +372,14 @@ export async function getAnamnesisById(id: string): Promise<Anamnesis> {
   return response.data.data;
 };
 
+/**
+ * GET /api/professional/dashboard
+ * Buscar estatísticas do dashboard do profissional
+ */
+export async function getProfessionalDashboard(): Promise<ProfessionalDashboardStats> {
+  const response = await api.get('/professional/dashboard');
+  return response.data.data;
+}
 
 /**
  * Rota: PUT /api/anamnesis/:id/section/:sectionName
@@ -365,6 +407,7 @@ export const professionalService = {
   getAnamnesisByPatient,
   getAnamnesisById,
   updateAnamnesisSection,
+  getProfessionalDashboard,
 };
 
 

@@ -11,7 +11,10 @@
     "migrate": "node src/database/migrations/runMigrations.js",
     "seed": "node src/database/seeds/runSeeds.js",
     "lint": "eslint src/ --ext .js",
-    "lint:fix": "eslint src/ --ext .js --fix"
+    "lint:fix": "eslint src/ --ext .js --fix",
+    "db:test": "node scripts/test-connection.js",
+    "db:init": "node scripts/init-database.js",
+    "db:reset": "node scripts/init-database.js"
   },
   "keywords": [
     "modula",

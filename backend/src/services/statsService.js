@@ -20,8 +20,8 @@
  * - Suporte a múltiplos períodos de análise
  */
 
-const { User, Patient, Session, Anamnesis} = require('../models');
-const { Op } = require('sequelize');
+const { sequelize, User, Patient, Session, Anamnesis } = require('../models');
+const { Op, fn, col, literal } = require('sequelize');
 
 // ============================================
 // ESTATÍSTICAS GERAIS DA CLÍNICA
@@ -35,7 +35,7 @@ const getClinicOverview = async (adminUserId) => {
   const professionalsStats = await User.count({
     where: { user_type: 'professional' },
     group: ['status'],
-    attributes: ['status', [sequelize.fn('COUNT', 'id'), 'count']]
+    attributes: ['status', [fn('COUNT', 'id'), 'count']]
   });
 
   const professionals = {
@@ -47,7 +47,7 @@ const getClinicOverview = async (adminUserId) => {
   // Contar pacientes
   const patientsStats = await Patient.count({
     group: ['status'],
-    attributes: ['status', [sequelize.fn('COUNT', 'id'), 'count']]
+    attributes: ['status', [fn('COUNT', 'id'), 'count']]
   });
 
   const patients = {

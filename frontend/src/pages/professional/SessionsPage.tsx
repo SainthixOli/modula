@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Sidebar } from "@/components/shared/Sidebar";
 import { Header } from "@/components/shared/Header";
@@ -6,83 +6,66 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { ClipboardList, Search, Filter, Plus, Calendar, Clock, User, FileText } from "lucide-react";
+import { ClipboardList, Search, Plus, Loader2, Filter, Calendar, FileText, Clock } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { getSessions, Session } from "@/services/professional.service";
+import { useToast } from "@/hooks/use-toast";
+import { SessionCard } from "@/components/shared/SessionCard";
 
 // Página de consultas/sessões do profissional
 const SessionsPage = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
+  const [sessions, setSessions] = useState<Session[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
-  // Dados mockados de sessões
-  const sessions = [
-    {
-      id: 1,
-      patientId: 1,
-      patientName: "Maria Silva",
-      date: "2024-01-15",
-      time: "14:00",
-      duration: "50 min",
-      type: "Consulta Regular",
-      status: "scheduled",
-      notes: "Primeira consulta do mês"
-    },
-    {
-      id: 2,
-      patientId: 2,
-      patientName: "João Santos",
-      date: "2024-01-15",
-      time: "15:00",
-      duration: "50 min",
-      type: "Retorno",
-      status: "scheduled",
-      notes: "Acompanhamento mensal"
-    },
-    {
-      id: 3,
-      patientId: 3,
-      patientName: "Ana Costa",
-      date: "2024-01-14",
-      time: "10:00",
-      duration: "50 min",
-      type: "Consulta Regular",
-      status: "completed",
-      notes: "Sessão produtiva, paciente apresentou melhora"
-    },
-    {
-      id: 4,
-      patientId: 4,
-      patientName: "Carlos Oliveira",
-      date: "2024-01-14",
-      time: "14:00",
-      duration: "50 min",
-      type: "Avaliação Inicial",
-      status: "completed",
-      notes: "Primeira consulta, anamnese completa realizada"
-    },
-    {
-      id: 5,
-      patientId: 5,
-      patientName: "Paula Rodrigues",
-      date: "2024-01-13",
-      time: "09:00",
-      duration: "50 min",
-      type: "Retorno",
-      status: "cancelled",
-      notes: "Paciente cancelou com antecedência"
-    }
-  ];
+  useEffect(() => {
+    const fetchSessions = async () => {
+      try {
+        // Buscar sessões dos últimos 30 dias e próximos 30 dias
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - 30);
+        const endDate = new Date();
+        endDate.setDate(endDate.getDate() + 30);
+        
+        console.log('🔍 SessionsPage - Buscando sessões de', startDate, 'até', endDate);
+        const data = await getSessions(startDate, endDate);
+        console.log('✅ SessionsPage - Sessões carregadas:', data);
+        setSessions(data);
+      } catch (error) {
+        console.error('❌ SessionsPage - Erro ao carregar sessões:', error);
+        toast({
+          title: 'Erro',
+          description: 'Não foi possível carregar as sessões',
+          variant: 'destructive',
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSessions();
+  }, [toast]);
 
   // Filtra sessões por busca
-  const filteredSessions = sessions.filter(session =>
-    session.patientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    session.type.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredSessions = sessions.filter(session => {
+    const patientData = session.Patient || session.patient;
+    const notesData = session.session_notes || session.notes;
+    return patientData?.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+           notesData?.toLowerCase().includes(searchQuery.toLowerCase());
+  });
+
+  console.log('📊 Estatísticas:', {
+    total: sessions.length,
+    filtradas: filteredSessions.length,
+    searchQuery
+  });
 
   // Agrupa sessões por status
   const scheduledSessions = filteredSessions.filter(s => s.status === "scheduled");
   const completedSessions = filteredSessions.filter(s => s.status === "completed");
-  const cancelledSessions = filteredSessions.filter(s => s.status === "cancelled");
+  const cancelledSessions = filteredSessions.filter(s => s.status === "cancelled" || s.status === "no_show");
 
   // Retorna badge de status
   const getStatusBadge = (status: string) => {
@@ -94,6 +77,40 @@ const SessionsPage = () => {
     const config = statusConfig[status as keyof typeof statusConfig];
     return <Badge variant={config.variant}>{config.label}</Badge>;
   };
+
+  // Helper para formatar data
+  const formatSessionDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('pt-BR');
+    } catch {
+      return dateString;
+    }
+  };
+
+  // Helper para formatar hora
+  const formatSessionTime = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    } catch {
+      return '';
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex h-screen bg-background">
+        <Sidebar userType="professional" userName="Dr. João Silva" />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <Header userName="Dr. João Silva" />
+          <main className="flex-1 flex items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </main>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen bg-background">
@@ -191,197 +208,43 @@ const SessionsPage = () => {
             </TabsList>
 
             <TabsContent value="all" className="space-y-4 mt-6">
-              {filteredSessions.map((session) => (
-                <Card key={session.id} className="p-4 hover:shadow-md transition-shadow">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start gap-4 flex-1">
-                      <div className="p-3 rounded-full bg-muted">
-                        <User className="h-5 w-5 text-primary" />
-                      </div>
-                      
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <h3 className="font-semibold text-foreground">{session.patientName}</h3>
-                          {getStatusBadge(session.status)}
-                        </div>
-                        
-                        <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground">
-                          <div className="flex items-center gap-2">
-                            <Calendar className="h-4 w-4" />
-                            <span>{session.date}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Clock className="h-4 w-4" />
-                            <span>{session.time} ({session.duration})</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <FileText className="h-4 w-4" />
-                            <span>{session.type}</span>
-                          </div>
-                        </div>
-                        
-                        {session.notes && (
-                          <p className="text-sm text-muted-foreground mt-3 italic">
-                            {session.notes}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                    
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => navigate(`/professional/patients/${session.patientId}`)}
-                    >
-                      Ver Paciente
-                    </Button>
-                  </div>
-                </Card>
-              ))}
+              {filteredSessions.length > 0 ? (
+                filteredSessions.map((session) => (
+                  <SessionCard key={session.id} session={session} />
+                ))
+              ) : (
+                <p className="text-center text-muted-foreground py-8">Nenhuma sessão encontrada</p>
+              )}
             </TabsContent>
 
             <TabsContent value="scheduled" className="space-y-4 mt-6">
-              {scheduledSessions.map((session) => (
-                <Card key={session.id} className="p-4 hover:shadow-md transition-shadow">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start gap-4 flex-1">
-                      <div className="p-3 rounded-full bg-muted">
-                        <User className="h-5 w-5 text-primary" />
-                      </div>
-                      
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <h3 className="font-semibold text-foreground">{session.patientName}</h3>
-                          {getStatusBadge(session.status)}
-                        </div>
-                        
-                        <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground">
-                          <div className="flex items-center gap-2">
-                            <Calendar className="h-4 w-4" />
-                            <span>{session.date}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Clock className="h-4 w-4" />
-                            <span>{session.time} ({session.duration})</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <FileText className="h-4 w-4" />
-                            <span>{session.type}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => navigate(`/professional/patients/${session.patientId}`)}
-                    >
-                      Ver Paciente
-                    </Button>
-                  </div>
-                </Card>
-              ))}
+              {scheduledSessions.length > 0 ? (
+                scheduledSessions.map((session) => (
+                  <SessionCard key={session.id} session={session} />
+                ))
+              ) : (
+                <p className="text-center text-muted-foreground py-8">Nenhuma sessão agendada</p>
+              )}
             </TabsContent>
 
             <TabsContent value="completed" className="space-y-4 mt-6">
-              {completedSessions.map((session) => (
-                <Card key={session.id} className="p-4 hover:shadow-md transition-shadow">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start gap-4 flex-1">
-                      <div className="p-3 rounded-full bg-muted">
-                        <User className="h-5 w-5 text-primary" />
-                      </div>
-                      
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <h3 className="font-semibold text-foreground">{session.patientName}</h3>
-                          {getStatusBadge(session.status)}
-                        </div>
-                        
-                        <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground">
-                          <div className="flex items-center gap-2">
-                            <Calendar className="h-4 w-4" />
-                            <span>{session.date}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Clock className="h-4 w-4" />
-                            <span>{session.time} ({session.duration})</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <FileText className="h-4 w-4" />
-                            <span>{session.type}</span>
-                          </div>
-                        </div>
-                        
-                        {session.notes && (
-                          <p className="text-sm text-muted-foreground mt-3 italic">
-                            {session.notes}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                    
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => navigate(`/professional/patients/${session.patientId}`)}
-                    >
-                      Ver Paciente
-                    </Button>
-                  </div>
-                </Card>
-              ))}
+              {completedSessions.length > 0 ? (
+                completedSessions.map((session) => (
+                  <SessionCard key={session.id} session={session} />
+                ))
+              ) : (
+                <p className="text-center text-muted-foreground py-8">Nenhuma sessão concluída</p>
+              )}
             </TabsContent>
 
             <TabsContent value="cancelled" className="space-y-4 mt-6">
-              {cancelledSessions.map((session) => (
-                <Card key={session.id} className="p-4 hover:shadow-md transition-shadow opacity-75">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start gap-4 flex-1">
-                      <div className="p-3 rounded-full bg-muted">
-                        <User className="h-5 w-5 text-primary" />
-                      </div>
-                      
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <h3 className="font-semibold text-foreground">{session.patientName}</h3>
-                          {getStatusBadge(session.status)}
-                        </div>
-                        
-                        <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground">
-                          <div className="flex items-center gap-2">
-                            <Calendar className="h-4 w-4" />
-                            <span>{session.date}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Clock className="h-4 w-4" />
-                            <span>{session.time} ({session.duration})</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <FileText className="h-4 w-4" />
-                            <span>{session.type}</span>
-                          </div>
-                        </div>
-                        
-                        {session.notes && (
-                          <p className="text-sm text-muted-foreground mt-3 italic">
-                            {session.notes}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                    
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => navigate(`/professional/patients/${session.patientId}`)}
-                    >
-                      Ver Paciente
-                    </Button>
-                  </div>
-                </Card>
-              ))}
+              {cancelledSessions.length > 0 ? (
+                cancelledSessions.map((session) => (
+                  <SessionCard key={session.id} session={session} opacity />
+                ))
+              ) : (
+                <p className="text-center text-muted-foreground py-8">Nenhuma sessão cancelada</p>
+              )}
             </TabsContent>
           </Tabs>
         </main>

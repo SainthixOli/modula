@@ -1,5 +1,18 @@
 import { NavLink, useNavigate } from "react-router-dom"; 
-import { Home, Calendar, Users, FileText, Settings, LogOut } from "lucide-react";
+import { 
+  Home, 
+  Calendar, 
+  Users, 
+  FileText, 
+  Settings, 
+  LogOut,
+  ClipboardList,
+  Bell,
+  BarChart3,
+  ArrowLeftRight,
+  Shield,
+  Database
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import logomodula from '@/components/assets/logo.png'; 
 import { logout } from "@/services/auth.service"; 
@@ -11,18 +24,25 @@ interface SidebarProps {
 
 export const Sidebar = ({ userType, userName }: SidebarProps) => {
   const professionalLinks = [
-    { to: "/professional/dashboard", icon: Home, label: "Home" },
+    { to: "/professional/dashboard", icon: Home, label: "Dashboard" },
     { to: "/professional/calendar", icon: Calendar, label: "Calendário" },
     { to: "/professional/patients", icon: Users, label: "Pacientes" },
-    { to: "/professional/reports", icon: FileText, label: "Relatórios" },
-    { to: "/professional/settings", icon: Settings, label: "Ajustes" },
+    { to: "/professional/sessions", icon: ClipboardList, label: "Sessões" },
+    { to: "/professional/anamnesi-templates", icon: FileText, label: "Anamneses" },
+    { to: "/professional/notifications", icon: Bell, label: "Notificações" },
+    { to: "/professional/reports", icon: BarChart3, label: "Relatórios" },
+    { to: "/professional/settings", icon: Settings, label: "Configurações" },
   ];
 
   const adminLinks = [
-    { to: "/admin/dashboard", icon: Home, label: "Home" },
+    { to: "/admin/dashboard", icon: Home, label: "Dashboard" },
     { to: "/admin/professionals", icon: Users, label: "Profissionais" },
-    { to: "/admin/reports", icon: FileText, label: "Relatórios" },
-    { to: "/admin/settings", icon: Settings, label: "Ajustes" },
+    { to: "/admin/transfers", icon: ArrowLeftRight, label: "Transferências" },
+    { to: "/admin/notifications", icon: Bell, label: "Notificações" },
+    { to: "/admin/monitoring", icon: BarChart3, label: "Monitoramento" },
+    { to: "/admin/audit-logs", icon: Shield, label: "Auditoria" },
+    { to: "/admin/backup", icon: Database, label: "Backup" },
+    { to: "/admin/settings", icon: Settings, label: "Configurações" },
   ];
 
   const links = userType === "admin" ? adminLinks : professionalLinks;

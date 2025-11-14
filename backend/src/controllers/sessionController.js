@@ -50,8 +50,17 @@ const createSession = async (req, res) => {
     throw new AppError('Paciente não encontrado ou não pertence a você', 404);
   }
 
-  // Construir datetime completo
-  const sessionDateTime = new Date(session_date);
+  // Construir datetime completo combinando data e hora
+  let sessionDateTime;
+  if (session_time) {
+    // Se session_time for fornecido (formato "HH:MM"), combinar com session_date
+    const [hours, minutes] = session_time.split(':').map(Number);
+    sessionDateTime = new Date(session_date);
+    sessionDateTime.setHours(hours, minutes, 0, 0);
+  } else {
+    // Se não, usar session_date como está (pode já incluir hora)
+    sessionDateTime = new Date(session_date);
+  }
 
   // Calcular session_number sequencial
   const lastSession = await Session.findOne({

@@ -68,18 +68,34 @@ export interface ProfessionalDetails {
  * Busca a lista de todos os profissionais.
  */
 export const getProfessionalsList = async (): Promise<Professional[]> => {
-  console.log("Buscando a lista de profissionais...");
-  const response = await api.get('/admin/professionals');
-  return response.data.data; 
+  try {
+    console.log("👨‍⚕️ Buscando a lista de profissionais...");
+    const response = await api.get('/admin/professionals');
+    console.log("👨‍⚕️ Resposta da API:", response.data);
+    const professionals = response.data.data || response.data;
+    console.log("👨‍⚕️ Profissionais processados:", professionals);
+    return Array.isArray(professionals) ? professionals : [];
+  } catch (error: any) {
+    console.error("❌ Erro ao buscar profissionais:", error.response?.data || error.message);
+    throw error;
+  }
 };
 
 /**
  * Busca as estatísticas do dashboard administrativo.
  */
 export const getAdminDashboardStats = async (): Promise<DashboardStats> => {
-  console.log("Buscando estatísticas do dashboard...");
-  const response = await api.get('/admin/dashboard');
-  return response.data.data.overview; 
+  try {
+    console.log("📊 Buscando estatísticas do dashboard...");
+    const response = await api.get('/admin/dashboard');
+    console.log("📊 Resposta da API:", response.data);
+    const stats = response.data.data?.overview || response.data.data || response.data;
+    console.log("📊 Stats processadas:", stats);
+    return stats;
+  } catch (error: any) {
+    console.error("❌ Erro ao buscar stats:", error.response?.data || error.message);
+    throw error;
+  }
 };
 
 /**
