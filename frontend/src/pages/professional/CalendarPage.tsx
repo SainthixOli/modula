@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+ import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Sidebar } from "@/components/shared/Sidebar";
 import { Header } from "@/components/shared/Header";
@@ -454,9 +454,9 @@ const handleSubmit = async () => {
             </div>
           </div>
           
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-[350px_1fr] gap-6">
             <Card>
-              <CardContent className="p-4">
+              <CardContent className="p-6">
                 <Calendar
                   mode="single"
                   selected={date}
@@ -468,7 +468,7 @@ const handleSubmit = async () => {
               </CardContent>
             </Card>
 
-            <Card className="lg:col-span-3">
+            <Card>
               <CardContent className="p-6">
                 <div className="space-y-1">
                   {isLoading ? (

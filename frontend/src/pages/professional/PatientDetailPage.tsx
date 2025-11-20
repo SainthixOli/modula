@@ -13,6 +13,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner'; 
 import { useToast } from "@/hooks/use-toast";
+import { translateGender, translateMaritalStatus, translateSessionStatus, translateSessionType } from '@/utils/translations';
 
 import {
   Dialog,
@@ -147,6 +148,9 @@ export default function PatientDetailPage() {
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
   const [newStatus, setNewStatus] = useState<'active' | 'inactive'>('active');
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+  
+  const [selectedSession, setSelectedSession] = useState<any>(null);
+  const [isSessionDialogOpen, setIsSessionDialogOpen] = useState(false);
 
   const handleStatusChange = async () => {
     if (!id || !patient) return;
@@ -188,8 +192,10 @@ export default function PatientDetailPage() {
       try {
         // Chamar a função pelo 'professionalService'
         const data = await professionalService.getPatientDetails(id); 
+        console.log('📦 Dados do paciente carregados:', data);
         setPatient(data);
       } catch (err) {
+        console.error('❌ Erro ao carregar paciente:', err);
         setError("Não foi possível carregar os dados do paciente.");
       } finally {
         setIsLoading(false);
@@ -278,7 +284,7 @@ export default function PatientDetailPage() {
                 <div>
                   <h1 className="text-3xl font-bold">{patient.full_name}</h1>
                   <p className="text-muted-foreground">
-                    {patient.gender} • {patient.age} anos • CPF:{" "}
+                    {translateGender(patient.gender)} • {patient.age} anos • CPF:{" "}
                     {patient.cpf || "N/A"}
                   </p>
                   <div className="flex gap-2 mt-2">
@@ -436,7 +442,7 @@ export default function PatientDetailPage() {
                           Estado Civil
                         </p>
                         <p className="font-medium">
-                          {patient.marital_status || "N/A"}
+                          {translateMaritalStatus(patient.marital_status)}
                         </p>
                       </div>
                     </div>
@@ -536,32 +542,188 @@ export default function PatientDetailPage() {
 
             <TabsContent value="sessions">
               <Card>
-                <CardHeader>
+                <CardHeader className="flex flex-row items-center justify-between">
                   <CardTitle>Sessões e Consultas</CardTitle>
+                  <Button onClick={handleScheduleClick}>
+                    <Calendar className="h-4 w-4 mr-2" />
+                    Nova Sessão
+                  </Button>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-center py-12">
-                    <Activity
-                      className="h-12 w-12 mx-auto text-muted-foreground mb-4"
-                    />
-                    <h3 className="text-lg font-semibold mb-2">
-                      Lista de sessões
-                    </h3>
-                    <p className="text-muted-foreground mb-4">
-                      Total de {patient.sessions?.length || 0} sessões
-                      registradas
-                    </p>
-                    <Button onClick={handleScheduleClick}>
-                      <Calendar className="h-4 w-4 mr-2" />
-                      Nova Sessão
-                    </Button>
-                  </div>
+                  {patient.sessions && patient.sessions.length > 0 ? (
+                    <div className="space-y-4">
+                      {patient.sessions.map((session: any, index: number) => (
+                        <div
+                          key={session.id || index}
+                          className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
+                        >
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h4 className="font-semibold">
+                                {translateSessionType(session.session_type)}
+                              </h4>
+                              <Badge variant={
+                                session.status === 'completed' ? 'default' :
+                                session.status === 'scheduled' ? 'secondary' :
+                                session.status === 'cancelled' ? 'destructive' :
+                                'outline'
+                              }>
+                                {translateSessionStatus(session.status)}
+                              </Badge>
+                            </div>
+                            <p className="text-sm text-muted-foreground">
+                              {session.session_date ? format(new Date(session.session_date), "dd 'de' MMMM 'de' yyyy", { locale: ptBR }) : 'Data não informada'}
+                              {session.scheduled_start_time && ` às ${typeof session.scheduled_start_time === 'string' && session.scheduled_start_time.includes('T') ? format(new Date(session.scheduled_start_time), 'HH:mm') : session.scheduled_start_time}`}
+                            </p>
+                            {session.session_notes && (
+                              <p className="text-sm text-muted-foreground mt-1">
+                                {session.session_notes}
+                              </p>
+                            )}
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setSelectedSession(session);
+                              setIsSessionDialogOpen(true);
+                            }}
+                          >
+                            Ver detalhes
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12">
+                      <Activity
+                        className="h-12 w-12 mx-auto text-muted-foreground mb-4"
+                      />
+                      <h3 className="text-lg font-semibold mb-2">
+                        Nenhuma sessão registrada
+                      </h3>
+                      <p className="text-muted-foreground mb-4">
+                        Este paciente ainda não possui sessões agendadas.
+                      </p>
+                      <Button onClick={handleScheduleClick}>
+                        <Calendar className="h-4 w-4 mr-2" />
+                        Agendar Primeira Sessão
+                      </Button>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
           </Tabs>
         </main>
       </div>
+
+      {/* Dialog com detalhes da sessão */}
+      <Dialog open={isSessionDialogOpen} onOpenChange={setIsSessionDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Detalhes da Sessão</DialogTitle>
+            <DialogDescription>
+              Informações completas sobre a sessão selecionada
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedSession && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Tipo de Sessão</p>
+                  <p className="text-base font-semibold">{translateSessionType(selectedSession.session_type)}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Status</p>
+                  <Badge variant={
+                    selectedSession.status === 'completed' ? 'default' :
+                    selectedSession.status === 'scheduled' ? 'secondary' :
+                    selectedSession.status === 'cancelled' ? 'destructive' :
+                    'outline'
+                  }>
+                    {translateSessionStatus(selectedSession.status)}
+                  </Badge>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Data</p>
+                  <p className="text-base">
+                    {selectedSession.session_date ? format(new Date(selectedSession.session_date), "dd 'de' MMMM 'de' yyyy", { locale: ptBR }) : 'Não informada'}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Horário</p>
+                  <p className="text-base">
+                    {selectedSession.scheduled_start_time ? 
+                      (typeof selectedSession.scheduled_start_time === 'string' && selectedSession.scheduled_start_time.includes('T') ? 
+                        format(new Date(selectedSession.scheduled_start_time), 'HH:mm') : 
+                        selectedSession.scheduled_start_time) 
+                      : 'Não informado'}
+                  </p>
+                </div>
+              </div>
+
+              {selectedSession.duration_minutes && (
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Duração</p>
+                  <p className="text-base">{selectedSession.duration_minutes} minutos</p>
+                </div>
+              )}
+
+              {selectedSession.session_notes && (
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Observações</p>
+                  <p className="text-base whitespace-pre-wrap">{selectedSession.session_notes}</p>
+                </div>
+              )}
+
+              {selectedSession.main_topics && (
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Tópicos Principais</p>
+                  <p className="text-base">{selectedSession.main_topics}</p>
+                </div>
+              )}
+
+              {selectedSession.interventions_used && (
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Intervenções Utilizadas</p>
+                  <p className="text-base">{selectedSession.interventions_used}</p>
+                </div>
+              )}
+
+              {selectedSession.homework_assigned && (
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Tarefa de Casa</p>
+                  <p className="text-base">{selectedSession.homework_assigned}</p>
+                </div>
+              )}
+
+              {selectedSession.next_session_goals && (
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Metas para Próxima Sessão</p>
+                  <p className="text-base">{selectedSession.next_session_goals}</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsSessionDialogOpen(false)}>
+              Fechar
+            </Button>
+            <Button onClick={() => {
+              setIsSessionDialogOpen(false);
+              navigate(`/professional/calendar?sessionId=${selectedSession?.id}`);
+            }}>
+              Editar no Calendário
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

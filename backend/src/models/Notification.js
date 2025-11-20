@@ -306,7 +306,8 @@ Notification.prototype.getFormattedData = function() {
     },
     age_minutes: this.getAgeInMinutes(),
     is_expired: this.isExpired(),
-    created_at: this.created_at,
+    created_at: this.createdAt || this.created_at,
+    createdAt: this.createdAt || this.created_at,
     expires_at: this.expires_at,
   };
 };

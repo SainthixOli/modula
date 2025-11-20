@@ -31,11 +31,22 @@ export interface CreateTransferData {
 
 /**
  * Busca transferências (admin vê todas, profissional vê as suas)
- * GET /api/transfers
+ * GET /api/transfers/admin/history (admin) ou GET /api/transfers/my-requests (professional)
  */
 export const getTransfers = async (): Promise<Transfer[]> => {
-  const response = await api.get('/transfers');
-  return response.data.data || [];
+  try {
+    // Tenta buscar como admin primeiro (histórico completo)
+    const response = await api.get('/transfers/admin/history');
+    // A API retorna { data: { transfers: [...] } }
+    return response.data.data?.transfers || [];
+  } catch (error: any) {
+    // Se falhar (não é admin), busca como profissional
+    if (error.response?.status === 403 || error.response?.status === 404) {
+      const response = await api.get('/transfers/my-requests');
+      return response.data.data?.transfers || [];
+    }
+    throw error;
+  }
 };
 
 /**
@@ -49,18 +60,18 @@ export const createTransfer = async (data: CreateTransferData): Promise<Transfer
 
 /**
  * Aprova uma transferência (admin)
- * PUT /api/transfers/:id/approve
+ * PUT /api/transfers/admin/:id/approve
  */
 export const approveTransfer = async (id: string): Promise<void> => {
-  await api.put(`/transfers/${id}/approve`);
+  await api.put(`/transfers/admin/${id}/approve`);
 };
 
 /**
  * Rejeita uma transferência (admin)
- * PUT /api/transfers/:id/reject
+ * PUT /api/transfers/admin/:id/reject
  */
 export const rejectTransfer = async (id: string, reason?: string): Promise<void> => {
-  await api.put(`/transfers/${id}/reject`, { reason });
+  await api.put(`/transfers/admin/${id}/reject`, { reason });
 };
 
 /**

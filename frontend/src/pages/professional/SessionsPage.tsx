@@ -6,11 +6,27 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { ClipboardList, Search, Plus, Loader2, Filter, Calendar, FileText, Clock } from "lucide-react";
+import { ClipboardList, Search, Plus, Loader2, Filter, Calendar, FileText, Clock, X } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getSessions, Session } from "@/services/professional.service";
 import { useToast } from "@/hooks/use-toast";
 import { SessionCard } from "@/components/shared/SessionCard";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 // Página de consultas/sessões do profissional
 const SessionsPage = () => {
@@ -19,6 +35,12 @@ const SessionsPage = () => {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+
+  // Estados para filtros
+  const [filterModalOpen, setFilterModalOpen] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [typeFilter, setTypeFilter] = useState<string>("all");
+  const [hasActiveFilters, setHasActiveFilters] = useState(false);
 
   useEffect(() => {
     const fetchSessions = async () => {
@@ -48,13 +70,35 @@ const SessionsPage = () => {
     fetchSessions();
   }, [toast]);
 
-  // Filtra sessões por busca
+  // Aplicar todos os filtros
   const filteredSessions = sessions.filter(session => {
     const patientData = session.Patient || session.patient;
     const notesData = session.notes;
-    return patientData?.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    
+    // Filtro de busca
+    const matchesSearch = patientData?.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
            notesData?.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    // Filtro de status
+    const matchesStatus = statusFilter === "all" || session.status === statusFilter;
+    
+    // Filtro de tipo
+    const matchesType = typeFilter === "all" || session.session_type === typeFilter;
+    
+    return matchesSearch && matchesStatus && matchesType;
   });
+
+  // Funções do modal de filtros
+  const handleApplyFilters = () => {
+    setHasActiveFilters(statusFilter !== "all" || typeFilter !== "all");
+    setFilterModalOpen(false);
+  };
+
+  const handleClearFilters = () => {
+    setStatusFilter("all");
+    setTypeFilter("all");
+    setHasActiveFilters(false);
+  };
 
   console.log('📊 Estatísticas:', {
     total: sessions.length,
@@ -149,9 +193,17 @@ const SessionsPage = () => {
                 className="pl-10"
               />
             </div>
-            <Button variant="outline">
+            <Button 
+              variant={hasActiveFilters ? "default" : "outline"}
+              onClick={() => setFilterModalOpen(true)}
+            >
               <Filter className="h-4 w-4 mr-2" />
               Filtros
+              {hasActiveFilters && (
+                <span className="ml-2 bg-background text-foreground rounded-full w-5 h-5 text-xs flex items-center justify-center">
+                  {(statusFilter !== "all" ? 1 : 0) + (typeFilter !== "all" ? 1 : 0)}
+                </span>
+              )}
             </Button>
           </div>
 
@@ -249,6 +301,64 @@ const SessionsPage = () => {
           </Tabs>
         </main>
       </div>
+
+      {/* Modal de Filtros */}
+      <Dialog open={filterModalOpen} onOpenChange={setFilterModalOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Filtros de Sessões</DialogTitle>
+            <DialogDescription>
+              Refine a lista de sessões aplicando filtros personalizados
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid gap-6 py-4">
+            {/* Filtro de Status */}
+            <div className="grid gap-2">
+              <Label htmlFor="status">Status</Label>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger id="status">
+                  <SelectValue placeholder="Selecione o status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                  <SelectItem value="scheduled">Agendada</SelectItem>
+                  <SelectItem value="completed">Concluída</SelectItem>
+                  <SelectItem value="cancelled">Cancelada</SelectItem>
+                  <SelectItem value="no_show">Falta</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Filtro de Tipo */}
+            <div className="grid gap-2">
+              <Label htmlFor="type">Tipo de Consulta</Label>
+              <Select value={typeFilter} onValueChange={setTypeFilter}>
+                <SelectTrigger id="type">
+                  <SelectValue placeholder="Selecione o tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                  <SelectItem value="initial">Inicial</SelectItem>
+                  <SelectItem value="followup">Retorno</SelectItem>
+                  <SelectItem value="therapy">Terapia</SelectItem>
+                  <SelectItem value="evaluation">Avaliação</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <DialogFooter className="flex justify-between sm:justify-between">
+            <Button variant="outline" onClick={handleClearFilters}>
+              <X className="h-4 w-4 mr-2" />
+              Limpar Filtros
+            </Button>
+            <Button onClick={handleApplyFilters}>
+              Aplicar Filtros
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

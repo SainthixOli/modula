@@ -219,6 +219,22 @@ router.get('/reports/activity',
   asyncHandler(professionalController.getActivityReport)
 );
 
+// GET /api/professional/reports/export
+// Exportar relatório completo
+// Query params: period, format (pdf, txt, csv)
+router.get('/reports/export',
+  requireProfessional,
+  asyncHandler(professionalController.exportReport)
+);
+
+// GET /api/professional/reports/monthly-sessions
+// Dados do gráfico de consultas por mês
+// Query params: months (padrão: 6)
+router.get('/reports/monthly-sessions',
+  requireProfessional,
+  asyncHandler(professionalController.getMonthlySessionsChart)
+);
+
 /**
  * ROTAS DE CONFIGURAÇÕES PESSOAIS
  * Configurações específicas do profissional

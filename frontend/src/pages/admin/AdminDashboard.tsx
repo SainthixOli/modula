@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { getAdminDashboardStats, getProfessionalsList } from "@/services/admin.service";
+import { getCurrentUser } from "@/services/auth.service";
 import { useToast } from "@/hooks/use-toast";
 
 export default function AdminDashboard() {
@@ -17,6 +18,7 @@ export default function AdminDashboard() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState<{ full_name: string } | null>(null);
   const [stats, setStats] = useState({
     totalProfessionals: 0,
     activeProfessionals: 0,
@@ -24,6 +26,13 @@ export default function AdminDashboard() {
     monthlyGrowth: 0,
   });
   const [professionals, setProfessionals] = useState<any[]>([]);
+
+  useEffect(() => {
+    const user = getCurrentUser();
+    if (user) {
+      setCurrentUser({ full_name: user.full_name });
+    }
+  }, []);
 
   console.log('🏠 Estado atual:', { loading, stats, professionalsCount: professionals.length });
 
@@ -73,7 +82,7 @@ export default function AdminDashboard() {
       <Sidebar userType="admin" />
 
       <div className="flex-1 flex flex-col">
-        <Header userName="Administrador" userRole="Sistema Módula" />
+        <Header userName={currentUser?.full_name || "Administrador"} userRole="Sistema Módula" />
 
         <main className="flex-1 p-6 overflow-auto">
           <div className="flex items-center justify-between mb-6">

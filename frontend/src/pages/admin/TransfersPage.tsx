@@ -19,6 +19,7 @@ const TransfersPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [transfers, setTransfers] = useState<Transfer[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -27,15 +28,20 @@ const TransfersPage = () => {
 
   const fetchTransfers = async () => {
     try {
+      setError(null);
       const data = await getTransfers();
-      setTransfers(data);
-    } catch (error) {
+      console.log('Transferências carregadas:', data);
+      setTransfers(data || []);
+    } catch (error: any) {
       console.error('Erro ao carregar transferências:', error);
+      const errorMessage = error.response?.data?.message || 'Não foi possível carregar as transferências';
+      setError(errorMessage);
       toast({
         title: 'Erro',
-        description: 'Não foi possível carregar as transferências',
+        description: errorMessage,
         variant: 'destructive',
       });
+      setTransfers([]);
     } finally {
       setLoading(false);
     }
@@ -75,12 +81,12 @@ const TransfersPage = () => {
     }
   };
 
-  const filteredTransfers = transfers.filter(transfer =>
+  const filteredTransfers = Array.isArray(transfers) ? transfers.filter(transfer =>
     transfer.patient?.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     transfer.from_professional?.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     transfer.to_professional?.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     transfer.reason?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  ) : [];
 
   const pendingTransfers = filteredTransfers.filter(t => t.status === "pending");
   const approvedTransfers = filteredTransfers.filter(t => t.status === "approved");

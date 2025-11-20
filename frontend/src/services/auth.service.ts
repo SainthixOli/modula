@@ -45,6 +45,10 @@ export const login = async (email, password) => {
     const { user } = data;
     localStorage.setItem('authToken', access_token);
     localStorage.setItem('userType', user.user_type);
+    localStorage.setItem('userName', user.full_name);
+    if (user.professional_register) {
+      localStorage.setItem('userRegister', user.professional_register);
+    }
     window.dispatchEvent(new Event("authChange"));
     console.log('Login realizado, token salvo e evento "authChange" disparado!');
     return data.user;
@@ -60,8 +64,27 @@ export const logout = () => {
   console.log('Executando serviço de logout...');
   localStorage.removeItem('authToken');
   localStorage.removeItem('userType');
+  localStorage.removeItem('userName');
+  localStorage.removeItem('userRegister');
   window.dispatchEvent(new Event("authChange"));
   console.log('Logout realizado, token removido e evento "authChange" disparado!');
+};
+
+/**
+ * Retorna os dados do usuário logado salvos no localStorage.
+ */
+export const getCurrentUser = () => {
+  const userName = localStorage.getItem('userName');
+  const userType = localStorage.getItem('userType');
+  const userRegister = localStorage.getItem('userRegister');
+  
+  if (!userName || !userType) return null;
+  
+  return {
+    full_name: userName,
+    user_type: userType as 'admin' | 'professional',
+    professional_register: userRegister || undefined
+  };
 };
 
 /**

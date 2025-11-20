@@ -101,3 +101,35 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
   }
 }
+
+/* Estilos do Calendário */
+@layer components {
+  /* Remover borda vermelha do dia selecionado */
+  .rdp-day_selected {
+    background-color: hsl(var(--primary)) !important;
+    color: hsl(var(--primary-foreground)) !important;
+    border: none !important;
+    outline: none !important;
+  }
+  
+  .rdp-day_selected:hover {
+    background-color: hsl(var(--primary)) !important;
+    opacity: 0.9;
+  }
+
+  /* Dia de hoje */
+  .rdp-day_today {
+    font-weight: 600;
+  }
+
+  /* Hover nos dias */
+  .rdp-day:hover:not(.rdp-day_selected):not(.rdp-day_disabled) {
+    background-color: hsl(var(--accent) / 0.1);
+  }
+
+  /* Remover outline de foco */
+  .rdp-day:focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+}

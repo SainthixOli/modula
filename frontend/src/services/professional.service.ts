@@ -3,13 +3,38 @@ import api from './api';
 // --- Interfaces para Dashboard ---
 
 export interface ProfessionalDashboardStats {
-  totalPatients: number;
-  activePatients: number;
-  todaySessions: number;
-  completedSessions: number;
-  canceledSessions: number;
-  upcomingSessions: any[];
-  recentPatients: any[];
+  overview: {
+    patients: {
+      total: number;
+      active: number;
+      inactive: number;
+      activeRate: number;
+    };
+    recent_activity: {
+      new_patients_week: number;
+      new_patients_month: number;
+      recent_patients_7_days: number;
+      recently_updated: number;
+    };
+    pending_tasks: {
+      pending_anamnesis: number;
+      overdue_appointments: number;
+      follow_up_needed: number;
+    };
+  };
+  recent_updates: any[];
+  today_schedule: {
+    appointments: any[];
+    total_appointments: number;
+    next_appointment: any | null;
+  };
+  quick_actions: {
+    need_follow_up: any[];
+    incomplete_records: any[];
+    suggested_appointments: any[];
+  };
+  generated_at: string;
+  cache_expires_in: number;
 }
 
 // --- Interfaces para Pacientes ---

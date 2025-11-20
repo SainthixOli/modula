@@ -14,8 +14,8 @@
  * Arquivo: /backend/src/controllers/professionalController.js
  */
 
-const { Op } = require('sequelize');
-const { User, Patient } = require('../models');
+const { Op, fn } = require('sequelize');
+const { User, Patient, Session } = require('../models');
 const { 
   AppError, 
   createNotFoundError, 
@@ -109,10 +109,48 @@ const getDashboard = async (req, res) => {
   const avgPatientsPerWeek = Math.ceil(weeklyNewPatients || 0);
   const avgPatientsPerMonth = Math.ceil(monthlyNewPatients || 0);
   
-  // Buscar próximas consultas (implementação básica)
-  // TODO: Implementar quando modelo Session for criado
-  const todayAppointments = [];
-  const upcomingAppointments = [];
+  // Buscar sessões de hoje
+  const todayAppointments = await Session.findAll({
+    where: {
+      user_id: userId,
+      session_date: {
+        [Op.gte]: startOfDay,
+        [Op.lte]: endOfDay
+      },
+      status: {
+        [Op.in]: ['scheduled', 'confirmed']
+      }
+    },
+    include: [{
+      model: Patient,
+      as: 'Patient',
+      attributes: ['id', 'full_name', 'phone', 'email']
+    }],
+    order: [['session_date', 'ASC']],
+    limit: 10
+  });
+  
+  // Buscar próximas sessões (próximos 7 dias)
+  const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+  const upcomingAppointments = await Session.findAll({
+    where: {
+      user_id: userId,
+      session_date: {
+        [Op.gt]: endOfDay,
+        [Op.lte]: nextWeek
+      },
+      status: {
+        [Op.in]: ['scheduled', 'confirmed']
+      }
+    },
+    include: [{
+      model: Patient,
+      as: 'Patient',
+      attributes: ['id', 'full_name', 'phone', 'email']
+    }],
+    order: [['session_date', 'ASC']],
+    limit: 5
+  });
   
   res.json({
     success: true,
@@ -506,17 +544,15 @@ const getPatientById = async (req, res) => {
   // Paciente já foi verificado pelo middleware checkResourceOwnership
   const patient = req.resource || req.patient;
   
-  // Buscar informações adicionais
-  const [/* consultaCount, ultimaConsulta */] = await Promise.all([
-    // TODO: Implementar quando modelo Session existir
-    // Session.count({ where: { patient_id: patient.id } }),
-    // Session.findOne({
-    //   where: { patient_id: patient.id },
-    //   order: [['session_date', 'DESC']]
-    // })
-    Promise.resolve(0),
-    Promise.resolve(null)
-  ]);
+  // Buscar sessões do paciente
+  const sessions = await Session.findAll({
+    where: { patient_id: patient.id },
+    order: [['session_date', 'DESC'], ['scheduled_start_time', 'DESC']],
+    attributes: ['id', 'session_date', 'scheduled_start_time', 'session_type', 'status', 'session_notes', 'created_at']
+  });
+  
+  const consultaCount = sessions.length;
+  const ultimaConsulta = sessions.length > 0 ? sessions[0] : null;
   
   const patientData = patient.toJSON();
   
@@ -526,11 +562,14 @@ const getPatientById = async (req, res) => {
     patientData.age = age;
   }
   
+  // Adicionar sessões ao objeto do paciente
+  patientData.sessions = sessions.map(s => s.toJSON());
+  
   // Adicionar estatísticas
   patientData.statistics = {
-    total_sessions: 0, // TODO: consultaCount
+    total_sessions: consultaCount,
     days_as_patient: Math.floor((new Date() - new Date(patient.created_at)) / (1000 * 60 * 60 * 24)),
-    last_session: null, // TODO: ultimaConsulta
+    last_session: ultimaConsulta ? ultimaConsulta.toJSON() : null,
     anamnesis_completed: false // TODO: verificar anamnese
   };
   
@@ -1018,6 +1057,7 @@ const getMyProfile = async (req, res) => {
     status: user.status,
     created_at: user.created_at,
     last_login: user.last_login,
+    metadata: user.metadata || {},
     statistics: {
       total_patients: patientCount
     }
@@ -1067,16 +1107,501 @@ module.exports = {
     res.json({ success: true, message: 'Em implementação', data: [] });
   },
   getPatientSummaryReport: async (req, res) => {
-    res.json({ success: true, message: 'Em implementação', data: {} });
+    const userId = req.user.id;
+    const { period = 'month' } = req.query;
+
+    // Calcular datas baseado no período
+    const now = new Date();
+    let startDate;
+    
+    switch(period) {
+      case 'week':
+        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        break;
+      case 'quarter':
+        startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+        break;
+      case 'year':
+        startDate = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
+        break;
+      default: // month
+        startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    }
+
+    // Buscar dados
+    const [totalPatients, activeSessions, completedSessions, cancelledSessions, newPatients] = await Promise.all([
+      Patient.count({ where: { user_id: userId } }),
+      Session.count({ 
+        where: { 
+          user_id: userId, 
+          status: 'scheduled',
+          session_date: { [Op.gte]: startDate }
+        } 
+      }),
+      Session.count({ 
+        where: { 
+          user_id: userId, 
+          status: 'completed',
+          session_date: { [Op.gte]: startDate }
+        } 
+      }),
+      Session.count({ 
+        where: { 
+          user_id: userId, 
+          status: 'cancelled',
+          session_date: { [Op.gte]: startDate }
+        } 
+      }),
+      Patient.count({ 
+        where: { 
+          user_id: userId,
+          created_at: { [Op.gte]: startDate }
+        } 
+      })
+    ]);
+
+    // Buscar distribuição por gênero
+    const genderDistribution = await Patient.findAll({
+      where: { user_id: userId },
+      attributes: ['gender', [fn('COUNT', 'id'), 'count']],
+      group: ['gender'],
+      raw: true
+    });
+
+    // Buscar distribuição por idade
+    const patients = await Patient.findAll({
+      where: { user_id: userId },
+      attributes: ['birth_date'],
+      raw: true
+    });
+
+    const ageRanges = {
+      '18-25': 0,
+      '26-35': 0,
+      '36-50': 0,
+      '51+': 0
+    };
+
+    patients.forEach(p => {
+      if (p.birth_date) {
+        const age = Math.floor((new Date() - new Date(p.birth_date)) / (365.25 * 24 * 60 * 60 * 1000));
+        if (age >= 18 && age <= 25) ageRanges['18-25']++;
+        else if (age >= 26 && age <= 35) ageRanges['26-35']++;
+        else if (age >= 36 && age <= 50) ageRanges['36-50']++;
+        else if (age > 50) ageRanges['51+']++;
+      }
+    });
+
+    // Calcular taxa de comparecimento
+    const totalScheduled = activeSessions + completedSessions + cancelledSessions;
+    const attendanceRate = totalScheduled > 0 
+      ? Math.round((completedSessions / totalScheduled) * 100) 
+      : 0;
+
+    res.json({
+      success: true,
+      data: {
+        summary: {
+          totalPatients,
+          activeSessions,
+          completedSessions,
+          cancelledSessions,
+          newPatients,
+          attendanceRate: `${attendanceRate}%`
+        },
+        distribution: {
+          gender: genderDistribution.reduce((acc, item) => {
+            acc[item.gender || 'não_informado'] = parseInt(item.count);
+            return acc;
+          }, {}),
+          ageRanges
+        },
+        period: {
+          type: period,
+          startDate,
+          endDate: now
+        }
+      }
+    });
   },
+  
   getActivityReport: async (req, res) => {
-    res.json({ success: true, message: 'Em implementação', data: {} });
+    const userId = req.user.id;
+    const { period = 'month' } = req.query;
+
+    // Calcular datas
+    const now = new Date();
+    let startDate, previousPeriodStart;
+    
+    switch(period) {
+      case 'week':
+        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        previousPeriodStart = new Date(startDate.getTime() - 7 * 24 * 60 * 60 * 1000);
+        break;
+      case 'quarter':
+        startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+        previousPeriodStart = new Date(startDate.getTime() - 90 * 24 * 60 * 60 * 1000);
+        break;
+      case 'year':
+        startDate = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
+        previousPeriodStart = new Date(startDate.getTime() - 365 * 24 * 60 * 60 * 1000);
+        break;
+      default: // month
+        startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        previousPeriodStart = new Date(startDate.getTime() - 30 * 24 * 60 * 60 * 1000);
+    }
+
+    // Dados do período atual
+    const [currentPatients, currentSessions] = await Promise.all([
+      Patient.count({ 
+        where: { 
+          user_id: userId,
+          created_at: { [Op.gte]: startDate }
+        } 
+      }),
+      Session.count({ 
+        where: { 
+          user_id: userId,
+          session_date: { [Op.gte]: startDate }
+        } 
+      })
+    ]);
+
+    // Dados do período anterior
+    const [previousPatients, previousSessions] = await Promise.all([
+      Patient.count({ 
+        where: { 
+          user_id: userId,
+          created_at: { 
+            [Op.gte]: previousPeriodStart,
+            [Op.lt]: startDate
+          }
+        } 
+      }),
+      Session.count({ 
+        where: { 
+          user_id: userId,
+          session_date: { 
+            [Op.gte]: previousPeriodStart,
+            [Op.lt]: startDate
+          }
+        } 
+      })
+    ]);
+
+    // Calcular tendências
+    const patientsTrend = previousPatients > 0 
+      ? Math.round(((currentPatients - previousPatients) / previousPatients) * 100)
+      : (currentPatients > 0 ? 100 : 0);
+    
+    const sessionsTrend = previousSessions > 0
+      ? Math.round(((currentSessions - previousSessions) / previousSessions) * 100)
+      : (currentSessions > 0 ? 100 : 0);
+
+    res.json({
+      success: true,
+      data: {
+        current: {
+          patients: currentPatients,
+          sessions: currentSessions
+        },
+        previous: {
+          patients: previousPatients,
+          sessions: previousSessions
+        },
+        trends: {
+          patients: {
+            value: patientsTrend,
+            isPositive: patientsTrend >= 0
+          },
+          sessions: {
+            value: sessionsTrend,
+            isPositive: sessionsTrend >= 0
+          }
+        },
+        period: {
+          type: period,
+          current: { startDate, endDate: now },
+          previous: { startDate: previousPeriodStart, endDate: startDate }
+        }
+      }
+    });
   },
+  getMonthlySessionsChart: async (req, res) => {
+    const userId = req.user.id;
+    const { months = 6 } = req.query;
+
+    try {
+      const endDate = new Date();
+      const startDate = new Date();
+      startDate.setMonth(startDate.getMonth() - parseInt(months));
+
+      // Buscar todas as sessões no período
+      const sessions = await Session.findAll({
+        where: {
+          user_id: userId,
+          session_date: {
+            [Op.gte]: startDate,
+            [Op.lte]: endDate
+          }
+        },
+        attributes: ['session_date', 'status'],
+        raw: true
+      });
+
+      // Agrupar por mês
+      const monthlyData = {};
+      const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+
+      // Inicializar últimos N meses
+      for (let i = parseInt(months) - 1; i >= 0; i--) {
+        const date = new Date();
+        date.setMonth(date.getMonth() - i);
+        const key = `${monthNames[date.getMonth()]}/${date.getFullYear().toString().substr(2)}`;
+        monthlyData[key] = { total: 0, completed: 0, cancelled: 0 };
+      }
+
+      // Contar sessões por mês
+      sessions.forEach(session => {
+        const date = new Date(session.session_date);
+        const key = `${monthNames[date.getMonth()]}/${date.getFullYear().toString().substr(2)}`;
+        
+        if (monthlyData[key]) {
+          monthlyData[key].total++;
+          if (session.status === 'completed') monthlyData[key].completed++;
+          if (session.status === 'cancelled') monthlyData[key].cancelled++;
+        }
+      });
+
+      // Converter para array
+      const chartData = Object.entries(monthlyData).map(([month, data]) => ({
+        month,
+        total: data.total,
+        completed: data.completed,
+        cancelled: data.cancelled
+      }));
+
+      res.json({
+        success: true,
+        data: chartData
+      });
+    } catch (error) {
+      console.error('Erro ao buscar dados do gráfico:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erro ao buscar dados do gráfico',
+        error: error.message
+      });
+    }
+  },
+
+  exportReport: async (req, res) => {
+    const userId = req.user.id;
+    const { period = 'month', format = 'pdf' } = req.query;
+
+    try {
+      // Buscar todos os dados
+      const [summary, activity] = await Promise.all([
+        // Reutilizar lógica do getPatientSummaryReport
+        (async () => {
+          const now = new Date();
+          let startDate;
+          
+          switch(period) {
+            case 'week':
+              startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+              break;
+            case 'quarter':
+              startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+              break;
+            case 'year':
+              startDate = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
+              break;
+            default:
+              startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+          }
+
+          const [totalPatients, completedSessions, cancelledSessions, newPatients] = await Promise.all([
+            Patient.count({ where: { user_id: userId } }),
+            Session.count({ 
+              where: { 
+                user_id: userId, 
+                status: 'completed',
+                session_date: { [Op.gte]: startDate }
+              } 
+            }),
+            Session.count({ 
+              where: { 
+                user_id: userId, 
+                status: 'cancelled',
+                session_date: { [Op.gte]: startDate }
+              } 
+            }),
+            Patient.count({ 
+              where: { 
+                user_id: userId,
+                created_at: { [Op.gte]: startDate }
+              } 
+            })
+          ]);
+
+          return { totalPatients, completedSessions, cancelledSessions, newPatients, startDate, endDate: now };
+        })(),
+        User.findByPk(userId, { attributes: ['full_name', 'professional_register'] })
+      ]);
+
+      // Gerar relatório em texto simples
+      const reportText = `
+═══════════════════════════════════════════════════════════
+                  RELATÓRIO DE ATIVIDADES
+                    Sistema MÓDULA
+═══════════════════════════════════════════════════════════
+
+Profissional: ${activity.full_name}
+Registro: ${activity.professional_register || 'N/A'}
+Período: ${period === 'week' ? 'Última semana' : period === 'month' ? 'Último mês' : period === 'quarter' ? 'Último trimestre' : 'Último ano'}
+Data de Geração: ${new Date().toLocaleString('pt-BR')}
+
+───────────────────────────────────────────────────────────
+                    RESUMO ESTATÍSTICO
+───────────────────────────────────────────────────────────
+
+Total de Pacientes: ${summary.totalPatients}
+Novos Pacientes no Período: ${summary.newPatients}
+Consultas Concluídas: ${summary.completedSessions}
+Consultas Canceladas: ${summary.cancelledSessions}
+
+Taxa de Comparecimento: ${summary.completedSessions + summary.cancelledSessions > 0 
+  ? Math.round((summary.completedSessions / (summary.completedSessions + summary.cancelledSessions)) * 100) 
+  : 0}%
+
+═══════════════════════════════════════════════════════════
+              Relatório gerado automaticamente
+                   www.modula.com.br
+═══════════════════════════════════════════════════════════
+      `;
+
+      // Por enquanto, retornar como texto. Em produção, gerar PDF
+      res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+      res.setHeader('Content-Disposition', `attachment; filename="relatorio-${period}-${new Date().toISOString().split('T')[0]}.txt"`);
+      res.send(reportText);
+
+    } catch (error) {
+      console.error('Erro ao exportar relatório:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erro ao exportar relatório',
+        error: error.message
+      });
+    }
+  },
+  
   updateMyProfile: async (req, res) => {
-    res.json({ success: true, message: 'Em implementação' });
+    const userId = req.userId;
+    const { full_name, email, phone, bio, appearance_settings, notification_preferences } = req.body;
+
+    // Buscar usuário atual
+    const user = await User.findByPk(userId);
+    if (!user) {
+      throw new AppError('Usuário não encontrado', 404);
+    }
+
+    // Validar email se foi alterado
+    if (email && email !== user.email) {
+      const emailExists = await User.findOne({
+        where: {
+          email,
+          id: { [Op.ne]: userId }
+        }
+      });
+
+      if (emailExists) {
+        throw new AppError('Este email já está em uso', 400);
+      }
+    }
+
+    // Atualizar campos permitidos
+    const updateData = {};
+    if (full_name !== undefined) updateData.full_name = full_name;
+    if (email !== undefined) updateData.email = email;
+
+    // Atualizar metadata com todos os dados personalizados
+    const currentMetadata = user.metadata || {};
+    updateData.metadata = {
+      ...currentMetadata,
+      bio: bio !== undefined ? bio : currentMetadata.bio,
+      phone: phone !== undefined ? phone : currentMetadata.phone,
+      appearance_settings: appearance_settings !== undefined ? appearance_settings : currentMetadata.appearance_settings,
+      notification_preferences: notification_preferences !== undefined ? notification_preferences : currentMetadata.notification_preferences,
+    };
+
+    await user.update(updateData);
+
+    // Recarregar usuário para garantir que metadata foi salvo
+    await user.reload();
+
+    res.json({
+      success: true,
+      message: 'Perfil atualizado com sucesso',
+      data: {
+        id: user.id,
+        full_name: user.full_name,
+        email: user.email,
+        professional_register: user.professional_register,
+        metadata: user.metadata,
+      }
+    });
   },
+
   changePassword: async (req, res) => {
-    res.json({ success: true, message: 'Em implementação' });
+    const userId = req.userId;
+    const { currentPassword, newPassword, confirmPassword } = req.body;
+
+    // Validar campos obrigatórios
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      throw new AppError('Todos os campos são obrigatórios', 400);
+    }
+
+    // Validar confirmação
+    if (newPassword !== confirmPassword) {
+      throw new AppError('As senhas não coincidem', 400);
+    }
+
+    // Validar força da senha
+    if (newPassword.length < 8) {
+      throw new AppError('A senha deve ter no mínimo 8 caracteres', 400);
+    }
+
+    const hasLetter = /[a-zA-Z]/.test(newPassword);
+    const hasNumber = /[0-9]/.test(newPassword);
+
+    if (!hasLetter || !hasNumber) {
+      throw new AppError('A senha deve conter letras e números', 400);
+    }
+
+    // Buscar usuário
+    const user = await User.findByPk(userId);
+    if (!user) {
+      throw new AppError('Usuário não encontrado', 404);
+    }
+
+    // Verificar senha atual
+    const bcrypt = require('bcryptjs');
+    const isValidPassword = await bcrypt.compare(currentPassword, user.password);
+    if (!isValidPassword) {
+      throw new AppError('Senha atual incorreta', 401);
+    }
+
+    // Criptografar nova senha
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Atualizar senha
+    await user.update({ password: hashedPassword });
+
+    res.json({
+      success: true,
+      message: 'Senha alterada com sucesso',
+    });
   },
   getNotifications: async (req, res) => {
     res.json({ success: true, message: 'Em implementação', data: [] });

@@ -12,6 +12,7 @@ import {
 } from "@/services/professional.service";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { translateAnamnesisStatus } from "@/utils/translations";
 
 // Componente simples para mostrar um campo
 const InfoField = ({
@@ -141,7 +142,7 @@ export default function ViewAnamnesiPage() {
                   Anamnese Psicológica (Visualização)
                 </CardTitle>
                  <CardDescription>
-                  Status: {anamnesis.status} ({anamnesis.completion_percentage}%)
+                  Status: {translateAnamnesisStatus(anamnesis.status)} ({anamnesis.completion_percentage}%)
                 </CardDescription>
               </CardHeader>
               <CardContent>

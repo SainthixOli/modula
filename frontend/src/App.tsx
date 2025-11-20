@@ -9,7 +9,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from "./pages/Login";
 import ResetSenhaPage from "./pages/ResetSenha";
 import CriarSenha from "./pages/CriarSenha";
-import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 import FirstAccessPage from './pages/FirstAccessPage';
 import ProtectedRoute from './components/shared/ProtectedRoute';
@@ -44,13 +43,35 @@ import NotificationsAdminPage from "./pages/admin/NotificationsAdminPage";
 
 // Serviços
 import { setupAuthHeader } from './services/auth.service';
+import { getMyProfile, applyAppearanceSettings, getAppearanceSettings } from './services/settings.service';
 
 const queryClient = new QueryClient();
 
 const App = () => {
   useEffect(() => {
     setupAuthHeader();
-    const handleAuthChange = () => setupAuthHeader();
+    
+    // Carregar e aplicar configurações de aparência do usuário logado
+    const loadUserAppearance = async () => {
+      const token = localStorage.getItem('authToken');
+      if (token) {
+        try {
+          const profile = await getMyProfile();
+          const appearance = getAppearanceSettings(profile);
+          applyAppearanceSettings(appearance);
+        } catch (error) {
+          console.error('Erro ao carregar configurações de aparência:', error);
+        }
+      }
+    };
+    
+    loadUserAppearance();
+    
+    const handleAuthChange = () => {
+      setupAuthHeader();
+      loadUserAppearance();
+    };
+    
     window.addEventListener('authChange', handleAuthChange);
     return () => {
       window.removeEventListener('authChange', handleAuthChange);
@@ -72,8 +93,6 @@ return (
             
             {/* --- Rotas Protegidas (SÓ ENTRA QUEM TEM TOKEN) --- */}
             <Route element={<ProtectedRoute />}>
-              <Route path="/dashboard" element={<Dashboard />} />
-              
               {/* Rotas do Profissional */}
               <Route path="/professional/dashboard" element={<ProfessionalDashboard />} />
               <Route path="/professional/patients" element={<PatientsPage />} />

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { MoreVertical } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { translateGender } from "@/utils/translations";
 
 interface PatientCardProps {
   id: string;
@@ -53,7 +54,7 @@ export const PatientCard = ({ id, name, schedule, type, time, age, gender, statu
             )}
             {age && gender && (
               <p className="text-sm text-muted-foreground">
-                {gender === "male" ? "Masculino" : "Feminino"} - {age} anos
+                {translateGender(gender)} - {age} anos
               </p>
             )}
           </div>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Sidebar } from "@/components/shared/Sidebar";
 import { Header } from "@/components/shared/Header";
 import { Button } from "@/components/ui/button";
@@ -8,18 +8,32 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Save, User, Bell, Shield, Palette } from "lucide-react";
+import { Save, User, Bell, Shield, Palette, Loader2 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
+import {
+  getMyProfile,
+  updateProfile,
+  changePassword,
+  getNotificationPreferences,
+  saveNotificationPreferences,
+  getAppearanceSettings,
+  saveAppearanceSettings,
+  applyAppearanceSettings,
+} from "@/services/settings.service";
 
 export default function SettingsPage() {
   const { toast } = useToast();
+  const { userName } = useCurrentUser();
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   const [profileData, setProfileData] = useState({
-    fullName: "Dr. Oliver",
-    email: "oliver@clinica.com",
-    phone: "(11) 98765-4321",
-    professionalRegister: "CRP 123456",
-    bio: "Psicólogo clínico com 10 anos de experiência",
+    fullName: "",
+    email: "",
+    phone: "",
+    professionalRegister: "",
+    bio: "",
   });
 
   const [passwordData, setPasswordData] = useState({
@@ -35,14 +49,79 @@ export default function SettingsPage() {
     smsReminders: true,
   });
 
-  const handleSaveProfile = () => {
-    toast({
-      title: "Sucesso",
-      description: "Perfil atualizado com sucesso",
-    });
+  const [appearanceSettings, setAppearanceSettings] = useState<{
+    theme: 'light' | 'dark' | 'system';
+    fontSize: 'small' | 'medium' | 'large';
+  }>({
+    theme: 'light',
+    fontSize: 'medium',
+  });
+
+  useEffect(() => {
+    loadUserData();
+  }, []);
+
+  const loadUserData = async () => {
+    try {
+      setLoading(true);
+      const profile = await getMyProfile();
+      
+      setProfileData({
+        fullName: profile.full_name || "",
+        email: profile.email || "",
+        phone: profile.metadata?.phone || "",
+        professionalRegister: profile.professional_register || "",
+        bio: profile.metadata?.bio || "",
+      });
+
+      // Carregar preferências do perfil do backend
+      const notifPrefs = getNotificationPreferences(profile);
+      setNotificationSettings(notifPrefs);
+
+      const appearance = getAppearanceSettings(profile);
+      setAppearanceSettings(appearance);
+      
+      // Aplicar configurações de aparência salvas
+      applyAppearanceSettings(appearance);
+    } catch (error) {
+      console.error("Erro ao carregar dados do usuário:", error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível carregar seus dados",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleChangePassword = () => {
+  const handleSaveProfile = async () => {
+    try {
+      setSaving(true);
+      await updateProfile({
+        full_name: profileData.fullName,
+        email: profileData.email,
+        phone: profileData.phone,
+        bio: profileData.bio,
+      });
+
+      toast({
+        title: "Sucesso",
+        description: "Perfil atualizado com sucesso",
+      });
+    } catch (error: any) {
+      console.error("Erro ao atualizar perfil:", error);
+      toast({
+        title: "Erro",
+        description: error.response?.data?.message || "Não foi possível atualizar o perfil",
+        variant: "destructive",
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleChangePassword = async () => {
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       toast({
         title: "Erro",
@@ -55,32 +134,108 @@ export default function SettingsPage() {
     if (passwordData.newPassword.length < 8) {
       toast({
         title: "Erro",
-        description: "A senha deve ter no mínimo 8 caracteres",
+        description: "A senha deve ter no mínimo 8 caracteres com letras e números",
         variant: "destructive",
       });
       return;
     }
 
-    toast({
-      title: "Sucesso",
-      description: "Senha alterada com sucesso",
-    });
-    setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
+    try {
+      setSaving(true);
+      await changePassword(passwordData);
+      
+      toast({
+        title: "Sucesso",
+        description: "Senha alterada com sucesso",
+      });
+      setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
+    } catch (error: any) {
+      console.error("Erro ao alterar senha:", error);
+      toast({
+        title: "Erro",
+        description: error.response?.data?.message || "Não foi possível alterar a senha",
+        variant: "destructive",
+      });
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const handleSaveNotifications = () => {
-    toast({
-      title: "Sucesso",
-      description: "Preferências de notificação atualizadas",
-    });
+  const handleSaveNotifications = async () => {
+    try {
+      setSaving(true);
+      await saveNotificationPreferences(notificationSettings);
+      toast({
+        title: "Sucesso",
+        description: "Preferências de notificação atualizadas",
+      });
+    } catch (error: any) {
+      console.error("Erro ao salvar preferências:", error);
+      toast({
+        title: "Erro",
+        description: error.response?.data?.message || "Não foi possível salvar as preferências",
+        variant: "destructive",
+      });
+    } finally {
+      setSaving(false);
+    }
   };
+
+  const handleThemeChange = async (theme: 'light' | 'dark' | 'system') => {
+    try {
+      const newSettings = { ...appearanceSettings, theme };
+      setAppearanceSettings(newSettings);
+      await saveAppearanceSettings(newSettings);
+      toast({
+        title: "Tema alterado",
+        description: `Tema ${theme === 'light' ? 'claro' : theme === 'dark' ? 'escuro' : 'do sistema'} aplicado`,
+      });
+    } catch (error: any) {
+      console.error("Erro ao salvar tema:", error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível salvar o tema",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleFontSizeChange = async (fontSize: 'small' | 'medium' | 'large') => {
+    try {
+      const newSettings = { ...appearanceSettings, fontSize };
+      setAppearanceSettings(newSettings);
+      await saveAppearanceSettings(newSettings);
+      toast({
+        title: "Tamanho da fonte alterado",
+        description: `Fonte ${fontSize === 'small' ? 'pequena' : fontSize === 'medium' ? 'média' : 'grande'} aplicada`,
+      });
+    } catch (error: any) {
+      console.error("Erro ao salvar tamanho da fonte:", error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível salvar o tamanho da fonte",
+        variant: "destructive",
+      });
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen bg-background">
+        <Sidebar userType="professional" />
+        <div className="flex-1 flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-background">
       <Sidebar userType="professional" />
 
       <div className="flex-1 flex flex-col">
-        <Header userName="Dr. Oliver" />
+        <Header userName={userName} />
 
         <main className="flex-1 p-6 overflow-auto">
           <div className="max-w-4xl mx-auto">
@@ -180,9 +335,18 @@ export default function SettingsPage() {
                       />
                     </div>
 
-                    <Button onClick={handleSaveProfile}>
-                      <Save className="h-4 w-4 mr-2" />
-                      Salvar Alterações
+                    <Button onClick={handleSaveProfile} disabled={saving}>
+                      {saving ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Salvando...
+                        </>
+                      ) : (
+                        <>
+                          <Save className="h-4 w-4 mr-2" />
+                          Salvar Alterações
+                        </>
+                      )}
                     </Button>
                   </CardContent>
                 </Card>
@@ -234,9 +398,18 @@ export default function SettingsPage() {
                       />
                     </div>
 
-                    <Button onClick={handleChangePassword}>
-                      <Shield className="h-4 w-4 mr-2" />
-                      Alterar Senha
+                    <Button onClick={handleChangePassword} disabled={saving}>
+                      {saving ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Alterando...
+                        </>
+                      ) : (
+                        <>
+                          <Shield className="h-4 w-4 mr-2" />
+                          Alterar Senha
+                        </>
+                      )}
                     </Button>
                   </CardContent>
                 </Card>
@@ -311,9 +484,18 @@ export default function SettingsPage() {
                       />
                     </div>
 
-                    <Button onClick={handleSaveNotifications}>
-                      <Save className="h-4 w-4 mr-2" />
-                      Salvar Preferências
+                    <Button onClick={handleSaveNotifications} disabled={saving}>
+                      {saving ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Salvando...
+                        </>
+                      ) : (
+                        <>
+                          <Save className="h-4 w-4 mr-2" />
+                          Salvar Preferências
+                        </>
+                      )}
                     </Button>
                   </CardContent>
                 </Card>
@@ -331,17 +513,32 @@ export default function SettingsPage() {
                     <div className="space-y-2">
                       <Label>Tema</Label>
                       <div className="grid grid-cols-3 gap-4">
-                        <Card className="cursor-pointer border-2 border-primary">
+                        <Card 
+                          className={`cursor-pointer transition-all hover:border-primary/50 ${
+                            appearanceSettings.theme === 'light' ? 'border-2 border-primary' : ''
+                          }`}
+                          onClick={() => handleThemeChange('light')}
+                        >
                           <CardContent className="p-4 text-center">
                             <p className="font-medium">Claro</p>
                           </CardContent>
                         </Card>
-                        <Card className="cursor-pointer">
+                        <Card 
+                          className={`cursor-pointer transition-all hover:border-primary/50 ${
+                            appearanceSettings.theme === 'dark' ? 'border-2 border-primary' : ''
+                          }`}
+                          onClick={() => handleThemeChange('dark')}
+                        >
                           <CardContent className="p-4 text-center">
                             <p className="font-medium">Escuro</p>
                           </CardContent>
                         </Card>
-                        <Card className="cursor-pointer">
+                        <Card 
+                          className={`cursor-pointer transition-all hover:border-primary/50 ${
+                            appearanceSettings.theme === 'system' ? 'border-2 border-primary' : ''
+                          }`}
+                          onClick={() => handleThemeChange('system')}
+                        >
                           <CardContent className="p-4 text-center">
                             <p className="font-medium">Sistema</p>
                           </CardContent>
@@ -352,17 +549,32 @@ export default function SettingsPage() {
                     <div className="space-y-2">
                       <Label>Tamanho da Fonte</Label>
                       <div className="grid grid-cols-3 gap-4">
-                        <Card className="cursor-pointer">
+                        <Card 
+                          className={`cursor-pointer transition-all hover:border-primary/50 ${
+                            appearanceSettings.fontSize === 'small' ? 'border-2 border-primary' : ''
+                          }`}
+                          onClick={() => handleFontSizeChange('small')}
+                        >
                           <CardContent className="p-4 text-center">
                             <p className="text-sm font-medium">Pequena</p>
                           </CardContent>
                         </Card>
-                        <Card className="cursor-pointer border-2 border-primary">
+                        <Card 
+                          className={`cursor-pointer transition-all hover:border-primary/50 ${
+                            appearanceSettings.fontSize === 'medium' ? 'border-2 border-primary' : ''
+                          }`}
+                          onClick={() => handleFontSizeChange('medium')}
+                        >
                           <CardContent className="p-4 text-center">
                             <p className="font-medium">Média</p>
                           </CardContent>
                         </Card>
-                        <Card className="cursor-pointer">
+                        <Card 
+                          className={`cursor-pointer transition-all hover:border-primary/50 ${
+                            appearanceSettings.fontSize === 'large' ? 'border-2 border-primary' : ''
+                          }`}
+                          onClick={() => handleFontSizeChange('large')}
+                        >
                           <CardContent className="p-4 text-center">
                             <p className="text-lg font-medium">Grande</p>
                           </CardContent>

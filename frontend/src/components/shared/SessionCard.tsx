@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock, User, FileText } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Session } from "@/services/professional.service";
+import { translateSessionType, translateSessionStatus } from "@/utils/translations";
 
 interface SessionCardProps {
   session: Session;
@@ -30,14 +31,15 @@ export const SessionCard = ({ session, opacity = false }: SessionCardProps) => {
   };
 
   const getStatusBadge = (status: string) => {
-    const statusConfig = {
-      scheduled: { label: "Agendada", variant: "default" as const },
-      completed: { label: "Concluída", variant: "secondary" as const },
-      cancelled: { label: "Cancelada", variant: "destructive" as const },
-      no_show: { label: "Falta", variant: "destructive" as const }
+    const variantMap: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
+      scheduled: "default",
+      confirmed: "default",
+      completed: "secondary",
+      cancelled: "destructive",
+      no_show: "destructive"
     };
-    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.scheduled;
-    return <Badge variant={config.variant}>{config.label}</Badge>;
+    const variant = variantMap[status] || "default";
+    return <Badge variant={variant}>{translateSessionStatus(status)}</Badge>;
   };
 
   return (
@@ -67,7 +69,7 @@ export const SessionCard = ({ session, opacity = false }: SessionCardProps) => {
               </div>
               <div className="flex items-center gap-2">
                 <FileText className="h-4 w-4" />
-                <span>{session.session_type || 'Sessão'}</span>
+                <span>{translateSessionType(session.session_type)}</span>
               </div>
             </div>
             

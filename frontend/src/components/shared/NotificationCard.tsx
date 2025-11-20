@@ -2,6 +2,8 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Check, Trash2, AlertCircle, Calendar, User, FileText } from "lucide-react";
 import { Notification } from "@/services/notification.service";
+import { format, parseISO, isValid } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 interface NotificationCardProps {
   notification: Notification;
@@ -23,6 +25,27 @@ export const NotificationCard = ({ notification, onMarkAsRead, onDelete }: Notif
     }
   };
 
+  const formatNotificationDate = (notification: Notification): string => {
+    // Tenta usar created_at, se não houver tenta createdAt, senão tenta updatedAt
+    const dateString = notification.created_at || (notification as any).createdAt || (notification as any).updated_at || (notification as any).updatedAt;
+    
+    if (!dateString) {
+      // Se não houver nenhuma data, retorna "Agora"
+      return 'Agora';
+    }
+    
+    try {
+      // Tenta criar a data diretamente
+      const date = new Date(dateString);
+      if (!isValid(date)) {
+        return 'Agora';
+      }
+      return format(date, "dd 'de' MMMM 'de' yyyy 'às' HH:mm", { locale: ptBR });
+    } catch {
+      return 'Agora';
+    }
+  };
+
   const { icon: Icon, color } = getNotificationIcon(notification.type);
 
   return (
@@ -38,7 +61,7 @@ export const NotificationCard = ({ notification, onMarkAsRead, onDelete }: Notif
               <h3 className="font-semibold text-foreground">{notification.title}</h3>
               <p className="text-sm text-muted-foreground mt-1">{notification.message}</p>
               <p className="text-xs text-muted-foreground mt-2">
-                {new Date(notification.created_at).toLocaleString('pt-BR')}
+                {formatNotificationDate(notification)}
               </p>
             </div>
             
