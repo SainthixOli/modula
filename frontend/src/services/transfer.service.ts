@@ -3,81 +3,120 @@ import api from './api';
 export interface Transfer {
   id: string;
   patient_id: string;
-  from_professional_id: string;
-  to_professional_id: string;
+  from_user_id: string;
+  to_user_id: string;
   reason: string;
-  status: 'pending' | 'approved' | 'rejected';
+  status: 'pending' | 'approved' | 'rejected' | 'cancelled';
+  approved_by?: string;
+  approved_at?: string;
+  rejection_reason?: string;
+  cancelled_at?: string;
+  completed_at?: string;
+  metadata?: any;
   created_at: string;
   updated_at: string;
-  patient?: {
+  Patient?: {
+    id: string;
+    full_name: string;
+    cpf: string;
+  };
+  FromUser?: {
+    id: string;
+    full_name: string;
+    email: string;
+  };
+  ToUser?: {
+    id: string;
+    full_name: string;
+    email: string;
+  };
+  ApprovedBy?: {
     id: string;
     full_name: string;
   };
-  from_professional?: {
-    id: string;
-    full_name: string;
-  };
-  to_professional?: {
-    id: string;
-    full_name: string;
-  };
+}
+
+export interface TransferStats {
+  total: number;
+  pending: number;
+  approved: number;
+  rejected: number;
+  cancelled: number;
 }
 
 export interface CreateTransferData {
   patient_id: string;
-  to_professional_id: string;
+  to_user_id: string;
   reason: string;
 }
 
-/**
- * Busca transferências (admin vê todas, profissional vê as suas)
- * GET /api/transfers/admin/history (admin) ou GET /api/transfers/my-requests (professional)
- */
-export const getTransfers = async (): Promise<Transfer[]> => {
-  try {
-    // Tenta buscar como admin primeiro (histórico completo)
-    const response = await api.get('/transfers/admin/history');
-    // A API retorna { data: { transfers: [...] } }
-    return response.data.data?.transfers || [];
-  } catch (error: any) {
-    // Se falhar (não é admin), busca como profissional
-    if (error.response?.status === 403 || error.response?.status === 404) {
-      const response = await api.get('/transfers/my-requests');
-      return response.data.data?.transfers || [];
-    }
-    throw error;
-  }
-};
+// ============================================
+// PROFISSIONAL - Solicitações
+// ============================================
 
 /**
- * Cria uma nova solicitação de transferência
- * POST /api/transfers
+ * Solicitar transferência de paciente
  */
-export const createTransfer = async (data: CreateTransferData): Promise<Transfer> => {
+export const requestTransfer = async (data: CreateTransferData): Promise<Transfer> => {
   const response = await api.post('/transfers', data);
-  return response.data.data;
+  return response.data.data.transfer;
 };
 
 /**
- * Aprova uma transferência (admin)
- * PUT /api/transfers/admin/:id/approve
+ * Listar minhas solicitações de transferência
  */
-export const approveTransfer = async (id: string): Promise<void> => {
-  await api.put(`/transfers/admin/${id}/approve`);
+export const getMyTransferRequests = async (status?: string): Promise<Transfer[]> => {
+  const params = status ? { status } : {};
+  const response = await api.get('/transfers/my-requests', { params });
+  return response.data.data.transfers;
 };
 
 /**
- * Rejeita uma transferência (admin)
- * PUT /api/transfers/admin/:id/reject
- */
-export const rejectTransfer = async (id: string, reason?: string): Promise<void> => {
-  await api.put(`/transfers/admin/${id}/reject`, { reason });
-};
-
-/**
- * Cancela uma transferência (profissional que solicitou)
- * DELETE /api/transfers/:id
+ * Cancelar solicitação de transferência
  */
 export const cancelTransfer = async (id: string): Promise<void> => {
-  await api.delete(`/transfers/${id}`);
+  await api.post(`/transfers/${id}/cancel`);
+};
+
+// ============================================
+// ADMIN - Gerenciamento
+// ============================================
+
+/**
+ * Listar todas as transferências (admin)
+ */
+export const getAllTransfers = async (status?: string): Promise<Transfer[]> => {
+  const params = status ? { status } : {};
+  const response = await api.get('/admin/transfers', { params });
+  return response.data.data.transfers;
+};
+
+/**
+ * Aprovar transferência (admin)
+ */
+export const approveTransfer = async (id: string): Promise<void> => {
+  await api.put(`/admin/transfers/${id}/approve`);
+};
+
+/**
+ * Rejeitar transferência (admin)
+ */
+export const rejectTransfer = async (id: string, reason: string): Promise<void> => {
+  await api.put(`/admin/transfers/${id}/reject`, { reason });
+};
+
+/**
+ * Estatísticas de transferências (admin)
+ */
+export const getTransferStats = async (): Promise<TransferStats> => {
+  const response = await api.get('/admin/transfers/stats');
+  return response.data.data.stats;
+};
+
+/**
+ * Listar profissionais ativos (para seleção)
+ */
+export const getActiveProfessionals = async () => {
+  const response = await api.get('/transfers/professionals');
+  return response.data.data.professionals;
 };

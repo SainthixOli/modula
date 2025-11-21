@@ -19,9 +19,11 @@ import {
   Professional,
   DashboardStats 
 } from "@/services/admin.service";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 export default function ProfessionalsPage() {
   const navigate = useNavigate();
+  const { userName, userType } = useCurrentUser();
   const [searchQuery, setSearchQuery] = useState("");
 
   const [professionals, setProfessionals] = useState<Professional[]>([]);
@@ -59,9 +61,9 @@ export default function ProfessionalsPage() {
   if (isLoading) {
     return (
       <div className="flex min-h-screen bg-background">
-        <Sidebar userType="admin" />
+        <Sidebar userType={userType as "professional" | "admin"} />
         <div className="flex-1 flex flex-col">
-          <Header userName="Administrador" />
+          <Header userName={userName} />
           <main className="flex-1 p-6 flex items-center justify-center">
             <p>Carregando profissionais...</p>
           </main>
@@ -73,9 +75,9 @@ export default function ProfessionalsPage() {
   if (error) {
     return (
       <div className="flex min-h-screen bg-background">
-        <Sidebar userType="admin" />
+        <Sidebar userType={userType as "professional" | "admin"} />
         <div className="flex-1 flex flex-col">
-          <Header userName="Administrador" />
+          <Header userName={userName} />
           <main className="flex-1 p-6 flex items-center justify-center">
             <p className="text-destructive">{error}</p>
           </main>
@@ -85,9 +87,9 @@ export default function ProfessionalsPage() {
   }
   return (
     <div className="flex min-h-screen bg-background">
-      <Sidebar userType="admin" />
+      <Sidebar userType={userType as "professional" | "admin"} />
       <div className="flex-1 flex flex-col">
-        <Header userName="Administrador" onSearch={setSearchQuery} />
+        <Header userName={userName} onSearch={setSearchQuery} />
         <main className="flex-1 p-6 overflow-auto">
           <div className="flex items-center justify-between mb-6">
             <div>

@@ -229,6 +229,122 @@ router.get(
 );
 
 // ============================================
+// ROTAS DE TRIGGERS (ADMIN)
+// ============================================
+
+/**
+ * @route   GET /api/notifications/admin/triggers/stats
+ * @desc    Estatísticas dos triggers (deve vir antes de /admin/triggers/:id)
+ * @access  Admin
+ */
+router.get(
+  '/admin/triggers/stats',
+  validateToken,
+  requireAdmin,
+  asyncHandler(notificationController.getTriggerStats)
+);
+
+/**
+ * @route   GET /api/notifications/admin/triggers
+ * @desc    Listar todos os triggers configurados
+ * @access  Admin
+ */
+router.get(
+  '/admin/triggers',
+  validateToken,
+  requireAdmin,
+  asyncHandler(notificationController.getAllTriggers)
+);
+
+/**
+ * @route   PUT /api/notifications/admin/triggers/:id
+ * @desc    Atualizar status de um trigger
+ * @access  Admin
+ */
+router.put(
+  '/admin/triggers/:id',
+  validateToken,
+  requireAdmin,
+  asyncHandler(notificationController.updateTrigger)
+);
+
+/**
+ * @route   POST /api/notifications/admin/triggers/:id/test
+ * @desc    Testar um trigger específico
+ * @access  Admin
+ */
+router.post(
+  '/admin/triggers/:id/test',
+  validateToken,
+  requireAdmin,
+  asyncHandler(notificationController.testTrigger)
+);
+
+/**
+ * @route   POST /api/notifications/admin/triggers/:type/execute
+ * @desc    Executar manualmente um trigger por tipo
+ * @access  Admin
+ */
+router.post(
+  '/admin/triggers/:type/execute',
+  validateToken,
+  requireAdmin,
+  asyncHandler(notificationController.executeTrigger)
+);
+
+// ============================================
+// ROTAS DE TRIGGERS CUSTOMIZADOS (ADMIN)
+// ============================================
+
+/**
+ * @route   POST /api/notifications/admin/triggers/custom
+ * @desc    Criar novo trigger customizado
+ * @access  Admin
+ */
+router.post(
+  '/admin/triggers/custom',
+  validateToken,
+  requireAdmin,
+  asyncHandler(notificationController.createCustomTrigger)
+);
+
+/**
+ * @route   GET /api/notifications/admin/triggers/custom/:id
+ * @desc    Obter detalhes de um trigger customizado
+ * @access  Admin
+ */
+router.get(
+  '/admin/triggers/custom/:id',
+  validateToken,
+  requireAdmin,
+  asyncHandler(notificationController.getCustomTriggerById)
+);
+
+/**
+ * @route   PUT /api/notifications/admin/triggers/custom/:id
+ * @desc    Atualizar trigger customizado
+ * @access  Admin
+ */
+router.put(
+  '/admin/triggers/custom/:id',
+  validateToken,
+  requireAdmin,
+  asyncHandler(notificationController.updateCustomTrigger)
+);
+
+/**
+ * @route   DELETE /api/notifications/admin/triggers/custom/:id
+ * @desc    Deletar trigger customizado
+ * @access  Admin
+ */
+router.delete(
+  '/admin/triggers/custom/:id',
+  validateToken,
+  requireAdmin,
+  asyncHandler(notificationController.deleteCustomTrigger)
+);
+
+// ============================================
 // EXPORT
 // ============================================
 

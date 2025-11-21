@@ -6,9 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Activity, Server, Database, Users, TrendingUp, AlertTriangle, Clock, Cpu, HardDrive, Loader2, CheckCircle, XCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getAdvancedHealthCheck, getMetricsSummary, getAlerts, acknowledgeAlert, resolveAlert, type AdvancedHealthStatus, type MetricsSummary, type Alert } from "@/services/monitoring.service";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 // Página de monitoramento do sistema (admin)
 const MonitoringPage = () => {
+  const { userName, userType } = useCurrentUser();
   const [health, setHealth] = useState<AdvancedHealthStatus | null>(null);
   const [metrics, setMetrics] = useState<MetricsSummary | null>(null);
   const [alerts, setAlerts] = useState<Alert[]>([]);
@@ -102,9 +104,12 @@ const MonitoringPage = () => {
   if (loading) {
     return (
       <div className="flex h-screen bg-background">
-        <Sidebar userType="admin" userName="Admin" />
-        <div className="flex-1 flex items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <Sidebar userType={userType as "professional" | "admin"} />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <Header userName={userName} />
+          <div className="flex-1 flex items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
         </div>
       </div>
     );
@@ -112,10 +117,10 @@ const MonitoringPage = () => {
 
   return (
     <div className="flex h-screen bg-background">
-      <Sidebar userType="admin" userName="Admin" />
+      <Sidebar userType={userType as "professional" | "admin"} />
       
       <div className="flex-1 flex flex-col overflow-hidden">
-        <Header userName="Administrador" userRole="Admin" />
+        <Header userName={userName} />
         
         <main className="flex-1 overflow-y-auto p-8">
           <div className="mb-6 flex items-center justify-between">

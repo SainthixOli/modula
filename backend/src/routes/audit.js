@@ -118,4 +118,16 @@ router.get('/actions', auditController.getActions);
  */
 router.get('/resources', auditController.getResources);
 
+/**
+ * GET /api/audit/export/csv
+ * Exportar logs de auditoria em formato CSV
+ */
+router.get('/export/csv', auditController.exportCSV);
+
+/**
+ * GET /api/audit/export/json
+ * Exportar logs de auditoria em formato JSON
+ */
+router.get('/export/json', auditController.exportJSON);
+
 module.exports = router;

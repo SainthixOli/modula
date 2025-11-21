@@ -7,22 +7,25 @@
 import api from './api';
 
 export interface AuditLog {
-  id: number;
-  userId: number;
+  id: string;
+  userId?: string;
+  userName?: string;
+  userEmail?: string;
   user?: {
-    id: number;
+    id: string;
     name: string;
     email: string;
   };
   action: string;
   resource: string;
-  resourceId: number | null;
-  details: any;
-  ipAddress: string;
-  userAgent: string;
+  resourceId?: string;
+  details?: any;
+  description?: string;
+  ipAddress?: string;
+  userAgent?: string;
   status: 'success' | 'failure' | 'error';
-  errorMessage: string | null;
-  timestamp: string;
+  errorMessage?: string | null;
+  timestamp?: string;
   createdAt: string;
 }
 
@@ -51,7 +54,33 @@ export interface AuditLogsResponse {
  */
 export const getAuditLogs = async (filters?: AuditLogFilters): Promise<AuditLogsResponse> => {
   const response = await api.get('/audit/logs', { params: filters });
-  return response.data;
+  const rawLogs = response.data.data || [];
+  
+  // Mapear campos do backend para o formato esperado pelo frontend
+  const logs = rawLogs.map((log: any) => ({
+    ...log,
+    createdAt: log.created_at || log.createdAt,
+    userName: log.user_name || log.userName,
+    userEmail: log.user_email || log.userEmail,
+    userId: log.user_id || log.userId,
+    resourceId: log.resource_id || log.resourceId,
+    ipAddress: log.ip_address || log.ipAddress,
+    userAgent: log.user_agent || log.userAgent,
+    errorMessage: log.error_message || log.errorMessage
+  }));
+  
+  const total = response.data.count || logs.length;
+  const limit = filters?.limit || 100;
+  const page = Math.floor((filters?.offset || 0) / limit) + 1;
+  const totalPages = Math.ceil(total / limit);
+  
+  return {
+    success: response.data.success,
+    logs,
+    total,
+    page,
+    totalPages
+  };
 };
 
 /**

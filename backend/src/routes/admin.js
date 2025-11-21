@@ -20,6 +20,7 @@ const transferController = require('../controllers/transferController');
 
 // Importar controller que será criado na próxima etapa
 const adminController = require('../controllers/adminController');
+const settingsController = require('../controllers/settingsController');
 
 // Importar validações que serão criadas
 const {
@@ -144,6 +145,18 @@ router.get(
   validateToken,
   requireAdmin,
   asyncHandler(adminController.getPendingTransfersWidget)
+);
+
+/**
+ * @route   GET /api/admin/transfers
+ * @desc    Listar todas as transferências
+ * @access  Admin
+ */
+router.get(
+  '/transfers',
+  validateToken,
+  requireAdmin,
+  asyncHandler(transferController.getAllTransfers)
 );
 
 /**
@@ -411,3 +424,71 @@ module.exports = router;
  * PUT /api/admin/professionals/uuid-here/status
  * Body: { "status": "inactive" }
  */
+
+/**
+ * ROTAS DE PERFIL E CONFIGURAÇÕES DO ADMIN
+ */
+
+// GET /api/admin/profile
+router.get('/profile', 
+  validateToken, 
+  requireAdmin, 
+  asyncHandler(settingsController.getAdminProfile)
+);
+
+// PUT /api/admin/profile
+router.put('/profile', 
+  validateToken, 
+  requireAdmin, 
+  asyncHandler(settingsController.updateAdminProfile)
+);
+
+// POST /api/admin/change-password
+router.post('/change-password', 
+  validateToken, 
+  requireAdmin, 
+  asyncHandler(settingsController.changeAdminPassword)
+);
+
+/**
+ * ROTAS DE CONFIGURAÇÕES DO SISTEMA
+ */
+
+// Configurações da Clínica
+router.get('/settings/clinic', 
+  validateToken, 
+  requireAdmin, 
+  asyncHandler(settingsController.getClinicSettings)
+);
+
+router.put('/settings/clinic', 
+  validateToken, 
+  requireAdmin, 
+  asyncHandler(settingsController.updateClinicSettings)
+);
+
+// Configurações de Email
+router.get('/settings/email', 
+  validateToken, 
+  requireAdmin, 
+  asyncHandler(settingsController.getEmailSettings)
+);
+
+router.put('/settings/email', 
+  validateToken, 
+  requireAdmin, 
+  asyncHandler(settingsController.updateEmailSettings)
+);
+
+// Configurações do Sistema
+router.get('/settings/system', 
+  validateToken, 
+  requireAdmin, 
+  asyncHandler(settingsController.getSystemSettings)
+);
+
+router.put('/settings/system', 
+  validateToken, 
+  requireAdmin, 
+  asyncHandler(settingsController.updateSystemSettings)
+);

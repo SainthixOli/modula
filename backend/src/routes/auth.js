@@ -31,6 +31,7 @@ const {
   createValidationError,
   createNotFoundError
 } = require('../middleware/errorHandler');
+const auditService = require('../services/auditService');
 
 const router = express.Router();
 
@@ -107,13 +108,15 @@ router.post('/login', asyncHandler(async (req, res) => {
   });
 
   if (!user) {
-    // Adiciona um log para depuração
+    // Registrar tentativa de login com usuário inexistente
+    await auditService.logLoginFailed(req, email, 'Usuário não encontrado');
     console.error(`Login falhou: Usuário não encontrado para o email ${email}`);
     throw createAuthenticationError('Credenciais inválidas');
   }
 
   // 3. Verificar se o usuário está ativo
   if (!user.isActive()) {
+    await auditService.logLoginFailed(req, email, 'Conta inativa ou suspensa');
     throw createAuthenticationError('Conta inativa ou suspensa. Contate o administrador.');
   }
 
@@ -122,6 +125,8 @@ router.post('/login', asyncHandler(async (req, res) => {
   // 4. Verificar senha
   const isPasswordValid = await user.validatePassword(password);
   if (!isPasswordValid) {
+    // Registrar tentativa de login falha
+    await auditService.logLoginFailed(req, email, 'Senha incorreta');
     throw createAuthenticationError('Credenciais inválidas');
   }
 
@@ -132,7 +137,10 @@ router.post('/login', asyncHandler(async (req, res) => {
   const accessToken = generateToken(user);
   const refreshToken = generateRefreshToken(user);
 
-  // 7. Resposta de sucesso
+  // 7. Registrar login bem-sucedido
+  await auditService.logLogin(req, user);
+
+  // 8. Resposta de sucesso
   res.status(200).json({
     success: true,
     message: 'Login realizado com sucesso',
@@ -278,6 +286,9 @@ router.post('/reset-password', asyncHandler(async (req, res) => {
   
   await user.save();
 
+  // 4. Registrar reset de senha
+  await auditService.logPasswordReset(req, user, 'Senha redefinida via email de recuperação');
+
   res.status(200).json({
     success: true,
     message: 'Senha redefinida com sucesso. Faça login com sua nova senha.'
@@ -316,7 +327,10 @@ router.post('/first-access', validateToken, asyncHandler(async (req, res) => {
   user.is_first_access = false;
   await user.save();
 
-  // 4. Gerar novos tokens
+  // 4. Registrar mudança de senha no primeiro acesso
+  await auditService.logPasswordChanged(req, user, 'Senha alterada no primeiro acesso');
+
+  // 5. Gerar novos tokens
   const accessToken = generateToken(user);
   const refreshToken = generateRefreshToken(user);
 
@@ -358,6 +372,9 @@ router.post('/validate-token', validateToken, asyncHandler(async (req, res) => {
  * Logout do usuário (atualmente apenas confirmação)
  */
 router.post('/logout', validateToken, asyncHandler(async (req, res) => {
+  // Registrar logout
+  await auditService.logLogout(req, req.user);
+  
   // Em uma implementação mais avançada, poderíamos adicionar o token a uma blacklist
   res.status(200).json({
     success: true,

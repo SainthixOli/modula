@@ -92,7 +92,7 @@ export const getAdvancedHealthCheck = async (): Promise<AdvancedHealthStatus> =>
  */
 export const getMetricsSummary = async (): Promise<MetricsSummary> => {
   const response = await api.get('/monitoring/metrics/summary');
-  return response.data;
+  return response.data.data || response.data;
 };
 
 /**
@@ -101,19 +101,19 @@ export const getMetricsSummary = async (): Promise<MetricsSummary> => {
 export const getAlerts = async (status?: string): Promise<Alert[]> => {
   const params = status ? { status } : {};
   const response = await api.get('/monitoring/alerts', { params });
-  return response.data.alerts || [];
+  return response.data.data || response.data.alerts || response.data || [];
 };
 
 /**
  * Reconhecer alerta
  */
 export const acknowledgeAlert = async (alertId: number): Promise<void> => {
-  await api.patch(`/monitoring/alerts/${alertId}/acknowledge`);
+  await api.post(`/monitoring/alerts/${alertId}/acknowledge`);
 };
 
 /**
  * Resolver alerta
  */
 export const resolveAlert = async (alertId: number): Promise<void> => {
-  await api.patch(`/monitoring/alerts/${alertId}/resolve`);
+  await api.post(`/monitoring/alerts/${alertId}/resolve`);
 };

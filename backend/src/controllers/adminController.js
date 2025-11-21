@@ -18,6 +18,7 @@ const { AppError, createNotFoundError, createValidationError } = require('../mid
 const crypto = require('crypto');
 const { Transfer } = require('../models');
 const statsService = require('../services/statsService');
+const auditService = require('../services/auditService');
 
 /**
  * DASHBOARD E ESTATÍSTICAS
@@ -832,6 +833,9 @@ const createProfessional = async (req, res) => {
     delete professionalData.password;
     delete professionalData.reset_password_token;
     
+    // Registrar auditoria
+    await auditService.logCreate(req, 'user', professionalData, `Profissional criado: ${full_name}`);
+    
     // TODO: Implementar envio de email com credenciais
     // await emailService.sendWelcomeEmail(email, temporaryPassword);
     
@@ -1005,12 +1009,16 @@ const updateProfessional = async (req, res) => {
     updatedData.professional_register = professional_register ? professional_register.trim() : null;
   }
   
+  const oldData = { ...professional.toJSON() };
   await professional.update(updatedData);
   
   // Retornar dados atualizados
   const professionalData = professional.toJSON();
   delete professionalData.password;
   delete professionalData.reset_password_token;
+  
+  // Registrar auditoria
+  await auditService.logUpdate(req, 'user', oldData, professionalData, `Profissional atualizado: ${professional.full_name}`);
   
   res.json({
     success: true,
@@ -1035,7 +1043,11 @@ const updateProfessionalStatus = async (req, res) => {
     throw createNotFoundError('Profissional não encontrado');
   }
   
+  const oldStatus = professional.status;
   await professional.update({ status });
+  
+  // Registrar auditoria
+  await auditService.logUpdate(req, 'user', { status: oldStatus }, { status }, `Status do profissional ${professional.full_name} alterado de ${oldStatus} para ${status}`);
   
   res.json({
     success: true,
@@ -1074,6 +1086,9 @@ const resetProfessionalPassword = async (req, res) => {
     reset_password_token: null, // Limpar tokens existentes
     reset_password_expires: null
   });
+  
+  // Registrar auditoria
+  await auditService.logPasswordReset(req, professional, `Senha do profissional ${professional.full_name} resetada pelo administrador`);
   
   // TODO: Implementar envio de email
   // if (sendEmail) {

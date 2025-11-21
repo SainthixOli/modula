@@ -25,6 +25,7 @@ const Session = require('./Session');
 const Transfer = require('./Transfer');
 const Notification = require('./Notification');
 const AuditLog = require('./AuditLog');
+const NotificationRule = require('./NotificationRule');
 
 // ============================================
 // ASSOCIAÇÕES: USER ↔ PATIENT
@@ -251,6 +252,26 @@ Notification.belongsTo(User, {
 });
 
 // ============================================
+// ASSOCIAÇÕES: NOTIFICATIONRULE ↔ USER
+// ============================================
+
+// Uma regra foi criada por um admin
+NotificationRule.belongsTo(User, {
+  foreignKey: 'created_by',
+  as: 'Creator',
+  onDelete: 'SET NULL',
+  onUpdate: 'CASCADE',
+});
+
+// Um admin pode criar muitas regras
+User.hasMany(NotificationRule, {
+  foreignKey: 'created_by',
+  as: 'CreatedRules',
+  onDelete: 'SET NULL',
+  onUpdate: 'CASCADE',
+});
+
+// ============================================
 // EXPORTAR TUDO
 // ============================================
 
@@ -263,6 +284,7 @@ module.exports = {
   Transfer,
   Notification,
   AuditLog,
+  NotificationRule,
 };
 
 /**
@@ -291,6 +313,9 @@ module.exports = {
  * NOTIFICATION:
  * - belongsTo: User (destinatário), Creator (User)
  * 
+ * NOTIFICATION_RULE:
+ * - belongsTo: User (created_by)
+ * 
  * ESTRATÉGIAS DE DELEÇÃO:
  * 
  * CASCADE:
@@ -304,4 +329,5 @@ module.exports = {
  * SET NULL:
  * - Admin deletado → Transfer mantém registro mas processed_by = null
  * - Usuário deletado → Notification criada por ele mantém registro
+ * - Admin deletado → NotificationRule mantém mas created_by = null
  */

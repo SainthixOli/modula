@@ -69,13 +69,28 @@ class AuditService {
         retentionUntil
       };
 
+      console.log('[AuditService] ============ TENTANDO CRIAR LOG ============');
+      console.log('[AuditService] Action:', data.action);
+      console.log('[AuditService] Resource:', data.resource);
+      console.log('[AuditService] UserEmail:', data.userEmail);
+      console.log('[AuditService] Description:', data.description);
+      console.log('[AuditService] LogData completo:', JSON.stringify(logData, null, 2));
+
       const audit = await AuditLog.log(logData);
       
-      console.log(`[Audit] ${data.action} em ${data.resource}${data.resourceId ? ` (${data.resourceId})` : ''} por ${data.userEmail || 'system'}`);
+      console.log(`✅ [Audit] ${data.action} em ${data.resource}${data.resourceId ? ` (${data.resourceId})` : ''} por ${data.userEmail || 'system'}`);
       
       return audit;
     } catch (error) {
-      console.error('[AuditService] Erro ao registrar log:', error);
+      console.error('❌ [AuditService] ============ ERRO AO REGISTRAR LOG ============');
+      console.error('❌ [AuditService] Mensagem de erro:', error.message);
+      console.error('❌ [AuditService] Stack trace:', error.stack);
+      console.error('❌ [AuditService] Nome do erro:', error.name);
+      if (error.errors) {
+        console.error('❌ [AuditService] Erros de validação Sequelize:', JSON.stringify(error.errors, null, 2));
+      }
+      console.error('❌ [AuditService] Dados que causaram erro:', JSON.stringify(data, null, 2));
+      console.error('❌ [AuditService] ========================================');
       // Não lançar erro para não quebrar o fluxo principal
       return null;
     }

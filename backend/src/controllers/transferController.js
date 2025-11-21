@@ -286,6 +286,69 @@ const cancelTransfer = async (req, res) => {
 // ============================================
 
 /**
+ * Listar todas as transferências (admin)
+ * GET /api/admin/transfers
+ * 
+ * @route GET /api/admin/transfers
+ * @access Admin
+ */
+const getAllTransfers = async (req, res) => {
+  const {
+    page = 1,
+    limit = 20,
+    status,
+    sortBy = 'created_at',
+    order = 'DESC',
+  } = req.query;
+
+  const offset = (parseInt(page) - 1) * parseInt(limit);
+  
+  const whereClause = {};
+  if (status) {
+    whereClause.status = status;
+  }
+
+  const { count, rows: transfers } = await Transfer.findAndCountAll({
+    where: whereClause,
+    attributes: [
+      'id', 'patient_id', 'from_user_id', 'to_user_id', 'status', 
+      'reason', 'requested_at', 'processed_at', 'completed_at', 
+      'rejection_reason', 'notes', 'created_at', 'updated_at'
+    ],
+    include: [
+      { model: Patient, as: 'Patient', attributes: ['id', 'full_name'] },
+      { model: User, as: 'FromUser', attributes: ['id', 'full_name', 'email'] },
+      { model: User, as: 'ToUser', attributes: ['id', 'full_name', 'email'] },
+      { 
+        model: User, 
+        as: 'ProcessedBy', 
+        attributes: ['id', 'full_name', 'email'],
+        required: false,
+      },
+    ],
+    order: [[sortBy, order]],
+    limit: parseInt(limit),
+    offset: offset,
+  });
+
+  const totalPages = Math.ceil(count / parseInt(limit));
+
+  res.json({
+    success: true,
+    data: {
+      transfers,
+      pagination: {
+        total: count,
+        page: parseInt(page),
+        limit: parseInt(limit),
+        totalPages,
+        hasMore: parseInt(page) < totalPages,
+      },
+    },
+  });
+};
+
+/**
  * Listar transferências pendentes (admin)
  * GET /api/admin/transfers/pending
  * 
@@ -648,14 +711,46 @@ const getPatientTransferHistory = async (req, res) => {
 // EXPORTS
 // ============================================
 
+/**
+ * Listar profissionais ativos (para seleção em transferências)
+ * GET /api/transfers/professionals
+ * 
+ * @route GET /api/transfers/professionals
+ * @access Professional
+ */
+const getAvailableProfessionals = async (req, res) => {
+  const currentUserId = req.userId;
+
+  const professionals = await User.findAll({
+    where: {
+      user_type: 'professional',
+      status: 'active',
+      deleted_at: null,
+      id: { [Op.ne]: currentUserId }, // Excluir o próprio usuário
+    },
+    attributes: ['id', 'full_name', 'email', 'professional_register'],
+    order: [['full_name', 'ASC']],
+  });
+
+  res.json({
+    success: true,
+    data: {
+      professionals,
+      count: professionals.length,
+    },
+  });
+};
+
 module.exports = {
   // Operações do profissional
   requestTransfer,
   getMyTransferRequests,
   getTransferById,
   cancelTransfer,
+  getAvailableProfessionals,
   
   // Operações administrativas
+  getAllTransfers,
   getPendingTransfers,
   approveTransfer,
   rejectTransfer,

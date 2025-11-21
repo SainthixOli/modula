@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { z } from "zod";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 const professionalSchema = z.object({
   fullName: z.string().min(2, "Nome deve ter no mínimo 2 caracteres").max(150),
@@ -28,6 +29,7 @@ export default function EditProfessionalPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { userName, userType } = useCurrentUser();
 
   // Mock data - em produção viria da API
   const [formData, setFormData] = useState({
@@ -77,10 +79,10 @@ export default function EditProfessionalPage() {
 
   return (
     <div className="flex min-h-screen bg-background">
-      <Sidebar userType="admin" />
+      <Sidebar userType={userType as "professional" | "admin"} />
 
       <div className="flex-1 flex flex-col">
-        <Header userName="Admin" />
+        <Header userName={userName} />
 
         <main className="flex-1 p-6 overflow-auto">
           <div className="max-w-4xl mx-auto">

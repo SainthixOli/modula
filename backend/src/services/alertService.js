@@ -224,6 +224,19 @@ Métricas:
   }
 
   /**
+   * Obter histórico de alertas
+   */
+  getHistory() {
+    return Object.keys(this.alertHistory).map((type, index) => ({
+      id: index + 1,
+      type,
+      timestamp: new Date(this.alertHistory[type]).toISOString(),
+      status: 'active',
+      acknowledged: false
+    }));
+  }
+
+  /**
    * Limpar histórico de alertas
    */
   clearHistory() {

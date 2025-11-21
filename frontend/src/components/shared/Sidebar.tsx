@@ -28,6 +28,7 @@ export const Sidebar = ({ userType, userName }: SidebarProps) => {
     { to: "/professional/calendar", icon: Calendar, label: "Calendário" },
     { to: "/professional/patients", icon: Users, label: "Pacientes" },
     { to: "/professional/sessions", icon: ClipboardList, label: "Sessões" },
+    { to: "/professional/transfers", icon: ArrowLeftRight, label: "Transferências" },
     { to: "/professional/anamnesi-templates", icon: FileText, label: "Anamneses" },
     { to: "/professional/notifications", icon: Bell, label: "Notificações" },
     { to: "/professional/reports", icon: BarChart3, label: "Relatórios" },

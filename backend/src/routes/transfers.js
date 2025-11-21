@@ -64,6 +64,18 @@ router.post(
 );
 
 /**
+ * @route   GET /api/transfers/professionals
+ * @desc    Listar profissionais disponíveis para transferência
+ * @access  Professional
+ */
+router.get(
+  '/professionals',
+  validateToken,
+  requireProfessional,
+  asyncHandler(transferController.getAvailableProfessionals)
+);
+
+/**
  * @route   GET /api/transfers/my-requests
  * @desc    Listar minhas solicitações de transferência
  * @access  Professional

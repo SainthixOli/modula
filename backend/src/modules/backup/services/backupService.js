@@ -55,12 +55,13 @@ class BackupService {
       // Registrar backup no log
       const backupInfo = {
         name: backupName,
-        file: finalFile,
+        path: finalFile,
         size: await this.getFileSize(finalFile),
         sizeFormatted: await this.formatFileSize(finalFile),
-        timestamp: new Date(),
-        type: 'automatic',
-        compressed: backupConfig.compression.enabled
+        createdAt: new Date().toISOString(),
+        type: 'manual',
+        compressed: backupConfig.compression.enabled,
+        verified: true
       };
 
       await this.logBackup(backupInfo);
@@ -145,11 +146,13 @@ class BackupService {
           
           backups.push({
             name: file.replace('.sql.gz', '').replace('.sql', ''),
-            file: file,
+            path: filePath,
             size: stats.size,
             sizeFormatted: this.formatBytes(stats.size),
-            createdAt: stats.birthtime,
-            compressed: file.endsWith('.gz')
+            createdAt: stats.birthtime.toISOString(),
+            type: file.includes('automatic') ? 'automatic' : 'manual',
+            compressed: file.endsWith('.gz'),
+            verified: true
           });
         }
       }

@@ -12,7 +12,7 @@ const { validateToken } = require('../../../middleware/auth');
 
 // Middleware de autorização para admin
 const authorizeAdmin = (req, res, next) => {
-  if (req.user.role !== 'admin') {
+  if (req.user.user_type !== 'admin' && req.user.role !== 'admin') {
     return res.status(403).json({
       success: false,
       message: 'Acesso negado. Apenas administradores podem acessar backups.'

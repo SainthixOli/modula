@@ -9,7 +9,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Save } from "lucide-react";
 import { z } from "zod";
-import { createProfessional } from "@/services/admin.service"; 
+import { createProfessional } from "@/services/admin.service";
+import { useCurrentUser } from "@/hooks/useCurrentUser"; 
 
 const professionalSchema = z.object({
   fullName: z.string().min(2, "Nome deve ter no mínimo 2 caracteres").max(150),
@@ -20,6 +21,7 @@ const professionalSchema = z.object({
 export default function AddProfessionalPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { userName, userType } = useCurrentUser();
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -97,10 +99,10 @@ export default function AddProfessionalPage() {
 
   return (
     <div className="flex min-h-screen bg-background">
-      <Sidebar userType="admin" />
+      <Sidebar userType={userType as "professional" | "admin"} />
 
       <div className="flex-1 flex flex-col">
-        <Header userName="Admin" />
+        <Header userName={userName} />
 
         <main className="flex-1 p-6 overflow-auto">
           <div className="max-w-4xl mx-auto">

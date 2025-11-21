@@ -24,7 +24,7 @@ class BackupController {
       res.status(201).json({
         success: true,
         message: 'Backup criado com sucesso',
-        data: backup
+        backup: backup
       });
     } catch (error) {
       console.error('[BackupController] Erro ao criar backup:', error);
@@ -39,11 +39,23 @@ class BackupController {
   async listBackups(req, res, next) {
     try {
       const backups = await backupService.listBackups();
+      
+      // Calcular tamanho total
+      const totalSize = backups.reduce((sum, b) => sum + b.size, 0);
+      const formatBytes = (bytes) => {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+      };
 
       res.json({
         success: true,
-        data: backups,
-        count: backups.length
+        backups: backups,
+        totalBackups: backups.length,
+        totalSize: totalSize,
+        totalSizeFormatted: formatBytes(totalSize)
       });
     } catch (error) {
       console.error('[BackupController] Erro ao listar backups:', error);
@@ -113,7 +125,7 @@ class BackupController {
       res.json({
         success: true,
         message: 'Rotação de backups executada com sucesso',
-        data: result
+        deleted: result.deleted
       });
     } catch (error) {
       console.error('[BackupController] Erro ao rotacionar backups:', error);

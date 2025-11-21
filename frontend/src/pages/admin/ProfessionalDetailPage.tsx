@@ -13,6 +13,7 @@ import { getProfessionalDetails, resetPassword } from "@/services/admin.service"
 import { StatsCard } from '@/components/shared/StatsCard';
 import { format, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 interface ProfessionalDetails {
   id: string;
@@ -37,6 +38,7 @@ interface ProfessionalDetails {
 export default function ProfessionalDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { userName, userType } = useCurrentUser();
 
   const [professional, setProfessional] = useState<ProfessionalDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -102,13 +104,13 @@ useEffect(() => {
   
   if (isLoading) {
     return (
-      <div className="flex min-h-screen bg-background"><Sidebar userType="admin" /><div className="flex-1 flex flex-col"><Header userName="Administrador" /><main className="flex-1 p-6 flex items-center justify-center"><p>Carregando detalhes do profissional...</p></main></div></div>
+      <div className="flex min-h-screen bg-background"><Sidebar userType={userType as "professional" | "admin"} /><div className="flex-1 flex flex-col"><Header userName={userName} /><main className="flex-1 p-6 flex items-center justify-center"><p>Carregando detalhes do profissional...</p></main></div></div>
     );
   }
 
   if (error || !professional) {
     return (
-       <div className="flex min-h-screen bg-background"><Sidebar userType="admin" /><div className="flex-1 flex flex-col"><Header userName="Administrador" /><main className="flex-1 p-6 flex items-center justify-center"><p className="text-destructive">{error || "Profissional não encontrado."}</p></main></div></div>
+       <div className="flex min-h-screen bg-background"><Sidebar userType={userType as "professional" | "admin"} /><div className="flex-1 flex flex-col"><Header userName={userName} /><main className="flex-1 p-6 flex items-center justify-center"><p className="text-destructive">{error || "Profissional não encontrado."}</p></main></div></div>
     );
   }
   
@@ -116,10 +118,10 @@ useEffect(() => {
 
   return (
     <div className="flex min-h-screen bg-background">
-      <Sidebar userType="admin" />
+      <Sidebar userType={userType as "professional" | "admin"} />
 
       <div className="flex-1 flex flex-col">
-        <Header userName="Administrador" />
+        <Header userName={userName} />
 
         <main className="flex-1 p-6 overflow-auto">
           <div className="mb-6">

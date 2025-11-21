@@ -29,6 +29,7 @@ const { Session, Patient, User } = require('../models');
 const { Op } = require('sequelize');
 const { AppError } = require('../middleware/errorHandler');
 const notificationTriggers = require('../services/notificationTriggers');
+const auditService = require('../services/auditService');
 
 // ============================================
 // FUNÇÕES DE AGENDAMENTO
@@ -100,6 +101,9 @@ const createSession = async (req, res) => {
       }
     ]
   });
+
+  // Registrar auditoria
+  await auditService.logCreate(req, 'session', createdSession.toJSON(), `Sessão agendada para ${patient.full_name} - ${session_type} em ${sessionDateTime.toLocaleDateString('pt-BR')}`);
 
   res.status(201).json({
     success: true,

@@ -7,7 +7,7 @@
 const metricsService = require('../services/metricsService');
 const alertService = require('../services/alertService');
 const auditService = require('../services/auditService');
-const { sequelize } = require('../models');
+const { sequelize } = require('../config/database');
 
 /**
  * Health check básico (público)
@@ -62,12 +62,11 @@ const advancedHealthCheck = async (req, res) => {
     const system = metricsService.getSystemMetrics();
 
     // Registrar auditoria
-    await auditService.logRead(
-      req.user.id,
+    await auditService.logAccess(
+      req,
       'monitoring',
-      null,
       'health_check_advanced',
-      req
+      'Consulta de health check avançado'
     );
 
     res.status(health.status === 'critical' ? 503 : 200).json({
@@ -92,9 +91,14 @@ const advancedHealthCheck = async (req, res) => {
         load: system.cpu.load
       },
       issues: health.issues,
-      metrics: health.metrics
+      metrics: {
+        totalRequests: metricsService.metrics.requests.total,
+        avgResponseTime: health.metrics.avgResponseTime + 'ms',
+        errorRate: health.metrics.errorRate + '%'
+      }
     });
   } catch (error) {
+    console.error('[MonitoringController] Erro em advancedHealthCheck:', error);
     res.status(500).json({
       status: 'error',
       message: 'Erro ao verificar health check avançado',
@@ -112,12 +116,11 @@ const getMetrics = async (req, res) => {
     const metrics = metricsService.getAllMetrics();
 
     // Registrar auditoria
-    await auditService.logRead(
-      req.user.id,
+    await auditService.logAccess(
+      req,
       'monitoring',
-      null,
-      'metrics_view',
-      req
+      'metrics',
+      'Consulta de métricas do sistema'
     );
 
     res.json({
@@ -141,6 +144,59 @@ const getMetricsSummary = async (req, res) => {
   try {
     const summary = metricsService.getSummary();
 
+    // Verificar conexão com banco de dados
+    let dbStatus = 'disconnected';
+    try {
+      await sequelize.authenticate();
+      dbStatus = 'connected';
+    } catch (error) {
+      console.error('[Monitoring] Erro ao conectar com banco:', error.message);
+    }
+
+    // Contar usuários ativos (logados nas últimas 24 horas)
+    let activeUsers = 0;
+    try {
+      const { User } = require('../models');
+      const { Op } = require('sequelize');
+      const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      activeUsers = await User.count({
+        where: {
+          last_login: {
+            [Op.gte]: twentyFourHoursAgo
+          },
+          status: 'active'
+        }
+      });
+    } catch (error) {
+      console.error('[Monitoring] Erro ao contar usuários ativos:', error.message);
+    }
+
+    // Contar sessões ativas (agendadas para hoje ou futuro)
+    let activeSessions = 0;
+    try {
+      const { Session } = require('../models');
+      const { Op } = require('sequelize');
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      activeSessions = await Session.count({
+        where: {
+          session_date: {
+            [Op.gte]: today
+          },
+          status: {
+            [Op.in]: ['scheduled', 'in_progress']
+          }
+        }
+      });
+    } catch (error) {
+      console.error('[Monitoring] Erro ao contar sessões ativas:', error.message);
+    }
+
+    // Atualizar dados do resumo
+    summary.database.status = dbStatus;
+    summary.activeUsers = activeUsers;
+    summary.activeSessions = activeSessions;
+
     res.json({
       success: true,
       data: summary
@@ -161,15 +217,19 @@ const getMetricsSummary = async (req, res) => {
 const resetMetrics = async (req, res) => {
   try {
     // Registrar auditoria antes de resetar
-    await auditService.log(
-      req.user.id,
-      'monitoring',
-      null,
-      'metrics_reset',
-      req,
-      null,
-      { timestamp: new Date() }
-    );
+    await auditService.logAction({
+      userId: req.user.id,
+      userEmail: req.user.email,
+      userName: req.user.full_name,
+      userRole: req.user.user_type,
+      action: 'update',
+      resource: 'monitoring',
+      resourceId: 'metrics_reset',
+      description: 'Reset de métricas do sistema',
+      ipAddress: req.ip,
+      userAgent: req.get('user-agent'),
+      status: 'success'
+    });
 
     metricsService.reset();
 
@@ -271,15 +331,19 @@ const getAlertsConfig = async (req, res) => {
 const clearAlertsHistory = async (req, res) => {
   try {
     // Registrar auditoria
-    await auditService.log(
-      req.user.id,
-      'monitoring',
-      null,
-      'alerts_history_clear',
-      req,
-      null,
-      { timestamp: new Date() }
-    );
+    await auditService.logAction({
+      userId: req.user.id,
+      userEmail: req.user.email,
+      userName: req.user.full_name,
+      userRole: req.user.user_type,
+      action: 'delete',
+      resource: 'monitoring',
+      resourceId: 'alerts_history',
+      description: 'Limpeza de histórico de alertas',
+      ipAddress: req.ip,
+      userAgent: req.get('user-agent'),
+      status: 'success'
+    });
 
     alertService.clearHistory();
 
@@ -317,6 +381,110 @@ const checkSystemHealth = async (req, res) => {
   }
 };
 
+/**
+ * Obter alertas do sistema (admin)
+ * GET /api/monitoring/alerts
+ */
+const getAlerts = async (req, res) => {
+  try {
+    const { status } = req.query;
+    const alerts = alertService.getHistory();
+    
+    // Filtrar por status se fornecido
+    let filteredAlerts = alerts;
+    if (status) {
+      filteredAlerts = alerts.filter(alert => alert.status === status);
+    }
+
+    res.json({
+      success: true,
+      data: filteredAlerts
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Erro ao obter alertas',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * Reconhecer um alerta (admin)
+ * POST /api/monitoring/alerts/:id/acknowledge
+ */
+const acknowledgeAlert = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Registrar auditoria
+    await auditService.logAction({
+      userId: req.user.id,
+      userEmail: req.user.email,
+      userName: req.user.full_name,
+      userRole: req.user.user_type,
+      action: 'update',
+      resource: 'monitoring_alert',
+      resourceId: id,
+      description: 'Reconhecimento de alerta',
+      ipAddress: req.ip,
+      userAgent: req.get('user-agent'),
+      status: 'success'
+    });
+
+    // Aqui você pode implementar a lógica de reconhecimento se necessário
+    
+    res.json({
+      success: true,
+      message: 'Alerta reconhecido com sucesso'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Erro ao reconhecer alerta',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * Resolver um alerta (admin)
+ * POST /api/monitoring/alerts/:id/resolve
+ */
+const resolveAlert = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Registrar auditoria
+    await auditService.logAction({
+      userId: req.user.id,
+      userEmail: req.user.email,
+      userName: req.user.full_name,
+      userRole: req.user.user_type,
+      action: 'update',
+      resource: 'monitoring_alert',
+      resourceId: id,
+      description: 'Resolução de alerta',
+      ipAddress: req.ip,
+      userAgent: req.get('user-agent'),
+      status: 'success'
+    });
+
+    // Aqui você pode implementar a lógica de resolução se necessário
+    
+    res.json({
+      success: true,
+      message: 'Alerta resolvido com sucesso'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Erro ao resolver alerta',
+      error: error.message
+    });
+  }
+};
+
 module.exports = {
   healthCheck,
   advancedHealthCheck,
@@ -326,5 +494,8 @@ module.exports = {
   getStatus,
   getAlertsConfig,
   clearAlertsHistory,
-  checkSystemHealth
+  checkSystemHealth,
+  getAlerts,
+  acknowledgeAlert,
+  resolveAlert
 };

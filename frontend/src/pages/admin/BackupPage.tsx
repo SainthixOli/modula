@@ -16,9 +16,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 // Página de backup do sistema (admin)
 const BackupPage = () => {
+  const { userName, userType } = useCurrentUser();
   const [backups, setBackups] = useState<Backup[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
@@ -109,9 +111,12 @@ const BackupPage = () => {
   if (loading) {
     return (
       <div className="flex h-screen bg-background">
-        <Sidebar userType="admin" userName="Admin" />
-        <div className="flex-1 flex items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <Sidebar userType={userType as "professional" | "admin"} />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <Header userName={userName} />
+          <div className="flex-1 flex items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
         </div>
       </div>
     );
@@ -119,10 +124,10 @@ const BackupPage = () => {
 
   return (
     <div className="flex h-screen bg-background">
-      <Sidebar userType="admin" userName="Admin" />
+      <Sidebar userType={userType as "professional" | "admin"} />
       
       <div className="flex-1 flex flex-col overflow-hidden">
-        <Header userName="Administrador" userRole="Admin" />
+        <Header userName={userName} />
         
         <main className="flex-1 overflow-y-auto p-8">
           {/* Cabeçalho */}

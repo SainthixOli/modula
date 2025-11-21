@@ -7,15 +7,18 @@ import { Input } from "@/components/ui/input";
 import { ArrowRightLeft, Search, Check, X, Clock, Loader2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
-  getTransfers, 
+  getAllTransfers, 
   approveTransfer, 
   rejectTransfer,
+  getTransferStats,
   Transfer 
 } from "@/services/transfer.service";
 import { useToast } from "@/hooks/use-toast";
 import { TransferCard } from "@/components/shared/TransferCard";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 const TransfersPage = () => {
+  const { userName, userType } = useCurrentUser();
   const [searchQuery, setSearchQuery] = useState("");
   const [transfers, setTransfers] = useState<Transfer[]>([]);
   const [loading, setLoading] = useState(true);
@@ -29,7 +32,7 @@ const TransfersPage = () => {
   const fetchTransfers = async () => {
     try {
       setError(null);
-      const data = await getTransfers();
+      const data = await getAllTransfers();
       console.log('Transferências carregadas:', data);
       setTransfers(data || []);
     } catch (error: any) {
@@ -49,55 +52,68 @@ const TransfersPage = () => {
 
   const handleApprove = async (id: string) => {
     try {
+      console.log('Aprovando transferência:', id);
       await approveTransfer(id);
       toast({
         title: 'Sucesso',
         description: 'Transferência aprovada com sucesso',
       });
-      fetchTransfers();
-    } catch (error) {
+      console.log('Recarregando transferências...');
+      await fetchTransfers();
+    } catch (error: any) {
+      console.error('Erro ao aprovar:', error);
       toast({
         title: 'Erro',
-        description: 'Não foi possível aprovar a transferência',
+        description: error.response?.data?.message || 'Não foi possível aprovar a transferência',
         variant: 'destructive',
       });
     }
   };
 
   const handleReject = async (id: string) => {
+    const reason = prompt('Digite o motivo da rejeição:');
+    if (!reason || reason.trim().length < 10) {
+      toast({
+        title: 'Motivo obrigatório',
+        description: 'Informe um motivo com pelo menos 10 caracteres',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     try {
-      await rejectTransfer(id);
+      await rejectTransfer(id, reason.trim());
       toast({
         title: 'Sucesso',
         description: 'Transferência rejeitada',
       });
       fetchTransfers();
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: 'Erro',
-        description: 'Não foi possível rejeitar a transferência',
+        description: error.response?.data?.message || 'Não foi possível rejeitar a transferência',
         variant: 'destructive',
       });
     }
   };
 
   const filteredTransfers = Array.isArray(transfers) ? transfers.filter(transfer =>
-    transfer.patient?.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    transfer.from_professional?.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    transfer.to_professional?.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (transfer.Patient?.full_name || transfer.patient?.full_name || '')?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (transfer.FromUser?.full_name || transfer.from_professional?.full_name || '')?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (transfer.ToUser?.full_name || transfer.to_professional?.full_name || '')?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     transfer.reason?.toLowerCase().includes(searchQuery.toLowerCase())
   ) : [];
 
   const pendingTransfers = filteredTransfers.filter(t => t.status === "pending");
-  const approvedTransfers = filteredTransfers.filter(t => t.status === "approved");
+  const approvedTransfers = filteredTransfers.filter(t => t.status === "approved" || t.status === "completed");
   const rejectedTransfers = filteredTransfers.filter(t => t.status === "rejected");
 
   if (loading) {
     return (
       <div className="flex h-screen bg-background">
-        <Sidebar userType="admin" />
+        <Sidebar userType={userType as "professional" | "admin"} />
         <div className="flex-1 flex flex-col overflow-hidden">
-          <Header userName="Administrador" />
+          <Header userName={userName} />
           <main className="flex-1 flex items-center justify-center">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </main>
@@ -108,10 +124,10 @@ const TransfersPage = () => {
 
   return (
     <div className="flex h-screen bg-background">
-      <Sidebar userType="admin" />
+      <Sidebar userType={userType as "professional" | "admin"} />
       
       <div className="flex-1 flex flex-col overflow-hidden">
-        <Header userName="Administrador" />
+        <Header userName={userName} />
         
         <main className="flex-1 overflow-y-auto p-8">
           <div className="flex items-center justify-between mb-6">

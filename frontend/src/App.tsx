@@ -27,8 +27,9 @@ import SettingsPage from "./pages/professional/SettingsPage";
 import NotificationsPage from "./pages/professional/NotificationsPage";
 import SessionsPage from "./pages/professional/SessionsPage";
 import AuditLogsPage from "./pages/professional/AuditLogsPage";
-import BackupPage from "./pages/professional/BackupPage";
+import ProfessionalBackupPage from "./pages/professional/BackupPage";
 import ViewAnamnesiPage from "./pages/professional/ViewAnamnesiPage";
+import ProfessionalTransfersPage from "./pages/professional/TransfersPage";
 
 // Importações de Páginas do Admin
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -40,6 +41,7 @@ import AddProfessionalPage from "./pages/admin/AddProfessionalPage";
 import TransfersPage from "./pages/admin/TransfersPage";
 import MonitoringPage from "./pages/admin/MonitoringPage";
 import NotificationsAdminPage from "./pages/admin/NotificationsAdminPage";
+import AdminBackupPage from "./pages/admin/BackupPage";
 
 // Serviços
 import { setupAuthHeader } from './services/auth.service';
@@ -107,7 +109,8 @@ return (
               <Route path="/professional/notifications" element={<NotificationsPage />} />
               <Route path="/professional/sessions" element={<SessionsPage />} />
               <Route path="/professional/audit-logs" element={<AuditLogsPage />} />
-              <Route path="/professional/backup" element={<BackupPage />} />
+              <Route path="/professional/backup" element={<ProfessionalBackupPage />} />
+              <Route path="/professional/transfers" element={<ProfessionalTransfersPage />} />
               <Route path="/professional/patients/:patientId/view-anamnesis/:anamnesisId" element={<ViewAnamnesiPage />} />
               
               {/* Rotas do Admin */}
@@ -122,7 +125,7 @@ return (
               <Route path="/admin/monitoring" element={<MonitoringPage />} />
               <Route path="/admin/notifications" element={<NotificationsAdminPage />} />
               <Route path="/admin/audit-logs" element={<AuditLogsPage />} />
-              <Route path="/admin/backup" element={<BackupPage />} />
+              <Route path="/admin/backup" element={<AdminBackupPage />} />
             </Route>
 
             {/* Rota "Catch-all" para página não encontrada */}

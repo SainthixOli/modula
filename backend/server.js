@@ -254,12 +254,9 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/transfers', validateToken, transferRoutes);
 
 // Rotas de notificações (requer token)
-app.use('/api/notifications', validateToken, notificationRoutes);
-
 // Nota: As rotas admin já estão incluídas no arquivo notifications.js
-// com o prefixo /admin, então:
-// - /api/notifications/* = rotas do usuário
-// - /api/notifications/admin/* = rotas administrativas
+// A validação de token é feita internamente em cada rota
+app.use('/api/notifications', notificationRoutes);
 
 
 // MÓDULO DO PROFISSIONAL (requer token + profissional) 

@@ -24,6 +24,7 @@ const {
 } = require('../middleware/errorHandler');
 const bcrypt = require('bcryptjs');
 const notificationTriggers = require('../services/notificationTriggers');
+const auditService = require('../services/auditService');
 
 /**
  * DASHBOARD E ESTATÍSTICAS PESSOAIS
@@ -507,6 +508,9 @@ const createPatient = async (req, res) => {
     // Retornar dados do paciente criado
     const patientResponse = newPatient.toJSON();
 
+    // Registrar auditoria
+    await auditService.logCreate(req, 'patient', patientResponse, `Paciente criado: ${newPatient.full_name}`);
+
     await notificationTriggers.notifyNewPatient(
     newPatient,
     req.userId
@@ -593,6 +597,9 @@ const getPatientById = async (req, res) => {
       url: `/api/patients/${patient.id}/sessions`
     });
   }
+
+  // Registrar leitura de dados sensíveis do paciente
+  await auditService.logAccess(req, 'patient', patient.id, `Dados do paciente ${patient.full_name} acessados`);
   
   res.json({
     success: true,

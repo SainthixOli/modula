@@ -308,6 +308,143 @@ class AuditController {
       next(error);
     }
   }
+
+  /**
+   * GET /api/audit/export/csv
+   * Exportar logs de auditoria em formato CSV
+   */
+  async exportCSV(req, res, next) {
+    try {
+      const {
+        userId,
+        action,
+        resource,
+        resourceId,
+        status,
+        startDate,
+        endDate,
+        limit = 1000
+      } = req.query;
+
+      const filters = {
+        userId,
+        action,
+        resource,
+        resourceId,
+        status,
+        startDate: startDate ? new Date(startDate) : null,
+        endDate: endDate ? new Date(endDate) : null,
+        limit: parseInt(limit)
+      };
+
+      const logs = await auditService.getLogs(filters);
+
+      // Registrar exportação
+      await auditService.logExport(
+        req,
+        'audit',
+        filters,
+        `Exportação CSV: ${logs.length} logs`
+      );
+
+      // Criar CSV
+      const csvHeader = 'ID,Data/Hora,Usuário,Email,Ação,Recurso,ID Recurso,Status,IP,Descrição\n';
+      const csvRows = logs.map(log => {
+        const date = new Date(log.created_at).toLocaleString('pt-BR');
+        const user = log.user_name || 'Sistema';
+        const email = log.user_email || '';
+        const action = log.action || '';
+        const resource = log.resource || '';
+        const resourceId = log.resource_id || '';
+        const status = log.status || '';
+        const ip = log.ip_address || '';
+        const description = (log.description || '').replace(/"/g, '""');
+        
+        return `"${log.id}","${date}","${user}","${email}","${action}","${resource}","${resourceId}","${status}","${ip}","${description}"`;
+      }).join('\n');
+
+      const csv = csvHeader + csvRows;
+
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      res.setHeader('Content-Disposition', `attachment; filename=audit-logs-${Date.now()}.csv`);
+      res.send('\uFEFF' + csv); // BOM para UTF-8
+    } catch (error) {
+      console.error('[AuditController] Erro ao exportar CSV:', error);
+      next(error);
+    }
+  }
+
+  /**
+   * GET /api/audit/export/json
+   * Exportar logs de auditoria em formato JSON
+   */
+  async exportJSON(req, res, next) {
+    try {
+      const {
+        userId,
+        action,
+        resource,
+        resourceId,
+        status,
+        startDate,
+        endDate,
+        limit = 1000
+      } = req.query;
+
+      const filters = {
+        userId,
+        action,
+        resource,
+        resourceId,
+        status,
+        startDate: startDate ? new Date(startDate) : null,
+        endDate: endDate ? new Date(endDate) : null,
+        limit: parseInt(limit)
+      };
+
+      const logs = await auditService.getLogs(filters);
+
+      // Registrar exportação
+      await auditService.logExport(
+        req,
+        'audit',
+        filters,
+        `Exportação JSON: ${logs.length} logs`
+      );
+
+      res.setHeader('Content-Type', 'application/json; charset=utf-8');
+      res.setHeader('Content-Disposition', `attachment; filename=audit-logs-${Date.now()}.json`);
+      res.json({
+        exportDate: new Date().toISOString(),
+        filters,
+        totalLogs: logs.length,
+        logs: logs.map(log => ({
+          id: log.id,
+          timestamp: log.created_at,
+          user: {
+            id: log.user_id,
+            name: log.user_name,
+            email: log.user_email,
+            role: log.user_role
+          },
+          action: log.action,
+          resource: log.resource,
+          resourceId: log.resource_id,
+          status: log.status,
+          ipAddress: log.ip_address,
+          userAgent: log.user_agent,
+          description: log.description,
+          oldData: log.old_data,
+          newData: log.new_data,
+          errorMessage: log.error_message,
+          metadata: log.metadata
+        }))
+      });
+    } catch (error) {
+      console.error('[AuditController] Erro ao exportar JSON:', error);
+      next(error);
+    }
+  }
 }
 
 module.exports = new AuditController();

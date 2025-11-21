@@ -231,10 +231,27 @@ class MetricsService {
    */
   getSummary() {
     const health = this.getHealthStatus();
+    const system = this.getSystemMetrics();
     
     return {
       status: health.status,
       uptime: this.formatUptime(process.uptime()),
+      totalRequests: this.metrics.requests.total,
+      avgResponseTime: parseFloat(this.metrics.performance.avgResponseTime.toFixed(2)),
+      errorRate: this.metrics.requests.total > 0 
+        ? parseFloat(((this.metrics.requests.errors / this.metrics.requests.total) * 100).toFixed(2))
+        : 0,
+      activeUsers: 0, // TODO: Implementar contagem de usuários ativos
+      activeSessions: 0, // TODO: Implementar contagem de sessões ativas
+      memory: {
+        percentUsed: parseFloat(system.memory.percentUsed),
+        used: system.memory.usedFormatted,
+        total: system.memory.totalFormatted
+      },
+      database: {
+        status: 'connected', // Será atualizado pelo controller
+        connections: 0 // TODO: Implementar contagem de conexões
+      },
       requests: {
         total: this.metrics.requests.total,
         success: this.metrics.requests.success,
@@ -245,9 +262,6 @@ class MetricsService {
       },
       performance: {
         avgResponseTime: this.metrics.performance.avgResponseTime.toFixed(2) + 'ms'
-      },
-      memory: {
-        percentUsed: health.metrics.memoryUsage + '%'
       },
       recentErrors: this.metrics.errors.slice(0, 5)
     };

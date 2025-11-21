@@ -60,6 +60,27 @@ router.post('/metrics/reset', validateToken, requireAdmin, monitoringController.
 router.get('/status', validateToken, requireAdmin, monitoringController.getStatus);
 
 /**
+ * @route GET /api/monitoring/alerts
+ * @desc Obter alertas do sistema
+ * @access Admin
+ */
+router.get('/alerts', validateToken, requireAdmin, monitoringController.getAlerts);
+
+/**
+ * @route POST /api/monitoring/alerts/:id/acknowledge
+ * @desc Reconhecer um alerta
+ * @access Admin
+ */
+router.post('/alerts/:id/acknowledge', validateToken, requireAdmin, monitoringController.acknowledgeAlert);
+
+/**
+ * @route POST /api/monitoring/alerts/:id/resolve
+ * @desc Resolver um alerta
+ * @access Admin
+ */
+router.post('/alerts/:id/resolve', validateToken, requireAdmin, monitoringController.resolveAlert);
+
+/**
  * @route GET /api/monitoring/alerts/config
  * @desc Obter configuração de alertas
  * @access Admin

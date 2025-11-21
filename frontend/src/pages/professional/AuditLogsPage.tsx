@@ -8,9 +8,11 @@ import { Badge } from "@/components/ui/badge";
 import { Shield, Search, Download, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getAuditLogs, exportAuditLogs, type AuditLog, type AuditLogFilters } from "@/services/audit.service";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 // Página de logs de auditoria LGPD
 const AuditLogsPage = () => {
+  const { userName, userType } = useCurrentUser();
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
@@ -19,11 +21,13 @@ const AuditLogsPage = () => {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [error, setError] = useState<string | null>(null);
   const limit = 20;
 
   const loadLogs = async () => {
     try {
       setLoading(true);
+      setError(null);
       
       const filters: AuditLogFilters = {
         limit,
@@ -34,10 +38,14 @@ const AuditLogsPage = () => {
       if (statusFilter !== 'all') filters.status = statusFilter;
 
       const response = await getAuditLogs(filters);
-      setLogs(response.logs);
-      setTotalPages(response.totalPages);
-    } catch (error) {
+      console.log('Audit logs carregados:', response);
+      setLogs(Array.isArray(response.logs) ? response.logs : []);
+      setTotalPages(response.totalPages || 1);
+    } catch (error: any) {
       console.error('Erro ao carregar logs de auditoria:', error);
+      const errorMessage = error.response?.data?.message || 'Erro ao carregar logs';
+      setError(errorMessage);
+      setLogs([]);
     } finally {
       setLoading(false);
     }
@@ -74,12 +82,12 @@ const AuditLogsPage = () => {
   };
 
   // Filtra logs por busca local
-  const filteredLogs = logs.filter(log =>
+  const filteredLogs = Array.isArray(logs) ? logs.filter(log =>
     searchQuery === "" ||
     log.action.toLowerCase().includes(searchQuery.toLowerCase()) ||
     log.resource.toLowerCase().includes(searchQuery.toLowerCase()) ||
     log.user?.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  ) : [];
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
@@ -107,9 +115,12 @@ const AuditLogsPage = () => {
   if (loading) {
     return (
       <div className="flex h-screen bg-background">
-        <Sidebar userType="professional" userName="Profissional" />
-        <div className="flex-1 flex items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <Sidebar userType={userType as "professional" | "admin"} />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <Header userName={userName} />
+          <div className="flex-1 flex items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
         </div>
       </div>
     );
@@ -117,10 +128,10 @@ const AuditLogsPage = () => {
 
   return (
     <div className="flex h-screen bg-background">
-      <Sidebar userType="professional" userName="Profissional" />
+      <Sidebar userType={userType as "professional" | "admin"} />
       
       <div className="flex-1 flex flex-col overflow-hidden">
-        <Header userName="Profissional" userRole="Psicólogo" />
+        <Header userName={userName} />
         
         <main className="flex-1 overflow-y-auto p-8">
           {/* Cabeçalho da página */}
@@ -218,7 +229,7 @@ const AuditLogsPage = () => {
                     <th className="p-4 font-semibold">Data/Hora</th>
                     <th className="p-4 font-semibold">Usuário</th>
                     <th className="p-4 font-semibold">Ação</th>
-                    <th className="p-4 font-semibold">Recurso</th>
+                    <th className="p-4 font-semibold">Descrição</th>
                     <th className="p-4 font-semibold">IP</th>
                     <th className="p-4 font-semibold">Status</th>
                   </tr>
@@ -234,20 +245,24 @@ const AuditLogsPage = () => {
                     filteredLogs.map((log) => (
                       <tr key={log.id} className="border-b hover:bg-muted/50">
                         <td className="p-4 text-sm">
-                          {new Date(log.timestamp).toLocaleString('pt-BR')}
+                          {log.createdAt ? new Date(log.createdAt).toLocaleString('pt-BR') : 'N/A'}
                         </td>
                         <td className="p-4 text-sm">
-                          {log.user?.name || 'Sistema'}
+                          <div className="font-medium">{log.userName || log.user?.name || 'Sistema'}</div>
+                          {log.userEmail && <div className="text-xs text-muted-foreground">{log.userEmail}</div>}
                         </td>
                         <td className="p-4 text-sm font-medium">
                           {getActionLabel(log.action)}
                         </td>
-                        <td className="p-4 text-sm">
-                          {log.resource}
-                          {log.resourceId && <span className="text-muted-foreground"> #{log.resourceId}</span>}
+                        <td className="p-4 text-sm max-w-md">
+                          <div className="font-medium">{log.description || 'Sem descrição'}</div>
+                          <div className="text-xs text-muted-foreground mt-1">
+                            {log.resource}
+                            {log.resourceId && <span> • ID: {log.resourceId.substring(0, 8)}...</span>}
+                          </div>
                         </td>
                         <td className="p-4 text-sm text-muted-foreground">
-                          {log.ipAddress}
+                          {log.ipAddress || 'N/A'}
                         </td>
                         <td className="p-4">
                           {getStatusBadge(log.status)}

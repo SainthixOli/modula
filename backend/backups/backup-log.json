@@ -1,0 +1,12 @@
+[
+  {
+    "name": "backup_2025-11-21T01-04-57-345Z",
+    "path": "backups/backup_2025-11-21T01-04-57-345Z.sql.gz",
+    "size": 12473,
+    "sizeFormatted": "12.18 KB",
+    "createdAt": "2025-11-21T01:04:57.587Z",
+    "type": "manual",
+    "compressed": true,
+    "verified": true
+  }
+]
